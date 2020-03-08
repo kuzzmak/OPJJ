@@ -10,6 +10,11 @@ import java.util.Scanner;
  */
 public class Factorial {
 
+	/**
+	 * Funkcija iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args predani argumenti
+	 */
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
@@ -35,7 +40,7 @@ public class Factorial {
 				}else {
 					// izračun faktorijele
 					double fact = factorial(number);
-					System.out.println(String.format("%d! = %.0f", number, fact));
+					//System.out.println(String.format("%d! = %.0f", number, fact));
 				}
 			}catch(IllegalArgumentException e) { // neispravan unos
 				
