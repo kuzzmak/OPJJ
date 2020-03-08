@@ -10,6 +10,11 @@ import java.util.Scanner;
  */
 public class Factorial {
 
+	/**
+	 * Funkcija iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args predani argumenti
+	 */
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
