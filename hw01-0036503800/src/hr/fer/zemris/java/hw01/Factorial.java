@@ -40,7 +40,7 @@ public class Factorial {
 				}else {
 					// izračun faktorijele
 					double fact = factorial(number);
-					//System.out.println(String.format("%d! = %.0f", number, fact));
+					System.out.println(String.format("%d! = %.0f", number, fact));
 				}
 			}catch(IllegalArgumentException e) { // neispravan unos
 				
