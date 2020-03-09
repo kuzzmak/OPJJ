@@ -17,33 +17,6 @@ public class UniqueNumbers {
 		TreeNode left;
 		TreeNode right;
 		int value;
-
-		public String toString() {
-			StringBuilder buffer = new StringBuilder(50);
-			print(buffer, "", "");
-			return buffer.toString();
-		}
-
-		/**
-		 * Funkcija za slikovit ispit stabla.
-		 * 
-		 * @param buffer spremnik u koji se dodaju vrijednosti cvora i grane stabla
-		 * @param prefix predmetak za glavu
-		 * @param childrenPrefix predmetak za djecu
-		 * 
-		 */
-		private void print(StringBuilder buffer, String prefix, String childrenPrefix) {
-			buffer.append(prefix);
-			buffer.append(value);
-			buffer.append('\n');
-
-			if (right != null) {
-				right.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
-			}
-			if (left != null) {
-				left.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
-			}
-		}
 	}
 
 	/**
@@ -165,12 +138,12 @@ public class UniqueNumbers {
 	 * @param list lista u koju se dodaju vrijednosti zapisane u pojedinom čvoru
 	 * @return lista vrijednosti zapisanih u čvorovima od manje prema većoj
 	 */
-	private static List<Integer> inOrder(TreeNode node, List<Integer> list) {
+	private static StringBuilder inOrder(TreeNode node, StringBuilder list) {
 
 		if (node.left != null)
 			inOrder(node.left, list);
 		
-		list.add(node.value);
+		list.append(node.value).append(", ");
 		
 		if (node.right != null)
 			inOrder(node.right, list);
@@ -186,12 +159,12 @@ public class UniqueNumbers {
 	 * @param list lista u koju se dodaju vrijednosti zapisane u pojedinom čvoru
 	 * @return lista vrijednosti zapisanih u čvorovima od veće prema manjoj
 	 */
-	private static List<Integer> reverseInOrder(TreeNode node, List<Integer> list) {
+	private static StringBuilder reverseInOrder(TreeNode node, StringBuilder list) {
 		
 		if (node.right != null)
 			reverseInOrder(node.right, list);
 		
-		list.add(node.value);
+		list.append(node.value).append(", ");
 		
 		if (node.left != null)
 			reverseInOrder(node.left, list);
@@ -241,12 +214,16 @@ public class UniqueNumbers {
 		}
 
 		if (node != null) {
-			// ispis stabla u rastućem poretku
-			List<Integer> list = inOrder(node, new ArrayList<>());
-			System.out.println("Ispis od najmanjeg: " + list.toString().replace("[", "").replace("]", ""));
+			// dohvat stringa vrijednosti svih čvorova
+			String list = inOrder(node, new StringBuilder()).toString();
+			
+			// ispis stabla u rastućem poretku i micanje zareza poslije zadnjeg broja
+			System.out.println("Ispis od najmanjeg: " + list.substring(0, list.length() - 2));
+			
+			list = reverseInOrder(node, new StringBuilder()).toString();
+			
 			// ispis stabla u padajučem poretku
-			list = reverseInOrder(node, new ArrayList<>());
-			System.out.println("Ispis od najvećeg: " + list.toString().replace("[", "").replace("]", ""));
+			System.out.println("Ispis od najvećeg: " + list.substring(0, list.length() - 2));
 		}
 	}
 }
