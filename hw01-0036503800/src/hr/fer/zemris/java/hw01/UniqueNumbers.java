@@ -1,7 +1,5 @@
 package hr.fer.zemris.java.hw01;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class UniqueNumbers {
@@ -143,7 +141,7 @@ public class UniqueNumbers {
 		if (node.left != null)
 			inOrder(node.left, list);
 		
-		list.append(node.value).append(", ");
+		list.append(node.value).append(" ");
 		
 		if (node.right != null)
 			inOrder(node.right, list);
@@ -164,7 +162,7 @@ public class UniqueNumbers {
 		if (node.right != null)
 			reverseInOrder(node.right, list);
 		
-		list.append(node.value).append(", ");
+		list.append(node.value).append(" ");
 		
 		if (node.left != null)
 			reverseInOrder(node.left, list);
@@ -214,16 +212,12 @@ public class UniqueNumbers {
 		}
 
 		if (node != null) {
-			// dohvat stringa vrijednosti svih čvorova
-			String list = inOrder(node, new StringBuilder()).toString();
 			
-			// ispis stabla u rastućem poretku i micanje zareza poslije zadnjeg broja
-			System.out.println("Ispis od najmanjeg: " + list.substring(0, list.length() - 2));
-			
-			list = reverseInOrder(node, new StringBuilder()).toString();
+			// ispis stabla u rastućem poretku 
+			System.out.println("Ispis od najmanjeg: " + inOrder(node, new StringBuilder()).toString());
 			
 			// ispis stabla u padajučem poretku
-			System.out.println("Ispis od najvećeg: " + list.substring(0, list.length() - 2));
+			System.out.println("Ispis od najvećeg: " + reverseInOrder(node, new StringBuilder()).toString());
 		}
 	}
 }
