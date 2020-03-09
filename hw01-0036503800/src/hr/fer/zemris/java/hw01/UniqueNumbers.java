@@ -27,9 +27,8 @@ public class UniqueNumbers {
 		/**
 		 * Funkcija za slikovit ispit stabla.
 		 * 
-		 * @param buffer         spremnik u koji se dodaju vrijednosti cvora i grane
-		 *                       stabla
-		 * @param prefix         predmetak za glavu
+		 * @param buffer spremnik u koji se dodaju vrijednosti cvora i grane stabla
+		 * @param prefix predmetak za glavu
 		 * @param childrenPrefix predmetak za djecu
 		 * 
 		 */
@@ -139,8 +138,9 @@ public class UniqueNumbers {
 	 */
 	private static boolean containsValue(TreeNode node, int value) {
 
-		if(node == null) return false;
-		
+		if (node == null)
+			return false;
+
 		boolean flag = false;
 
 		if (node.value == value)
@@ -156,24 +156,54 @@ public class UniqueNumbers {
 
 		return flag;
 	}
-	
+
+	/**
+	 * Funkcija za prolazak kroz stablo na način da se prvo obiđe lijevo
+	 * dijete, zatim se posjeti roditelj i onda desno dijete.
+	 * 
+	 * @param node stablo koje se posjećuje
+	 * @param list lista u koju se dodaju vrijednosti zapisane u pojedinom čvoru
+	 * @return lista vrijednosti zapisanih u čvorovima od manje prema većoj
+	 */
 	private static List<Integer> inOrder(TreeNode node, List<Integer> list) {
+
+		if (node.left != null)
+			inOrder(node.left, list);
 		
-		if(node.left != null) inOrder(node.left, list);
 		list.add(node.value);
-		if(node.right != null) inOrder(node.right, list);
 		
-		return list;
-	}
-	
-	private static List<Integer> reverseInOrder(TreeNode node, List<Integer> list) {
-		if(node.right != null) inOrder(node.right, list);
-		list.add(node.value);
-		if(node.left != null) inOrder(node.left, list);
-		
+		if (node.right != null)
+			inOrder(node.right, list);
+
 		return list;
 	}
 
+	/**
+	 * Funkcija za prolazak kroz stablo na način da se prvo obiđe desno
+	 * dijete, zatim se posjeti roditelj i onda lijevo dijete.
+	 * 
+	 * @param node stablo koje se posjećuje
+	 * @param list lista u koju se dodaju vrijednosti zapisane u pojedinom čvoru
+	 * @return lista vrijednosti zapisanih u čvorovima od veće prema manjoj
+	 */
+	private static List<Integer> reverseInOrder(TreeNode node, List<Integer> list) {
+		
+		if (node.right != null)
+			reverseInOrder(node.right, list);
+		
+		list.add(node.value);
+		
+		if (node.left != null)
+			reverseInOrder(node.left, list);
+
+		return list;
+	}
+
+	/**
+	 * Funkcija iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args predani argumenti
+	 */
 	public static void main(String[] args) {
 
 		Scanner sc = new Scanner(System.in);
@@ -193,28 +223,30 @@ public class UniqueNumbers {
 			try {
 				// parsiranje unosa
 				int value = Integer.parseInt(line.trim());
-				
+
 				// provjera postoji li već vrijednost u stablu
 				if (!containsValue(node, value)) {
 					node = addNode(node, value);
 					System.out.println("Dodano");
-				}else {
+				} else {
 					System.out.println("Broj već postoji. Preskačem.");
 				}
 
-			} catch (IllegalArgumentException e) { 
+			} catch (IllegalArgumentException e) {
 				// predano je nešto različito od cijelog broja
 				System.out.println(line.trim() + " nije cijeli broj");
 			}
 
 			System.out.print("Unesite broj > ");
 		}
-		
-		// ispis stabla u rastućem poretku
-		List<Integer> list = inOrder(node, new ArrayList<>());
-		System.out.println("Ispis od najmanjeg: " + list.toString().replace("[", "").replace("]", ""));
-		// ispis stabla u padajučem poretku
-		list = reverseInOrder(node, new ArrayList<>());
-		System.out.println("Ispis od najvećeg: " + list.toString().replace("[", "").replace("]", ""));
+
+		if (node != null) {
+			// ispis stabla u rastućem poretku
+			List<Integer> list = inOrder(node, new ArrayList<>());
+			System.out.println("Ispis od najmanjeg: " + list.toString().replace("[", "").replace("]", ""));
+			// ispis stabla u padajučem poretku
+			list = reverseInOrder(node, new ArrayList<>());
+			System.out.println("Ispis od najvećeg: " + list.toString().replace("[", "").replace("]", ""));
+		}
 	}
 }
