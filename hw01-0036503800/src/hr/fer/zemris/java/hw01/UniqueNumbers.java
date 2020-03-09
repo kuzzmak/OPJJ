@@ -211,6 +211,8 @@ public class UniqueNumbers {
 			System.out.print("Unesite broj > ");
 		}
 
+		sc.close();
+		
 		if (node != null) {
 			
 			// ispis stabla u rastućem poretku 
