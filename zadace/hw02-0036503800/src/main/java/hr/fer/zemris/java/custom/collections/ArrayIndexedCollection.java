@@ -41,21 +41,28 @@ public class ArrayIndexedCollection extends Collection {
 		// napraviti da se dodaju elementi
 	}
 	
+	/**
+	 * Metoda za dodavanje nove vrijednosti u postojeću kolekciju.
+	 * Ako je postojeća kolekcija popunjena, stvara se nova, dvostruko veća.
+	 * 
+	 * @param value vrijednost koja se dodaje u kolekciju
+	 * @throws NullPointerException ako je predana vrijednost <code>null</code>
+	 */
 	public void add(Object value) {
 		
 		if(value == null) throw new NullPointerException("Nije moguće dodati null u kolekciju.");
 		
 		try {
 			this.elements[this.size] = value;
-			this.size += 1;
+			this.size ++;
 		}catch(IndexOutOfBoundsException e){
 			// kopija trenutne kolekcije			
 			ArrayIndexedCollection temp = new ArrayIndexedCollection(this);
-			
+			// stvaranje nove i kopiranje
 			this.elements = new Object[this.size * 2];
 			this.addAll(temp);
-			this.size = temp.size();
 			this.elements[this.size] = value;
+			this.size ++;
 		}
 	}
 	

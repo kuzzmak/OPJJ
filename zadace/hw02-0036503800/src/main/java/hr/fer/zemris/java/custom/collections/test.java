@@ -6,11 +6,12 @@ public class test {
 		
 		ArrayIndexedCollection col = new ArrayIndexedCollection();
 		
+		
 		for(int i = 0; i < 20; i++) {
 			col.add(i);
 		}
 		
 		System.out.println(col.size());
-		//System.out.println(col.elements.length);
+		
 	}
 }
