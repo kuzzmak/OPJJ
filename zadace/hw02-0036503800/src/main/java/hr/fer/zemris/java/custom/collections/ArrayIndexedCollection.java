@@ -1,5 +1,7 @@
 package hr.fer.zemris.java.custom.collections;
 
+import java.util.Arrays;
+
 /**
  * Razred koji predstavlja implementaciju kolekcija pomoću polja objekata.
  * 
@@ -42,11 +44,7 @@ public class ArrayIndexedCollection extends Collection {
 	}
 	
 	/**
-	 * Metoda za dodavanje nove vrijednosti u postojeću kolekciju.
-	 * Ako je postojeća kolekcija popunjena, stvara se nova, dvostruko veća.
-	 * 
-	 * @param value vrijednost koja se dodaje u kolekciju
-	 * @throws NullPointerException ako je predana vrijednost <code>null</code>
+	 * {@inheritDoc}
 	 */
 	@Override
 	public void add(Object value) {
@@ -68,6 +66,9 @@ public class ArrayIndexedCollection extends Collection {
 		}
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	void addAll(Collection other) {
 		
@@ -77,28 +78,39 @@ public class ArrayIndexedCollection extends Collection {
 			public void process(Object value) {
 				add(value);
 			}
-			
 		}
 		
 		other.forEach(new localProcessor());
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object[] toArray() {
 		
 		return this.elements;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int size() {
 		return this.size;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isEmpty() {
 		return this.size() == 0;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	boolean contains(Object value) {
 		
@@ -109,18 +121,23 @@ public class ArrayIndexedCollection extends Collection {
 		return false;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	boolean remove(Object value) {
 		
+		if(value == null) return false;
+		
 		Object[] temp = new Object[this.elements.length];
 		
-		int index = 0;
-		boolean removed = false;
+		// indeks vrijednosti koja se uklanja ako postoji		
+		int index = -1;
 		
+		// kopiranje svih vrijednosti do indexa u novo polje		
 		for(int i = 0; i < this.size; i++) {
 			if(this.elements[i].equals(value)) {
 				index = i;
-				removed = true;
 				break;
 			}else {
 				temp[i] = this.elements[i];
@@ -128,17 +145,28 @@ public class ArrayIndexedCollection extends Collection {
 			
 		}
 		
-		for(int i = index + 1; i < this.size; i++) {
-			temp[i] = this.elements[i];
+		// postoji vrijednost koja se treba ukloniti		
+		if(index != -1) {
+			// slučaj ako je zadnji element traženi element, onda se ne 
+			// radi ništa jer se već polje iskopiralo do toga dijela			
+			if(index == this.size - 1) {
+				
+			}else {
+				// kopiranje ostatka polja ako ga ima
+				for(int i = index; i < this.size - 1; i++) {
+					temp[i] = this.elements[i + 1];
+				}
+			}
+			
+			this.elements = temp;
+			return true;
 		}
 		
-		return removed;
+		return false;
 	}
 	
 	/**
-	 * Metoda za brisanje elemenata kolekcije. Polje unutar kolekcije ostaje jednake
-	 * veličine, ali su mu svi elementi <code>null</code>.
-	 * 
+	 * {@inheritDoc}
 	 */
 	@Override
 	void clear() {
@@ -150,8 +178,12 @@ public class ArrayIndexedCollection extends Collection {
 		this.size = 0;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	void forEach(Processor processor) {
+		
 		for(Object o: this.elements) {
 			if(o != null) {
 				processor.process(o);
@@ -159,6 +191,14 @@ public class ArrayIndexedCollection extends Collection {
 		}
 	}
 	
+	/**
+	 * Metoda za umetanje elementa u kolekciju na poziciji <code>position</code>.
+	 * 
+	 * @param value element koji se umeće u kolekciju
+	 * @param position pozicija na kojoj se umeće element
+	 * @throws NullPointerException ako je predan element <code>null</code> vrijednost
+	 * @throws IndexOutOfBoundsException ako je indeks < 0 ili > od veličine trenutne kolekcije
+	 */
 	void insert(Object value, int position) {
 		
 		if(value == null) 
@@ -199,9 +239,10 @@ public class ArrayIndexedCollection extends Collection {
 		
 		return -1;
 	}
-	
-	public Object[] getElements() {
-		return this.elements;
+
+	@Override
+	public String toString() {
+		return Arrays.toString(elements);
 	}
 	
 }
