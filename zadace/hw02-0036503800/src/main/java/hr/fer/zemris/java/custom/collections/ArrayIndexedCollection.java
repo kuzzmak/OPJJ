@@ -48,6 +48,7 @@ public class ArrayIndexedCollection extends Collection {
 	 * @param value vrijednost koja se dodaje u kolekciju
 	 * @throws NullPointerException ako je predana vrijednost <code>null</code>
 	 */
+	@Override
 	public void add(Object value) {
 		
 		if(value == null) throw new NullPointerException("Nije moguće dodati null u kolekciju.");
@@ -60,29 +61,45 @@ public class ArrayIndexedCollection extends Collection {
 			ArrayIndexedCollection temp = new ArrayIndexedCollection(this);
 			// stvaranje nove i kopiranje
 			this.elements = new Object[this.size * 2];
+			this.size = 0;
 			this.addAll(temp);
 			this.elements[this.size] = value;
 			this.size ++;
 		}
 	}
 	
+	@Override
 	void addAll(Collection other) {
 		
+		class localProcessor extends Processor{
+			
+			@Override
+			public void process(Object value) {
+				add(value);
+			}
+			
+		}
+		
+		other.forEach(new localProcessor());
 	}
 	
+	@Override
 	public Object[] toArray() {
 		
-		return new Object[] {this.getElements()};
+		return this.elements;
 	}
 	
+	@Override
 	public int size() {
 		return this.size;
 	}
 	
+	@Override
 	public boolean isEmpty() {
 		return this.size() == 0;
 	}
 	
+	@Override
 	boolean contains(Object value) {
 		
 		for(Object o: this.elements) {
@@ -92,6 +109,7 @@ public class ArrayIndexedCollection extends Collection {
 		return false;
 	}
 	
+	@Override
 	boolean remove(Object value) {
 		
 		Object[] temp = new Object[this.elements.length];
@@ -117,10 +135,40 @@ public class ArrayIndexedCollection extends Collection {
 		return removed;
 	}
 	
-	public Object[] getElements() {
-		return this.elements;
+	/**
+	 * Metoda za brisanje elemenata kolekcije. Polje unutar kolekcije ostaje jednake
+	 * veličine, ali su mu svi elementi <code>null</code>.
+	 * 
+	 */
+	@Override
+	void clear() {
+		
+		for(int i = 0; i < this.size; i++) {
+			this.elements[i] = null;
+		}
+		
+		this.size = 0;
 	}
 	
+	@Override
+	void forEach(Processor processor) {
+		for(Object o: this.elements) {
+			if(o != null) {
+				processor.process(o);
+			}
+		}
+	}
+	
+	void insert(Object value, int position) {
+		
+		if(value == null) 
+			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
+		if(position < 0 || position > this.size) 
+			throw new IndexOutOfBoundsException("Neispravni indeksi za umetanje elementa.");
+			
+		
+	}
+
 	/**
 	 * Metoda za dohvat elementa polja na indeksu <code>index</code>.
 	 * 
@@ -137,31 +185,6 @@ public class ArrayIndexedCollection extends Collection {
 	}
 	
 	/**
-	 * Metoda za brisanje elemenata kolekcije. Polje unutar kolekcije ostaje jednake
-	 * veličine, ali su mu svi elementi <code>null</code>.
-	 * 
-	 */
-	void clear() {
-		
-		for(int i = 0; i < this.size; i++) {
-			this.elements[i] = null;
-		}
-		
-		this.size = 0;
-	}
-	
-	
-	void insert(Object value, int position) {
-		
-		if(value == null) 
-			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
-		if(position < 0 || position > this.size) 
-			throw new IndexOutOfBoundsException("Neispravni indeksi za umetanje elementa.");
-			
-		
-	}
-	
-	/**
 	 * Metoda za pronalazak indeksa predanog elementa <code>value</code>.
 	 * Ukoliko predani elemnt nije član kolekcije, vraća se vrijednost -1. 
 	 * 
@@ -175,6 +198,10 @@ public class ArrayIndexedCollection extends Collection {
 		}
 		
 		return -1;
+	}
+	
+	public Object[] getElements() {
+		return this.elements;
 	}
 	
 }
