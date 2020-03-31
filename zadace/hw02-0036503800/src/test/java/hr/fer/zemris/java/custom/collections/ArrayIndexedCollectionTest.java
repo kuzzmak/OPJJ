@@ -405,8 +405,6 @@ class ArrayIndexedCollectionTest {
 			int n = c1.indexOf(10);
 			
 			assertEquals(-1, n);
-			
 		}
 	}
-
 }

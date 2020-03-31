@@ -19,7 +19,7 @@ public class ArrayIndexedCollection extends Collection {
 	
 	public ArrayIndexedCollection(int capacity) {
 		if(capacity < 1) throw new IllegalArgumentException("Kapacitet ne može biti manji od 1!");
-		elements = new Object[capacity];
+		this.elements = new Object[capacity];
 	}
 	
 	public ArrayIndexedCollection() {
@@ -36,15 +36,16 @@ public class ArrayIndexedCollection extends Collection {
 	
 	public ArrayIndexedCollection(Collection col, int initialCapacity) {
 		
+		if(col == null) throw new NullPointerException("Predana kolekcija ne može biti null.");
+		
 		if(initialCapacity < col.size()) {
-//			this(col);
+			this.elements = new Object[col.size()];
+			this.addAll(col);
 		}
 		else {
 			this.elements = new Object[initialCapacity];
 			this.addAll(col);
-			this.size = col.size();
 		}
-		// napraviti da se dodaju elementi
 	}
 	
 	/**
@@ -231,9 +232,16 @@ public class ArrayIndexedCollection extends Collection {
 		
 		temp[position] = value;
 		
-		// ostatak elemenata nakon position
-		for(int i = position + 1; i < this.elements.length + 1; i++) {
-			temp[i] = this.elements[i - 1];
+		// ostatak elemenata nakon position ako nije udvostručeno polje
+		if(temp.length == this.elements.length) {
+			for(int i = position + 1; i < this.elements.length; i++) {
+				temp[i] = this.elements[i - 1];
+			}
+		}else {
+			
+			for(int i = position + 1; i < this.elements.length + 1; i++) {
+				temp[i] = this.elements[i - 1];
+			}
 		}
 		
 		this.size++;
