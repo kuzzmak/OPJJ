@@ -59,6 +59,44 @@ public class LinkedListIndexedCollectionTest {
 			assertEquals(1, c.get(0));
 		}
 		
+		// isEmpty metoda
+		@Test
+		public void inicijalnaPraznaKolekcija() {
+			assertTrue(new LinkedListIndexedCollection().isEmpty());
+		}
 		
+		@Test
+		public void jedanElementUKolekciji() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			assertFalse(c.isEmpty());
+		}
+		
+		// contains metoda
+		@Test
+		public void nepostojecaVrijednost() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			assertFalse(c.contains(0));
+		}
+		
+		@Test
+		public void postojecaVrijednost() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			assertTrue(c.contains(1));
+		}
+		
+		// clear metoda
+		@Test
+		public void testClear() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.add(1);
+			c.add(1);
+			c.clear();
+			assertTrue(c.getFirst() == null);
+			assertTrue(c.getLast() == null);
+		}
 	}
 }
