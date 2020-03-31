@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 /**
  * Razred koji predstavlja implementaciju kolekcija pomoću polja objekata.
+ * Moguće je imati višestruke iste elemente, ali nije moguće pohraniti null 
+ * vrijednosti.
  * 
  * @author Antonio Kuzminski
  *
@@ -12,6 +14,8 @@ public class ArrayIndexedCollection extends Collection {
 	
 	private int size;
 	private Object[] elements;
+	
+	//TODO napraviti konstruktor s ulazom polja
 	
 	public ArrayIndexedCollection(int capacity) {
 		if(capacity < 1) throw new IllegalArgumentException("Kapacitet ne može biti manji od 1!");
@@ -72,6 +76,8 @@ public class ArrayIndexedCollection extends Collection {
 	@Override
 	void addAll(Collection other) {
 		
+		if(other == null) throw new NullPointerException("Nije moguće dodati null kolekciju.");
+		
 		class localProcessor extends Processor{
 			
 			@Override
@@ -114,8 +120,10 @@ public class ArrayIndexedCollection extends Collection {
 	@Override
 	boolean contains(Object value) {
 		
+		if(value == null) return false;
+		
 		for(Object o: this.elements) {
-			if(o.equals(value)) return true;
+			if(o != null && o.equals(value)) return true;
 		}
 		
 		return false;
@@ -159,6 +167,7 @@ public class ArrayIndexedCollection extends Collection {
 			}
 			
 			this.elements = temp;
+			this.size--;
 			return true;
 		}
 		
@@ -204,9 +213,31 @@ public class ArrayIndexedCollection extends Collection {
 		if(value == null) 
 			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
 		if(position < 0 || position > this.size) 
-			throw new IndexOutOfBoundsException("Neispravni indeksi za umetanje elementa.");
+			throw new IndexOutOfBoundsException("Neispravan indeks za umetanje elementa.");
 			
+		Object[] temp;
 		
+		// ako je kolekcija puna, stvara se nova dvostruko veća
+		if(this.size == this.elements.length) {
+			temp = new Object[this.elements.length * 2];
+		}else {
+			temp = new Object[this.elements.length];
+		}
+		
+		// kopiranje prvog dijela elemenata do position
+		for(int i = 0; i < position; i++) {
+			temp[i] = this.elements[i];
+		}
+		
+		temp[position] = value;
+		
+		// ostatak elemenata nakon position
+		for(int i = position + 1; i < this.elements.length + 1; i++) {
+			temp[i] = this.elements[i - 1];
+		}
+		
+		this.size++;
+		this.elements = temp;
 	}
 
 	/**
