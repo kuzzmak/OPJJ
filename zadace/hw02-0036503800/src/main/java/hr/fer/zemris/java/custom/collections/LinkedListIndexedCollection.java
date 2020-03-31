@@ -126,6 +126,28 @@ public class LinkedListIndexedCollection extends Collection {
 	public int size() {
 		return this.size;
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean contains(Object value) {
+		
+		if(value == null) return false;
+		
+		if(this.first.data.equals(value)) return true;
+		if(this.last.data.equals(value)) return true;
+		
+		ListNode next = this.first.next;
+		while(next != null) {
+			if(next.data.equals(value)) return true;
+			else {
+				next = next.next;
+			}
+		}
+		return false;
+		
+	}
 
 	public ListNode getFirst() {
 		return first;
