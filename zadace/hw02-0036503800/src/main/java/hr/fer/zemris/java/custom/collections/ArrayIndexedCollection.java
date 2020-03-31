@@ -15,17 +15,31 @@ public class ArrayIndexedCollection extends Collection {
 	private int size;
 	private Object[] elements;
 	
-	//TODO napraviti konstruktor s ulazom polja
-	
+	/**
+	 * Konstruktor gdje se inicijalizira interno polje na velicinu <code>capacity</code>.
+	 * 
+	 * @param capacity inicijalna veličina kolekcije
+	 * @throws IllegalArgumentException ako je <code>capacity</code> manji od 1
+	 */
 	public ArrayIndexedCollection(int capacity) {
 		if(capacity < 1) throw new IllegalArgumentException("Kapacitet ne može biti manji od 1!");
 		this.elements = new Object[capacity];
 	}
 	
+	/**
+	 * Konstruktor bez parametara, inicijalna veličina kolekcije je 16 elemenata.
+	 * 
+	 */
 	public ArrayIndexedCollection() {
 		this(16);
 	}
 	
+	/**
+	 * Konstruktor gdje se kao inicijalni elementi kopiraju elementi predane kolekcije <code>col</cpde>.
+	 * 
+	 * @param col kolekcija čiji se elementi kopiraju u novonastalu kolekciju
+	 * @throws NullPointerException ako je predana kolekcija <code>null</cpde>
+	 */
 	public ArrayIndexedCollection(Collection col) {
 		
 		if(col == null) throw new NullPointerException("Predana kolekcija ne može biti null.");
@@ -34,6 +48,14 @@ public class ArrayIndexedCollection extends Collection {
 		this.size = col.size();
 	}
 	
+	/**
+	 * Konstruktor gdje se kao kao inicijalni elementi uzimaju elementi kolekcije <code>col</cpde>, veličine
+	 * <code>initialCapacity</cpde>. Ako je <code>initialCapacity</cpde> manji od broja elemenata
+	 * predane kolekcije, kao veličina nove kolekcije uzima se veličina predane kolekcije <code>col</cpde>.
+	 * 
+	 * @param col
+	 * @param initialCapacity
+	 */
 	public ArrayIndexedCollection(Collection col, int initialCapacity) {
 		
 		if(col == null) throw new NullPointerException("Predana kolekcija ne može biti null.");
