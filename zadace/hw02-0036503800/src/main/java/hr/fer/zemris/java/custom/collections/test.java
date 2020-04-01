@@ -41,9 +41,8 @@ public class test {
 	
 	
 	
-	public static void parse(String s) {
+	public static ComplexNumber parse(String s) {
 
-		System.out.println(s);
 		// uklonjene sve praznine iz broja
 		String noSpaces = s.replaceAll("\\s+", "");
 
@@ -55,6 +54,7 @@ public class test {
 			}
 
 			// ako ima neki plus nakon potencijalnog micanja prvog plusa
+			// (brojevi s plusom između realnom i imaginarnog dijela)
 			if (noSpaces.contains("+")) {
 
 				String[] realAndImaginary = noSpaces.split("\\+");
@@ -66,21 +66,16 @@ public class test {
 
 						double real = Double.parseDouble(realAndImaginary[1]);
 						double imaginary = parseImaginary(realAndImaginary[0]);
-						
-						System.out.println("real: " + real + ", imaginary: " + imaginary);
-						
-//						return new ComplexNumber(real, imaginary);
+						return new ComplexNumber(real, imaginary);
 
 					} else { // oblik kompleksnog broja "-1 + i"
 
 						double real = Double.parseDouble(realAndImaginary[0]);
 						double imaginary = parseImaginary(realAndImaginary[1]);
-
-						System.out.println("real: " + real + ", imaginary: " + imaginary);
-//						return new ComplexNumber(real, imaginary);
+						return new ComplexNumber(real, imaginary);
 					}
 				}
-			}else {
+			}else { // kompleksni brojevi s minusom 
 				
 				String[] realAndImaginary = noSpaces.split("-");
 				
@@ -89,7 +84,7 @@ public class test {
 					
 					double imaginary = parseImaginary(realAndImaginary[0]);
 					
-					System.out.println("real: " + 0 + ", imaginary: " + imaginary);
+					return new ComplexNumber(0, imaginary);
 					
 				}else if(realAndImaginary.length == 2) {
 					
@@ -97,7 +92,7 @@ public class test {
 					if(realAndImaginary[0].equals("")) { // kada se splita -2i, dobije se ["", 2i]
 						double imaginary = -parseImaginary(realAndImaginary[1]);
 						
-						System.out.println("real: " + 0 + ", imaginary: " + imaginary);
+						return new ComplexNumber(0, imaginary);
 						
 					}else {
 						
@@ -105,44 +100,38 @@ public class test {
 
 							double real = -Double.parseDouble(realAndImaginary[1]);
 							double imaginary = parseImaginary(realAndImaginary[0]);
-							System.out.println("real: " + real + ", imaginary: " + imaginary);
-//							return new ComplexNumber(real, imaginary);
+							return new ComplexNumber(real, imaginary);
 
 						} else { // oblik broja 1 - i
 
 							double real = Double.parseDouble(realAndImaginary[0]);
 							double imaginary = -parseImaginary(realAndImaginary[1]);
-							System.out.println("real: " + real + ", imaginary: " + imaginary);
-//							return new ComplexNumber(real, imaginary);
+							return new ComplexNumber(real, imaginary);
 						}
-						
 					}
 					
-				}else { // broj oblika -1 -i, -2.1i - 2
+				}else { // broj oblika -1 -i, -2.1i - 2, split napravi ["", 2.1, 2]
 					
 					if (realAndImaginary[1].contains("i")) {
 
 						double real = -Double.parseDouble(realAndImaginary[2]);
 						double imaginary = -parseImaginary(realAndImaginary[1]);
-						System.out.println("real: " + real + ", imaginary: " + imaginary);
-//						return new ComplexNumber(real, imaginary);
+						return new ComplexNumber(real, imaginary);
 
 					} else { 
 
 						double real = -Double.parseDouble(realAndImaginary[1]);
 						double imaginary = -parseImaginary(realAndImaginary[2]);
-						System.out.println("real: " + real + ", imaginary: " + imaginary);
-//						return new ComplexNumber(real, imaginary);
+						return new ComplexNumber(real, imaginary);
 					}
 				}
 			}
 
-		} else {
+		} else { // kompleksni broj koji nema imaginarni dio
 			double real = Double.parseDouble(noSpaces);
-			System.out.println("real: " + real + ", imaginary: " + 0);
-//			return new ComplexNumber(real, 0);
+			return new ComplexNumber(real, 0);
 		}
 		
-
+		return null;
 	}
 }
