@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.custom.collections;
 
+import java.util.Arrays;
 
 public class test {
 	
@@ -13,6 +14,15 @@ public class test {
 		
 		c.add(3);
 		
-		System.out.println(c.get(1));
+		Object[] arr = c.toArray();
+		System.out.println(Arrays.toString(arr));
+		
+		c.remove(2);
+		c.remove(0);
+		c.remove(0);
+		arr = c.toArray();
+		System.out.println(Arrays.toString(arr));
+//		System.out.println(c);
+//		System.out.println(c.size());
 	}
 }

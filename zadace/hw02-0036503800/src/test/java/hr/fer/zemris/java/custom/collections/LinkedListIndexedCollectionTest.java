@@ -98,5 +98,108 @@ public class LinkedListIndexedCollectionTest {
 			assertTrue(c.getFirst() == null);
 			assertTrue(c.getLast() == null);
 		}
+		
+		// remove metoda
+		@Test
+		public void brisanjeNepostojecegIndeksa() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			assertThrows(IndexOutOfBoundsException.class, () -> c.remove(2));
+		}
+		
+		@Test
+		public void ispravanIndeks() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.remove(0);
+			assertEquals(0, c.size());
+		}
+		
+		// toArray metoda
+		@Test
+		public void toarrayTest() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.add(2);
+			Object[] array = c.toArray();
+			assertEquals(2, array.length);
+			assertEquals(1, (int)array[0]);
+			assertEquals(2, (int)array[1]);
+		}
+		
+		@Test
+		public void toArrayPraznaKolekcija() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			Object[] array = c.toArray();
+			assertEquals(0, array.length);
+		}
+		
+		// forEach metoda
+		@Test
+		public void processTest() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			c1.add(1);
+			c1.add(2);
+			c1.add(3);
+			
+			LinkedListIndexedCollection c2 = new LinkedListIndexedCollection();
+			
+			c1.forEach(new Processor() {
+				@Override
+				public void process(Object value) {
+					c2.add(String.valueOf(value));
+				} 
+			});
+			
+			assertEquals(3, c2.size());
+			
+			c2.forEach(new Processor() {
+				@Override
+				public void process(Object value) {
+					assertTrue(value instanceof String);
+				} 
+			});
+		}
+		
+		// addAll metoda
+		@Test
+		public void addAllTest() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			c1.add(1);
+			c1.add(2);
+			c1.add(3);
+			LinkedListIndexedCollection c2 = new LinkedListIndexedCollection();
+			c2.addAll(c1);
+			
+			for(int i = 0; i < 3; i++) {
+				assertEquals(c1.get(i), c2.get(i));
+			}
+		}
+		
+		@Test
+		public void praznaKolekcijaUAddAll() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			assertThrows(NullPointerException.class, () -> c1.addAll(null));
+		}
+		
+		// indexOf metoda
+		@Test
+		public void nullPredan() {
+			assertEquals(-1, new LinkedListIndexedCollection().indexOf(null));
+		}
+		
+		@Test
+		public void postojecaVrijednostUListi() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			c1.add(1);
+			assertEquals(0, c1.indexOf(1));
+		}
+		
+		@Test
+		public void nepostojecaVrijednostUListi() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			c1.add(1);
+			assertEquals(-1, c1.indexOf(2));
+		}
 	}
 }
