@@ -330,7 +330,7 @@ public class ComplexNumber {
 		ComplexNumber[] roots = new ComplexNumber[n];
 		
 		double angle = this.getAngle();
-		double magnitudeN = Math.pow(this.getMagnitude(), n);
+		double magnitudeN = this.getMagnitude();
 		
 		magnitudeN = Math.pow(magnitudeN, 1. / n);
 
