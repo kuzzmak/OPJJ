@@ -13,10 +13,35 @@ public class LinkedListIndexedCollectionTest {
 		@Test
 		public void praznaKolekcija() {
 			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
-			//TODO popraviti ovo
 			assertEquals(0, c.size());
 		}
-
+		
+		@Test
+		public void prekoDrugeKolekcije() {
+			LinkedListIndexedCollection c1 = new LinkedListIndexedCollection();
+			c1.add(1);
+			c1.add(2);
+			
+			LinkedListIndexedCollection c2 = new LinkedListIndexedCollection(c1);
+			Object[] elements = c2.toArray();
+			
+			assertEquals(2, c2.size());
+			assertEquals(1, elements[0]);
+			assertEquals(2, elements[1]);
+		}
+		
+		@Test
+		public void prekoKolekcijeDrugogTipa() {
+			ArrayIndexedCollection a = new ArrayIndexedCollection();
+			a.add(1);
+			a.add(2);
+			
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection(a);
+			Object[] elements = c.toArray();
+			assertEquals(2, c.size());
+			assertEquals(1, elements[0]);
+			assertEquals(2, elements[1]);
+		}
 	}
 
 	@Nested
@@ -99,7 +124,7 @@ public class LinkedListIndexedCollectionTest {
 			assertTrue(c.getLast() == null);
 		}
 		
-		// remove metoda
+		// remove metoda (indeks)
 		@Test
 		public void brisanjeNepostojecegIndeksa() {
 			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
@@ -112,6 +137,35 @@ public class LinkedListIndexedCollectionTest {
 			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
 			c.add(1);
 			c.remove(0);
+			assertEquals(0, c.size());
+		}
+		
+		// remove metoda (objekt)
+		@Test
+		public void brisanjePrvog() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.add(2);
+			c.remove(Integer.valueOf(1));
+			assertEquals(1, c.size());
+		}
+		
+		@Test
+		public void brisanjeZadnjeg() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.add(2);
+			c.remove(Integer.valueOf(2));
+			assertEquals(1, c.size());
+		}
+		
+		@Test
+		public void brisanjeSvih() {
+			LinkedListIndexedCollection c = new LinkedListIndexedCollection();
+			c.add(1);
+			c.add(2);
+			c.remove(Integer.valueOf(2));
+			c.remove(Integer.valueOf(1));
 			assertEquals(0, c.size());
 		}
 		
