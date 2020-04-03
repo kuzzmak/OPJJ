@@ -403,10 +403,10 @@ public class ComplexNumberTest {
 	public void ispravanKorijen2() {
 		ComplexNumber c1 = ComplexNumber.parse("4i");
 		ComplexNumber[] roots = c1.root(2);
-		assertEquals(Math.sqrt(2), roots[1].getReal(), 1e-6);
-		assertEquals(Math.sqrt(2), roots[1].getImaginary(), 1e-6);
-		assertEquals(-Math.sqrt(2), roots[0].getReal(), 1e-6);
-		assertEquals(-Math.sqrt(2), roots[0].getImaginary(), 1e-6);
+		assertEquals(-Math.sqrt(2), roots[1].getReal(), 1e-6);
+		assertEquals(-Math.sqrt(2), roots[1].getImaginary(), 1e-6);
+		assertEquals(Math.sqrt(2), roots[0].getReal(), 1e-6);
+		assertEquals(Math.sqrt(2), roots[0].getImaginary(), 1e-6);
 	}
 	
 	
