@@ -201,20 +201,10 @@ public class ComplexNumber {
 	 */
 	public double getAngle() {
 
-		if (this.real == 0 && this.imaginary == 0)
-			throw new ArithmeticException("Nedefinirano za 0/0.");
-
-		if (this.real > 0) {
-			if (this.imaginary < 0) {
-				return Math.atan(this.imaginary / this.real) + 2 * Math.PI;
-			}
-			return Math.atan(this.imaginary / this.real);
-		} else {
-			if (this.real == 0) {
-				return Math.atan(this.imaginary / this.real) + 2 * Math.PI;
-			}
-			return Math.atan(this.imaginary / this.real) + Math.PI;
+		if(this.imaginary < 0) {
+			return Math.atan2(this.imaginary, this.real) + 2 * Math.PI;
 		}
+		return Math.atan2(this.imaginary, this.real);
 	}
 
 	/**
