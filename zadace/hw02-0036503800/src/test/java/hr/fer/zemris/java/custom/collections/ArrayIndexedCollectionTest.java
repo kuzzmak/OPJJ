@@ -207,7 +207,7 @@ class ArrayIndexedCollectionTest {
 			assertTrue(c.contains("da"));
 		}
 
-		// remove metoda
+		// remove metoda (objekt)
 		@Test
 		public void micanjeNepostojeceg() {
 			ArrayIndexedCollection c = new ArrayIndexedCollection();
@@ -224,7 +224,7 @@ class ArrayIndexedCollectionTest {
 			for (int i = 0; i < 16; i++) {
 				c.add(i);
 			}
-			c.remove(6);
+			c.remove(Integer.valueOf(6));
 			assertTrue(c.size() == 15);
 		}
 
@@ -234,7 +234,7 @@ class ArrayIndexedCollectionTest {
 			for (int i = 0; i < 16; i++) {
 				c.add(i);
 			}
-			c.remove(0);
+			c.remove(Integer.valueOf(0));
 			assertFalse(c.contains(0));
 		}
 
@@ -244,7 +244,7 @@ class ArrayIndexedCollectionTest {
 			for (int i = 0; i < 16; i++) {
 				c.add(i);
 			}
-			c.remove(15);
+			c.remove(Integer.valueOf(15));
 			assertFalse(c.contains(15));
 		}
 
@@ -260,10 +260,52 @@ class ArrayIndexedCollectionTest {
 			}
 			c2.addAll(c1);
 
-			c2.remove(15);
+			c2.remove(Integer.valueOf(15));
 			assertFalse(c2.contains(15));
 		}
 
+		// remove metoda (indeks)
+		@Test
+		public void removeIndeksPrvi() {
+			ArrayIndexedCollection c = new ArrayIndexedCollection();
+			for (int i = 0; i < 10; i++) {
+				c.add(i);
+			}
+			c.remove(0);
+			assertEquals(9, c.size());
+		}
+		
+		@Test
+		public void removeIndeksZadnji() {
+			ArrayIndexedCollection c = new ArrayIndexedCollection();
+			for (int i = 0; i < 10; i++) {
+				c.add(i);
+			}
+			c.remove(9);
+			assertEquals(9, c.size());
+		}
+		
+		@Test
+		public void removeSvih() {
+			ArrayIndexedCollection c = new ArrayIndexedCollection();
+			for (int i = 0; i < 10; i++) {
+				c.add(i);
+			}
+			for (int i = 0; i < 10; i++) {
+				c.remove(0);
+			}
+			assertEquals(0, c.size());
+		}
+		
+		@Test
+		public void removeNepostojeceg() {
+			ArrayIndexedCollection c = new ArrayIndexedCollection();
+			for (int i = 0; i < 10; i++) {
+				c.add(i);
+			}
+			assertThrows(IndexOutOfBoundsException.class, () -> c.remove(11));
+		}
+		
 		@Test
 		public void micanjeNull() {
 			ArrayIndexedCollection c = new ArrayIndexedCollection();
