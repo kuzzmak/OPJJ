@@ -2,13 +2,13 @@ package hr.fer.zemris.java.custom.collections;
 
 public class LinkedListIndexedCollection extends Collection {
 
-	private int size = 0;
+	private int size;
 	private ListNode first;
 	private ListNode last;
 
 	/**
-	 * Razred koji predstavlja jednog člana liste, a ujedno i 
-	 * pamti sljedećeg i prethodnog člana. 
+	 * Razred koji predstavlja jednog člana liste, a ujedno i pamti sljedećeg i
+	 * prethodnog člana.
 	 * 
 	 * @author Antonio Kuzminski
 	 *
@@ -30,11 +30,20 @@ public class LinkedListIndexedCollection extends Collection {
 		}
 	}
 
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 */
 	public LinkedListIndexedCollection() {
 
 		this.first = this.last = null;
 	}
 
+	/**
+	 * Konstruktor preko neke druge kolekcije.
+	 * 
+	 * @param col druga kolekcija kojom se kopira u novonastalu
+	 */
 	public LinkedListIndexedCollection(Collection col) {
 		this.addAll(col);
 	}
@@ -52,24 +61,25 @@ public class LinkedListIndexedCollection extends Collection {
 		if (value == null)
 			throw new NullPointerException("Nije moguće pohraniti null vrijednost.");
 
+		// dodavanje prvog elementa
 		if (this.last == null) {
 			this.first = this.last = new ListNode(value);
 			this.size++;
 		} else {
 
-			ListNode nextNode = new ListNode(value);
+			ListNode newNode = new ListNode(value);
 
 			if (this.size == 1) {
 
-				this.last = nextNode;
-				this.first.next = nextNode;
-				nextNode.previous = this.first;
+				this.last = newNode;
+				this.first.next = newNode;
+				newNode.previous = this.first;
 			} else {
 
 				ListNode temp = this.last;
-				this.last = nextNode;
-				nextNode.previous = temp;
-				temp.next = nextNode;
+				this.last = newNode;
+				newNode.previous = temp;
+				temp.next = newNode;
 			}
 
 			this.size++;
@@ -122,26 +132,29 @@ public class LinkedListIndexedCollection extends Collection {
 	}
 
 	/**
-	 * Metoda za dohvat indeksa elementa unutar kolekcije ako postoji. 
+	 * Metoda za dohvat indeksa elementa unutar kolekcije ako postoji.
 	 * 
 	 * @param value element čiji se indeks traži
 	 * @return indeks traženog elementa ako postoji, -1 inače
 	 */
 	public int indexOf(Object value) {
-		
-		if(value == null) return -1;
-		
+
+		if (value == null)
+			return -1;
+
 		ListNode node = this.first;
-		
+
 		int i = 0;
-		while(node != null) {
-			if(node.data.equals(value)) return i;
+		while (node != null) {
+			if (node.data.equals(value))
+				return i;
 			node = node.next;
 			i++;
 		}
-		
+
 		return -1;
 	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -213,7 +226,6 @@ public class LinkedListIndexedCollection extends Collection {
 			node = node.next;
 			i++;
 		}
-
 		return array;
 	}
 
@@ -222,10 +234,10 @@ public class LinkedListIndexedCollection extends Collection {
 	 */
 	@Override
 	void forEach(Processor processor) {
-		
+
 		ListNode node = this.first;
-		
-		while(node != null) {
+
+		while (node != null) {
 			processor.process(node.data);
 			node = node.next;
 		}
@@ -236,23 +248,23 @@ public class LinkedListIndexedCollection extends Collection {
 	 */
 	@Override
 	void addAll(Collection other) {
-		
-		if(other == null) throw new NullPointerException("Predana kolekcija je null.");
-		
+
+		if (other == null)
+			throw new NullPointerException("Predana kolekcija je null.");
+
 		other.forEach(new Processor() {
 			@Override
 			public void process(Object value) {
 				add(value);
 			}
 		});
-		
 	}
+
 	/**
 	 * Metoda za brisanje elementata liste na određenom indeksu <code>index</code>.
 	 * 
 	 * @param index indeks na kojem se briše element
-	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica
-	 *                                   liste
+	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica liste
 	 */
 	void remove(int index) {
 
@@ -328,16 +340,69 @@ public class LinkedListIndexedCollection extends Collection {
 		}
 	}
 
-	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean remove(Object value) {
+
+		if (value == null)
+			throw new NullPointerException("Null nije dopušten u kolekciji.");
+
+		int index = this.indexOf(value);
+
+		if (index == 0) {
+			
+			ListNode secondElement = this.first.next;
+			if(this.size != 1) secondElement.previous = null; // ako je samo jedan element, on nema sljedećeg niti prethodnog
+			
+			this.first = secondElement;
+			
+			this.size--;
+			return true;
+			
+		} else if (index == this.size - 1) {
+			
+			ListNode secondToLast = this.last.previous;
+			secondToLast.next = null;
+			
+			this.last = secondToLast;
+			
+			this.size--;
+			return true;
+			
+		} else {
+
+			ListNode node = this.first;
+
+			while (node != null) {
+
+				if (node.data.equals(value)) {
+
+					ListNode next = node.next;
+					ListNode previous = node.previous;
+
+					previous.next = next;
+					next.previous = previous;
+
+					this.size--;
+					node = null;
+
+					return true;
+				}
+				node = node.next;
+			}
+		}
+		return false;
+	}
+
 	public ListNode getFirst() {
 		return first;
 	}
-	
 
 	public ListNode getLast() {
 		return last;
 	}
-	
 
 	@Override
 	public String toString() {
@@ -355,9 +420,9 @@ public class LinkedListIndexedCollection extends Collection {
 				sb.append(next.data + ", ");
 				next = next.next;
 			}
+			sb.delete(sb.length() - 2, sb.length());
 		}
 
-		sb.delete(sb.length() - 2, sb.length());
 		sb.append("]");
 
 		return sb.toString();
