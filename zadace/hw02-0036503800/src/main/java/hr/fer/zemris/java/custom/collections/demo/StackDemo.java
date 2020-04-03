@@ -10,9 +10,9 @@ public class StackDemo {
 		if (args.length != 1)
 			throw new IllegalArgumentException("Pogrešan broj argumenata: " + args.length + ".");
 		
-		int result = evaluateExpression("-1 8 2 / +"); 
+		int result = evaluateExpression(args[0]); 
 
-		System.out.println(result);
+		System.out.println("Expression evaluates to " + result + ".");
 	}
 	
 	/**
@@ -68,11 +68,9 @@ public class StackDemo {
 				
 				if(s.equals("/") || s.equals("+") || s.equals("-") || s.equals("*") || s.equals("%")) {
 					
-					int arg1, arg2;
-					
 					try {
-						arg1 = (int)stack.pop();
-						arg2 = (int)stack.pop();
+						int arg1 = (int)stack.pop();
+						int arg2 = (int)stack.pop();
 						
 						if(arg1 == 0) throw new ArithmeticException("Dijeljenje s nulom.");
 						
