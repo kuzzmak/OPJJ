@@ -108,7 +108,6 @@ public class ArrayIndexedCollection extends Collection {
 				add(value);
 			}
 		}
-		
 		other.forEach(new localProcessor());
 	}
 	
@@ -195,6 +194,31 @@ public class ArrayIndexedCollection extends Collection {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Metoda za uklanjanje elementa iz kolekcije na mjestu <code>index</code>.
+	 * 
+	 * @param index mjesto uklanjanja elementa
+	 * @throws IndexOutOfBoundsException ako je <code>index</code> van granica kolekcije
+	 */
+	public void remove(int index) {
+		
+		if(index < 0 || index > this.size - 1) 
+			throw new IndexOutOfBoundsException("Nije moguće ukloniti element izvan kolekcije.");
+		
+		Object[] elements = new Object[this.elements.length];
+		
+		for(int i = 0; i < index; i++) {
+			elements[i] = this.elements[i];
+		}
+		
+		for(int i = index + 1; i < this.size; i++) {
+			elements[i - 1] = this.elements[i];
+		}
+		
+		this.size--;
+		this.elements = elements;
 	}
 	
 	/**
