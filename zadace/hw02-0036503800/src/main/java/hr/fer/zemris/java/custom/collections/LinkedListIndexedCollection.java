@@ -100,7 +100,7 @@ public class LinkedListIndexedCollection extends Collection {
 			throw new IndexOutOfBoundsException("Indeks izvan granica kolekcije.");
 
 		// indeks u prvom dijelu kolekcije
-		// kreće se pretraga od prvog do zadnjeg noda
+		// kreće se pretraga od prvog node-a pa nadalje
 		if (index < this.size / 2) {
 
 			ListNode next = this.first;
@@ -350,6 +350,7 @@ public class LinkedListIndexedCollection extends Collection {
 			throw new NullPointerException("Null nije dopušten u kolekciji.");
 
 		int index = this.indexOf(value);
+		if(index == -1) return false;
 
 		if (index == 0) {
 			
