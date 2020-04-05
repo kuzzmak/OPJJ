@@ -2,7 +2,7 @@ package hr.fer.zemris.java.custom.collections;
 
 /**
  * Razred koji oponaša funkciju stoga, a u pozadini kao sredstvo pohrane
- * koristi kolekciju ArrayIndexedCollection.
+ * koristi kolekciju ArrayIndexedCollection. Ima ulogu adaptora u obrascu Adapter pattern.
  * 
  * @see ArrayIndexedCollection
  * @author Antonio Kuzminski

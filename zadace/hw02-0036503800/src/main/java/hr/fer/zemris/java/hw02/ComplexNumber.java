@@ -2,6 +2,12 @@ package hr.fer.zemris.java.hw02;
 
 import java.lang.Math;
 
+/**
+ * Razred za prikaz i izvođenje osnovnih aritmetičkih operacija s kompleksnim brojevima.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class ComplexNumber {
 
 	private double real;

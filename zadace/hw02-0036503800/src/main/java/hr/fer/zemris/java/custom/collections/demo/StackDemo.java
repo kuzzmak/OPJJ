@@ -3,6 +3,12 @@ package hr.fer.zemris.java.custom.collections.demo;
 import hr.fer.zemris.java.custom.collections.EmptyStackException;
 import hr.fer.zemris.java.custom.collections.ObjectStack;
 
+/**
+ * Razred za prikaz funkcionalnosti <code>ObjectStack</code> razreda.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class StackDemo {
 
 	public static void main(String[] args) {

@@ -1,5 +1,12 @@
 package hr.fer.zemris.java.custom.collections;
 
+/**
+ * Razred koji oponaša kolekciju povezane liste gdje je svaki element zaseban spremnik
+ * tipa ListNode.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class LinkedListIndexedCollection extends Collection {
 
 	private int size;
@@ -355,8 +362,8 @@ public class LinkedListIndexedCollection extends Collection {
 		if (index == 0) {
 			
 			ListNode secondElement = this.first.next;
-			if(this.size != 1) secondElement.previous = null; // ako je samo jedan element, on nema sljedećeg niti prethodnog
-			
+			if(this.size != 1) secondElement.previous = null; // ako je samo jedan element, 
+															  // on nema sljedećeg niti prethodnog
 			this.first = secondElement;
 			
 			this.size--;
