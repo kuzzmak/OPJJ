@@ -21,7 +21,7 @@ public class ArrayIndexedCollection implements Collection {
 
 	private class AICElementsGetter implements ElementsGetter{
 
-		int currentElement = 0;
+		int currentElement = -1;
 		
 		private long savedModificationCount;
 
@@ -32,7 +32,7 @@ public class ArrayIndexedCollection implements Collection {
 		@Override
 		public boolean hasNextElement() {
 
-			if (currentElement < size - 1) {
+			if (currentElement <= size) {
 				return true;
 			}
 			return false;
@@ -41,13 +41,16 @@ public class ArrayIndexedCollection implements Collection {
 		@Override
 		public Object getNextElement() {
 
-			if (currentElement == size)
+			if (!hasNextElement())
 				throw new NoSuchElementException("Nema više elemenata u kolekciji.");
 			
 			if(this.savedModificationCount != modificationCount) 
-				throw new ConcurrentModificationException("Nije moguće raditi izmjene na kolekciji prilikom iteracije.");
-
-			return elements[currentElement++];
+				throw new ConcurrentModificationException(
+						"Nije moguće raditi izmjene na kolekciji prilikom iteracije.");
+			
+			currentElement++;
+			
+			return elements[currentElement];
 		}
 	}
 
