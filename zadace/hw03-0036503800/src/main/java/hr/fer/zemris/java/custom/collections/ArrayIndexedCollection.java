@@ -32,7 +32,7 @@ public class ArrayIndexedCollection implements Collection {
 		@Override
 		public boolean hasNextElement() {
 
-			if (currentElement <= size) {
+			if (currentElement + 1 < size) {
 				return true;
 			}
 			return false;
@@ -242,16 +242,6 @@ public class ArrayIndexedCollection implements Collection {
 
 		size = 0;
 		modificationCount++;
-	}
-
-	@Override
-	public void forEach(Processor processor) {
-
-		for (Object o : elements) {
-			if (o != null) {
-				processor.process(o);
-			}
-		}
 	}
 
 	/**

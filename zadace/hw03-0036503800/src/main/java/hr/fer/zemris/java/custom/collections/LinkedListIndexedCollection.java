@@ -259,17 +259,6 @@ public class LinkedListIndexedCollection implements Collection {
 		return array;
 	}
 
-	@Override
-	public void forEach(Processor processor) {
-
-		ListNode node = this.first;
-
-		while (node != null) {
-			processor.process(node.data);
-			node = node.next;
-		}
-	}
-
 	/**
 	 * Metoda za brisanje elementata liste na određenom indeksu <code>index</code>.
 	 * 
