@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
  * @author Antonio Kuzminski
  *
  */
-public class LinkedListIndexedCollection implements Collection {
+public class LinkedListIndexedCollection implements List {
 
 	private int size;
 	private ListNode first;
@@ -18,6 +18,12 @@ public class LinkedListIndexedCollection implements Collection {
 	
 	private long modificationCount = 0;
 
+	/**
+	 * Privatni razred koji ima funkciju iteratora kolekcije.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
 	class LLICElementsGetter implements ElementsGetter{
 
 		ListNode currentNode = first;
@@ -38,7 +44,7 @@ public class LinkedListIndexedCollection implements Collection {
 		@Override
 		public boolean hasNextElement() {
 
-			if(currentNode.next != null) return true;
+			if(currentNode != null || currentNode == first) return true;
 			return false;
 		}
 
@@ -51,14 +57,23 @@ public class LinkedListIndexedCollection implements Collection {
 			if(this.savedModificationCount != modificationCount) 
 				throw new ConcurrentModificationException("Nije moguće raditi izmjene na kolekciji prilikom iteracije.");
 			
-			if(firstElement) {
-				firstElement = false;
+			if(currentNode == first) {
+				currentNode = currentNode.next;
 				return first.data;
+			}else {
+				currentNode = currentNode.next;
+				return currentNode.data;
 			}
 			
-			currentNode = currentNode.next;
-			
-			return currentNode.data;
+//			if(firstElement) {
+//				firstElement = false;
+//				
+//				return first.data;
+//			}
+//			
+//			currentNode = currentNode.next;
+//			
+//			return currentNode.data;
 		}
 	}
 
@@ -137,14 +152,7 @@ public class LinkedListIndexedCollection implements Collection {
 		}
 	}
 
-	/**
-	 * Metoda za dohvat elementa liste na indeksu <code>index</code>.
-	 * 
-	 * @param index indeks na kojem se pokušava dohvatiti element
-	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica
-	 *                                   kolekcije
-	 * @return element na indeksu <code>index</code> ako postoji
-	 */
+	@Override
 	public Object get(int index) {
 
 		if (index < 0 || index > this.size - 1)
@@ -182,12 +190,7 @@ public class LinkedListIndexedCollection implements Collection {
 		}
 	}
 
-	/**
-	 * Metoda za dohvat indeksa elementa unutar kolekcije ako postoji.
-	 * 
-	 * @param value element čiji se indeks traži
-	 * @return indeks traženog elementa ako postoji, -1 inače
-	 */
+	@Override
 	public int indexOf(Object value) {
 
 		if (value == null)
@@ -259,14 +262,8 @@ public class LinkedListIndexedCollection implements Collection {
 		return array;
 	}
 
-	/**
-	 * Metoda za brisanje elementata liste na određenom indeksu <code>index</code>.
-	 * 
-	 * @param index indeks na kojem se briše element
-	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica
-	 *                                   liste
-	 */
-	void remove(int index) {
+	@Override
+	public void remove(int index) {
 
 		if (index < 0 || index > this.size - 1)
 			throw new IndexOutOfBoundsException("Neispravan indeks.");
@@ -403,6 +400,62 @@ public class LinkedListIndexedCollection implements Collection {
 		}
 		return false;
 	}
+	
+	@Override
+	public void insert(Object value, int position) {
+		
+		if (value == null)
+			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
+		if (position < 0 || position > size)
+			throw new IndexOutOfBoundsException("Neispravan indeks za umetanje elementa.");
+		
+		if(position == this.size) {
+			
+			ListNode lastNode = this.last;
+			ListNode newNode = new ListNode(value);
+			
+			lastNode.next = newNode;
+			newNode.previous = lastNode;
+			this.last = newNode;
+			
+		}else if(position == 0) {
+			
+			ListNode firstNode = this.first;
+			ListNode newNode = new ListNode(value);
+			
+			firstNode.previous = newNode;
+			newNode.next = firstNode;
+			this.first = newNode;
+			
+		}else {
+			
+			ListNode node = this.first;
+			int counter = 0;
+			
+			while(node != null) {
+				if(counter == position) {
+					
+					ListNode previous = node.previous;
+					
+					ListNode newNode = new ListNode(value);
+					
+					previous.next = newNode;
+					node.previous = newNode;
+					
+					newNode.previous = previous;
+					newNode.next = node;
+					
+					break;
+				}else {
+					node = node.next;
+					counter++;
+				}
+			}
+		}
+		
+		this.size++;
+		this.modificationCount++;
+	}
 
 	public ListNode getFirst() {
 		return first;
@@ -442,4 +495,5 @@ public class LinkedListIndexedCollection implements Collection {
 		return new LLICElementsGetter(this.modificationCount);
 	}
 
+	
 }
