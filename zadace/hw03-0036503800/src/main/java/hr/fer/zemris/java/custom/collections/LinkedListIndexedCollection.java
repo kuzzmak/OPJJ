@@ -53,12 +53,12 @@ public class LinkedListIndexedCollection implements Collection {
 			
 			if(firstElement) {
 				firstElement = false;
-				return first;
+				return first.data;
 			}
 			
 			currentNode = currentNode.next;
 			
-			return currentNode;
+			return currentNode.data;
 		}
 	}
 
