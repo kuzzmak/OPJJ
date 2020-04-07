@@ -92,4 +92,10 @@ public interface Collection {
 	 * 
 	 */
 	void clear();
+	
+	/**
+	 * Metoda za stvaranje "iteratora" kolekcije.
+	 * 
+	 */
+	ElementsGetter createElementsGetter();
 }

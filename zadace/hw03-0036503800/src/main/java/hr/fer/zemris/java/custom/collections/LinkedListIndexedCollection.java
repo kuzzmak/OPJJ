@@ -1,8 +1,11 @@
 package hr.fer.zemris.java.custom.collections;
 
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+
 /**
- * Razred koji oponaša kolekciju povezane liste gdje je svaki element zaseban spremnik
- * tipa ListNode.
+ * Razred koji oponaša kolekciju povezane liste gdje je svaki element zaseban
+ * spremnik tipa ListNode.
  * 
  * @author Antonio Kuzminski
  *
@@ -12,6 +15,52 @@ public class LinkedListIndexedCollection implements Collection {
 	private int size;
 	private ListNode first;
 	private ListNode last;
+	
+	private long modificationCount = 0;
+
+	class LLICElementsGetter implements ElementsGetter{
+
+		ListNode currentNode = first;
+		// zastavica koja je istinita prilikom prvog dohvata elementa kolekcije
+		private boolean firstElement = true;
+		// broj modifikacije prilikom stvaranje ElementGettera
+		private long savedModificationCount;
+
+		/**
+		 * Inicijalni konstruktor.
+		 * 
+		 * @param modificationCount broj modifikacije koje su se do sada dogodile u kolekciji
+		 */
+		public LLICElementsGetter(long modificationCount) {
+			this.savedModificationCount = modificationCount;
+		}
+		
+		@Override
+		public boolean hasNextElement() {
+
+			if(currentNode.next != null) return true;
+			return false;
+		}
+
+		@Override
+		public Object getNextElement() {
+
+			if (!hasNextElement())
+				throw new NoSuchElementException("Nema više elemenata u kolekciji.");
+			
+			if(this.savedModificationCount != modificationCount) 
+				throw new ConcurrentModificationException("Nije moguće raditi izmjene na kolekciji prilikom iteracije.");
+			
+			if(firstElement) {
+				firstElement = false;
+				return first;
+			}
+			
+			currentNode = currentNode.next;
+			
+			return currentNode;
+		}
+	}
 
 	/**
 	 * Razred koji predstavlja jednog člana liste, a ujedno i pamti sljedećeg i
@@ -64,6 +113,7 @@ public class LinkedListIndexedCollection implements Collection {
 		// dodavanje prvog elementa
 		if (this.last == null) {
 			this.first = this.last = new ListNode(value);
+			modificationCount++;
 			this.size++;
 		} else {
 
@@ -81,7 +131,8 @@ public class LinkedListIndexedCollection implements Collection {
 				newNode.previous = temp;
 				temp.next = newNode;
 			}
-
+			
+			modificationCount++;
 			this.size++;
 		}
 	}
@@ -157,7 +208,7 @@ public class LinkedListIndexedCollection implements Collection {
 
 	@Override
 	public int size() {
-		return this.size;
+		return size;
 	}
 
 	@Override
@@ -185,6 +236,7 @@ public class LinkedListIndexedCollection implements Collection {
 	@Override
 	public void clear() {
 		this.first = this.last = null;
+		modificationCount++;
 		this.size = 0;
 	}
 
@@ -222,7 +274,8 @@ public class LinkedListIndexedCollection implements Collection {
 	 * Metoda za brisanje elementata liste na određenom indeksu <code>index</code>.
 	 * 
 	 * @param index indeks na kojem se briše element
-	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica liste
+	 * @throws IndexOutOfBoundsException ako je <code>index</code> izvan granica
+	 *                                   liste
 	 */
 	void remove(int index) {
 
@@ -259,6 +312,7 @@ public class LinkedListIndexedCollection implements Collection {
 			next.previous = previous;
 
 			this.size--;
+			modificationCount++;
 
 		} else {
 
@@ -281,6 +335,7 @@ public class LinkedListIndexedCollection implements Collection {
 			if (previous == null && next == null) {
 				this.first = null;
 				this.size--;
+				modificationCount++;
 				return;
 			}
 
@@ -294,6 +349,7 @@ public class LinkedListIndexedCollection implements Collection {
 				next.previous = previous;
 
 			previous.next = next;
+			modificationCount++;
 			this.size--;
 		}
 	}
@@ -305,28 +361,34 @@ public class LinkedListIndexedCollection implements Collection {
 			throw new NullPointerException("Null nije dopušten u kolekciji.");
 
 		int index = this.indexOf(value);
-		if(index == -1) return false;
+		if (index == -1)
+			return false;
 
 		if (index == 0) {
-			
+
 			ListNode secondElement = this.first.next;
-			if(this.size != 1) secondElement.previous = null; // ako je samo jedan element, 
-															  // on nema sljedećeg niti prethodnog
+			if (this.size != 1)
+				secondElement.previous = null; // ako je samo jedan element,
+												// on nema sljedećeg niti prethodnog
 			this.first = secondElement;
-			
+
 			this.size--;
+			modificationCount++;
+			
 			return true;
-			
+
 		} else if (index == this.size - 1) {
-			
+
 			ListNode secondToLast = this.last.previous;
 			secondToLast.next = null;
-			
+
 			this.last = secondToLast;
-			
+
 			this.size--;
-			return true;
+			modificationCount++;
 			
+			return true;
+
 		} else {
 
 			ListNode node = this.first;
@@ -343,7 +405,8 @@ public class LinkedListIndexedCollection implements Collection {
 
 					this.size--;
 					node = null;
-
+					modificationCount++;
+					
 					return true;
 				}
 				node = node.next;
@@ -382,6 +445,12 @@ public class LinkedListIndexedCollection implements Collection {
 		sb.append("]");
 
 		return sb.toString();
+	}
+
+	@Override
+	public ElementsGetter createElementsGetter() {
+		
+		return new LLICElementsGetter(this.modificationCount);
 	}
 
 }
