@@ -484,6 +484,4 @@ public class LinkedListIndexedCollection implements List {
 		
 		return new LLICElementsGetter(this.modificationCount);
 	}
-
-	
 }
