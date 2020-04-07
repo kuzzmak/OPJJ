@@ -10,7 +10,7 @@ public class Test {
 	public static void main(String[] args) {
 		
 		Collection col1 = new ArrayIndexedCollection();
-//		Collection col2 = new LinkedListIndexedCollection();
+//		Collection col2 = new ArrayIndexedCollection();
 		
 		col1.add("Ivo");
 		col1.add("Ana");
@@ -23,12 +23,15 @@ public class Test {
 		ElementsGetter getter1 = col1.createElementsGetter();
 //		ElementsGetter getter2 = col1.createElementsGetter();
 //		ElementsGetter getter3 = col2.createElementsGetter();
+		getter1.getNextElement();
+//		System.out.println(getter1.hasNextElement());
+//		getter1.getNextElement();
+//		System.out.println(getter1.hasNextElement());
+//		System.out.println("Jedan element: " + getter1.getNextElement());
+//		System.out.println("Jedan element: " + getter1.getNextElement());
 		
-		System.out.println("Jedan element: " + getter1.getNextElement());
-		System.out.println("Jedan element: " + getter1.getNextElement());
 		
-		col1.clear();
-		System.out.println("Jedan element: " + getter1.getNextElement());
+		getter1.processRemaining(System.out::println);
 		
 //		System.out.println("Jedan element: " + getter2.getNextElement());
 //		System.out.println("Jedan element: " + getter3.getNextElement());
