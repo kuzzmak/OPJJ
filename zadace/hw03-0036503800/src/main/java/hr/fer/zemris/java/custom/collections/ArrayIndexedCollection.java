@@ -12,13 +12,19 @@ import java.util.NoSuchElementException;
  * @author Antonio Kuzminski
  *
  */
-public class ArrayIndexedCollection implements Collection {
+public class ArrayIndexedCollection implements List {
 
 	private int size;
 	private Object[] elements;
 	
 	private long modificationCount = 0;
 
+	/**
+	 * Privatni razred koji ima funkciju iteratora kolekcije.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
 	private class AICElementsGetter implements ElementsGetter{
 
 		int currentElement = -1;
@@ -206,13 +212,7 @@ public class ArrayIndexedCollection implements Collection {
 		return false;
 	}
 
-	/**
-	 * Metoda za uklanjanje elementa iz kolekcije na mjestu <code>index</code>.
-	 * 
-	 * @param index mjesto uklanjanja elementa
-	 * @throws IndexOutOfBoundsException ako je <code>index</code> van granica
-	 *                                   kolekcije
-	 */
+	@Override
 	public void remove(int index) {
 
 		if (index < 0 || index > size - 1)
@@ -244,17 +244,8 @@ public class ArrayIndexedCollection implements Collection {
 		modificationCount++;
 	}
 
-	/**
-	 * Metoda za umetanje elementa u kolekciju na poziciji <code>position</code>.
-	 * 
-	 * @param value    element koji se umeće u kolekciju
-	 * @param position pozicija na kojoj se umeće element
-	 * @throws NullPointerException      ako je predan element <code>null</code>
-	 *                                   vrijednost
-	 * @throws IndexOutOfBoundsException ako je indeks < 0 ili > od veličine
-	 *                                   trenutne kolekcije
-	 */
-	void insert(Object value, int position) {
+	@Override
+	public void insert(Object value, int position) {
 
 		if (value == null)
 			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
@@ -294,14 +285,7 @@ public class ArrayIndexedCollection implements Collection {
 		modificationCount++;
 	}
 
-	/**
-	 * Metoda za dohvat elementa polja na indeksu <code>index</code>.
-	 * 
-	 * @param index indeks na kojem se pokušava dohvatiti element
-	 * @throws IndexOutOfBoundsException ako je predani <code>index</code> izvan
-	 *                                   granica polja
-	 * @return element polja na mjestu <code>index</code>
-	 */
+	@Override
 	public Object get(int index) {
 
 		if (index > size - 1 || index < 0)
@@ -310,14 +294,8 @@ public class ArrayIndexedCollection implements Collection {
 		return elements[index];
 	}
 
-	/**
-	 * Metoda za pronalazak indeksa predanog elementa <code>value</code>. Ukoliko
-	 * predani elemnt nije član kolekcije, vraća se vrijednost -1.
-	 * 
-	 * @param value element čiji se indeks pokušava naći
-	 * @return indeks traženog elementa ako je unutar kolekcije, -1 inače
-	 */
-	int indexOf(Object value) {
+	@Override
+	public int indexOf(Object value) {
 
 		for (int i = 0; i < size; i++) {
 			if (elements[i].equals(value))
@@ -337,5 +315,4 @@ public class ArrayIndexedCollection implements Collection {
 	public String toString() {
 		return Arrays.toString(elements);
 	}
-
 }
