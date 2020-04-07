@@ -64,16 +64,6 @@ public class LinkedListIndexedCollection implements List {
 				currentNode = currentNode.next;
 				return currentNode.data;
 			}
-			
-//			if(firstElement) {
-//				firstElement = false;
-//				
-//				return first.data;
-//			}
-//			
-//			currentNode = currentNode.next;
-//			
-//			return currentNode.data;
 		}
 	}
 
