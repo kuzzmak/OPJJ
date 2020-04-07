@@ -1,5 +1,6 @@
 package hr.fer.zemris.java.custom.collections;
 
+import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 
 /**
@@ -22,6 +23,27 @@ public interface ElementsGetter {
 	 * 
 	 * @return sljedeći eleement kolekcije ako postoji
 	 * @throws NoSuchElementException ako nema sljedećeg objekta
+	 * @throws ConcurrentModificationException ako se rade modifikacije 
+	 * 		   kolekcije prilikom iteriranja
 	 */
 	Object getNextElement();
+	
+	/**
+	 * Metoda za obradu ostatka elemenata kolekcije. Ostatka 
+	 * elemenata koji do sad nisu dohvaćeni metodom {@link #getNextElement()}.
+	 * 
+	 * @param p referenca razreda <code>Processora</code> koji obrađje svaki 
+	 *          element kolekcije
+	 * @throws NullPointerException ako je predan <code>null</code> kao Processor
+	 * @see Processor
+	 */
+	default void processRemaining(Processor p) {
+		
+		if(p == null) throw new NullPointerException("Null nije valjan Processor.");
+		
+		while(hasNextElement()) {
+			
+			p.process(getNextElement());
+		}
+	}
 }
