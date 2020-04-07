@@ -98,4 +98,23 @@ public interface Collection {
 	 * 
 	 */
 	ElementsGetter createElementsGetter();
+	
+	/**
+	 * Metoda za dodavanje svih elemenata kolekcije <code>col</code> koji zadovoljavaju
+	 * tester <code>tester</code>.
+	 * 
+	 * @param col kolekcija čiji se elementi dodaju trenutnoj
+	 * @param tester referenca razreda <code>Tester</code> koji definira uvjet zadovoljivosti
+	 */
+	default void addAllSatisfying(Collection col, Tester tester) {
+		
+		ElementsGetter eg = col.createElementsGetter();
+		
+		while(eg.hasNextElement()) {
+			
+			Object nextElement = eg.getNextElement();
+			
+			if(tester.test(nextElement)) add(nextElement);
+		}
+	}
 }
