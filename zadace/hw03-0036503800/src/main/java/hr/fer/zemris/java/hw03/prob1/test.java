@@ -21,7 +21,9 @@ public class test {
 		String ulaz7 = "  ab\\123cd ab\\2\\1cd\\4\\\\ \r\n\t   ";
 		
 		String ulaz9 = "Janko 3! Jasmina 5; -24";
-		Lexer lex = new Lexer(ulaz9);
+		
+		String ulaz69 = "Janko 3# Ivana26\\a 463abc#zzz";
+		Lexer lex = new Lexer(ulaz69);
 		
 		System.out.println(lex.nextToken());
 		System.out.println(lex.nextToken());

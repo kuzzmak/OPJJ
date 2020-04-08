@@ -220,86 +220,95 @@ public class Prob1Test {
 	// --------------------- Second part of tests; uncomment when everything above
 	// works ------------------------
 	// ----------------------------------------------------------------------------------------------------------
-	/*
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testNullState() { assertThrows(NullPointerException.class,
-	 * () -> new Lexer("").setState(null)); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testNotNullInExtended() { Lexer lexer = new Lexer("");
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * assertNotNull(lexer.nextToken(),
-	 * "Token was expected but null was returned."); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testEmptyInExtended() { Lexer lexer = new Lexer("");
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * assertEquals(TokenType.EOF, lexer.nextToken().getType(),
-	 * "Empty input must generate only EOF token."); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testGetReturnsLastNextInExtended() { // Calling getToken
-	 * once or several times after calling nextToken must return each time what
-	 * nextToken returned... Lexer lexer = new Lexer("");
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * Token token = lexer.nextToken(); assertEquals(token, lexer.getToken(),
-	 * "getToken returned different token than nextToken."); assertEquals(token,
-	 * lexer.getToken(), "getToken returned different token than nextToken."); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testRadAfterEOFInExtended() { Lexer lexer = new Lexer("");
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * // will obtain EOF lexer.nextToken(); // will throw!
-	 * assertThrows(LexerException.class, () -> lexer.nextToken()); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testNoActualContentInExtended() { // When input is only of
-	 * spaces, tabs, newlines, etc... Lexer lexer = new Lexer("   \r\n\t    ");
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * assertEquals(TokenType.EOF, lexer.nextToken().getType(),
-	 * "Input had no content. Lexer should generated only EOF token."); }
-	 * 
-	 * @Disabled
-	 * 
-	 * @Test public void testMultipartInput() { // Test input which has parts which
-	 * are tokenized by different rules... Lexer lexer = new
-	 * Lexer("Janko 3# Ivana26\\a 463abc#zzz");
-	 * 
-	 * checkToken(lexer.nextToken(), new Token(TokenType.WORD, "Janko"));
-	 * checkToken(lexer.nextToken(), new Token(TokenType.NUMBER, Long.valueOf(3)));
-	 * checkToken(lexer.nextToken(), new Token(TokenType.SYMBOL,
-	 * Character.valueOf('#')));
-	 * 
-	 * lexer.setState(LexerState.EXTENDED);
-	 * 
-	 * checkToken(lexer.nextToken(), new Token(TokenType.WORD, "Ivana26\\a"));
-	 * checkToken(lexer.nextToken(), new Token(TokenType.WORD, "463abc"));
-	 * checkToken(lexer.nextToken(), new Token(TokenType.SYMBOL,
-	 * Character.valueOf('#')));
-	 * 
-	 * lexer.setState(LexerState.BASIC);
-	 * 
-	 * checkToken(lexer.nextToken(), new Token(TokenType.WORD, "zzz"));
-	 * checkToken(lexer.nextToken(), new Token(TokenType.EOF, null));
-	 * 
-	 * }
-	 * 
-	 * private void checkToken(Token actual, Token expected) { String msg =
-	 * "Token are not equal."; assertEquals(expected.getType(), actual.getType(),
-	 * msg); assertEquals(expected.getValue(), actual.getValue(), msg); }
-	 * 
-	 */
+	
+	@Test 
+	public void testNullState() { 
+		assertThrows(NullPointerException.class, () -> new Lexer("").setState(null)); 
+	}
+ 
+	@Test 
+	public void testNotNullInExtended() {
+		Lexer lexer = new Lexer("");
+		lexer.setState(LexerState.EXTENDED);
+	 
+		assertNotNull(lexer.nextToken(),
+		"Token was expected but null was returned."); 
+	  }
+	  
+	@Test 
+	public void testEmptyInExtended() { 
+		Lexer lexer = new Lexer("");
+	    lexer.setState(LexerState.EXTENDED);
+	  
+	    assertEquals(TokenType.EOF, lexer.nextToken().getType(),
+	    "Empty input must generate only EOF token."); 
+	}
+	  
+	@Test 
+	public void testGetReturnsLastNextInExtended() { 
+		// Calling getToken once or several times after calling 
+		// nextToken must return each time what nextToken returned... 
+		Lexer lexer = new Lexer("");
+	    lexer.setState(LexerState.EXTENDED);
+	  
+	    Token token = lexer.nextToken(); 
+	    assertEquals(token, lexer.getToken(),
+	    "getToken returned different token than nextToken."); 
+	    assertEquals(token,
+	    lexer.getToken(), "getToken returned different token than nextToken."); 
+	}
+	  
+    @Test 
+    public void testRadAfterEOFInExtended() { 
+    	Lexer lexer = new Lexer("");
+    	lexer.setState(LexerState.EXTENDED);
+	  
+    	// will obtain EOF 
+    	lexer.nextToken(); 
+    	// will throw!
+    	assertThrows(LexerException.class, () -> lexer.nextToken()); 
+    }
+	  
+	@Test 
+	public void testNoActualContentInExtended() { 
+		// When input is only of spaces, tabs, newlines, etc... 
+		Lexer lexer = new Lexer("   \r\n\t    ");
+	    lexer.setState(LexerState.EXTENDED);
+	  
+	    assertEquals(TokenType.EOF, lexer.nextToken().getType(),
+	    "Input had no content. Lexer should generated only EOF token."); 
+	}
+	
+	@Test 
+	public void testMultipartInput() { 
+		// Test input which has parts which are tokenized by different rules... 
+		Lexer lexer = new Lexer("Janko 3# Ivana26\\a 463abc#zzz");
+	 
+		checkToken(lexer.nextToken(), new Token(TokenType.WORD, "Janko"));
+		checkToken(lexer.nextToken(), new Token(TokenType.NUMBER, Long.valueOf(3)));
+		checkToken(lexer.nextToken(), new Token(TokenType.SYMBOL,
+		Character.valueOf('#')));
+		
+		lexer.setState(LexerState.EXTENDED);
+		 
+		checkToken(lexer.nextToken(), new Token(TokenType.WORD, "Ivana26\\a"));
+		checkToken(lexer.nextToken(), new Token(TokenType.WORD, "463abc"));
+		checkToken(lexer.nextToken(), new Token(TokenType.SYMBOL,
+		Character.valueOf('#')));
+		 
+		lexer.setState(LexerState.BASIC);
+		 
+		checkToken(lexer.nextToken(), new Token(TokenType.WORD, "zzz"));
+		checkToken(lexer.nextToken(), new Token(TokenType.EOF, null));
+		 
+	}
+	
+	private void checkToken(Token actual, Token expected) { 
+		String msg = "Token are not equal."; 
+		assertEquals(expected.getType(), actual.getType(), msg); 
+		assertEquals(expected.getValue(), actual.getValue(), msg); 
+	}
+	 
+	
 
 }
