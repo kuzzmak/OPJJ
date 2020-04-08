@@ -21,15 +21,21 @@ public class Lexer {
 	private ArrayIndexedCollection symbols;
 
 	public Lexer(String text) {
+		
+		if(text == null) throw new NullPointerException("Tekst ne može biti null.");
+		
 		this.currentIndex = 0;
 
 		this.data = text.toCharArray();
 
 		symbols = new ArrayIndexedCollection();
 		symbols.add('.');
+		symbols.add('-');
 		symbols.add(',');
-		symbols.add(':');
-		symbols.add('_');
+		symbols.add('?');
+		symbols.add('#');
+		symbols.add('!');
+		symbols.add(';');
 	}
 
 	public Token nextToken() {
@@ -68,7 +74,8 @@ public class Lexer {
 
 		if (Character.isDigit(data[currentIndex])) {
 			
-			double number = extractNumber();
+			long number = extractNumber(false);
+			
 			token = new Token(TokenType.NUMBER, number);
 			
 			return token;
@@ -82,6 +89,12 @@ public class Lexer {
 			currentIndex++;
 
 			String result = extractEscaped();
+			
+			if(currentIndex +  1 < data.length) {
+				
+				String result2 = word();
+				result = result + result2;
+			}
 			token = new Token(TokenType.WORD, result);
 			return token;
 
@@ -136,7 +149,6 @@ public class Lexer {
 			
 			if(currentIndex >= data.length) return sb.toString();
 		}
-
 		return sb.toString();
 	}
 
@@ -147,25 +159,42 @@ public class Lexer {
 	 */
 	public String extractEscaped() {
 		
+		if(currentIndex >= data.length) 
+			throw new LexerException("Program ne može završavati s \"\\\".");
+		
+		if(Character.isLetter(data[currentIndex])) 
+			throw new LexerException("Nije moguće predati \"\\\" ispred slova.");
+		
 		StringBuilder sb = new StringBuilder();
+		
+		boolean oneSlash = false;
 
 		while (Character.isDigit(data[currentIndex]) || data[currentIndex] == '\\') {
 
 			// prvi puta se može izvesti tek nakon druge iteracije, ako je npr. \1\2
 			if(data[currentIndex] == '\\') {
+				
+				// ako je stigao drugi / poslije broja, onda se broji kao znak
+				if(oneSlash) {
+					currentIndex--;
+					return sb.toString();
+				}
+				
 				currentIndex++;
+				oneSlash = true;
+			
 			}else {
 				
-				double number = extractNumber();
-				// ako je broj integer znači da može biti više znamenaka escapeano
-				if(number % 1 == 0) {
-					sb.append((int)number);
-				}else { // decimalni broj, kada se ekstraktira nema više znamenaka
-					sb.append(number);
-					break;
-				}
+				long number = extractNumber(true);
+				oneSlash = false;
+				sb.append(number);
+				return sb.toString();
 			}
+			
+			if(currentIndex >= data.length) return sb.toString();
 		}
+		
+		if(Character.isLetter(data[currentIndex])) sb.append(word());
 		
 		return sb.toString();
 	}
@@ -174,9 +203,16 @@ public class Lexer {
 	 * Metoda za parsiranje broja.
 	 * 
 	 * @throws LexerException ako je neispravno zapisan decimalni broj u tekstu
-	 * @return double reprezentacija parsiranog broja
+	 * @return long reprezentacija parsiranog broja
 	 */
-	private double extractNumber() {
+	private long extractNumber(boolean escaped) {
+		
+		if(escaped) {
+			String num = new String(data, currentIndex, 1);
+			long number = Long.valueOf(num);
+			currentIndex++;
+			return number;
+		}
 
 		int start = currentIndex;
 		currentIndex++;
@@ -192,7 +228,11 @@ public class Lexer {
 		if (start == end)
 			throw new LexerException("Neispravan decimalni broj.");
 
-		return Double.parseDouble(value);
+		try {
+			return Long.valueOf(value);
+		}catch(NumberFormatException e) {
+			throw new LexerException("Broj prevelik, nemoguće parsirati u double.");
+		}
 	}
 
 	public Token getToken() {

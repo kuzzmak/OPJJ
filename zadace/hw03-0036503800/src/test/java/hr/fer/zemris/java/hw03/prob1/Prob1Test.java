@@ -32,14 +32,12 @@ public class Prob1Test {
 		assertNotNull(lexer.nextToken(), "Token was expected but null was returned.");
 	}
 
-	@Disabled
 	@Test
 	public void testNullInput() {
 		// must throw!
 		assertThrows(NullPointerException.class, () -> new Lexer(null));
 	}
 
-	@Disabled
 	@Test
 	public void testEmpty() {
 		Lexer lexer = new Lexer("");
@@ -47,7 +45,6 @@ public class Prob1Test {
 		assertEquals(TokenType.EOF, lexer.nextToken().getType(), "Empty input must generate only EOF token.");
 	}
 
-	@Disabled
 	@Test
 	public void testGetReturnsLastNext() {
 		// Calling getToken once or several times after calling nextToken must return
@@ -59,7 +56,6 @@ public class Prob1Test {
 		assertEquals(token, lexer.getToken(), "getToken returned different token than nextToken.");
 	}
 
-	@Disabled
 	@Test
 	public void testRadAfterEOF() {
 		Lexer lexer = new Lexer("");
@@ -70,7 +66,6 @@ public class Prob1Test {
 		assertThrows(LexerException.class, () -> lexer.nextToken());
 	}
 
-	@Disabled
 	@Test
 	public void testNoActualContent() {
 		// When input is only of spaces, tabs, newlines, etc...
@@ -80,7 +75,6 @@ public class Prob1Test {
 				"Input had no content. Lexer should generated only EOF token.");
 	}
 
-	@Disabled
 	@Test
 	public void testTwoWords() {
 		// Lets check for several words...
@@ -93,7 +87,6 @@ public class Prob1Test {
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testWordStartingWithEscape() {
 		Lexer lexer = new Lexer("  \\1st  \r\n\t   ");
@@ -104,7 +97,6 @@ public class Prob1Test {
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testInvalidEscapeEnding() {
 		Lexer lexer = new Lexer("   \\"); // this is three spaces and a single backslash -- 4 letters string
@@ -113,7 +105,6 @@ public class Prob1Test {
 		assertThrows(LexerException.class, () -> lexer.nextToken());
 	}
 
-	@Disabled
 	@Test
 	public void testInvalidEscape() {
 		Lexer lexer = new Lexer("   \\a    ");
@@ -122,7 +113,6 @@ public class Prob1Test {
 		assertThrows(LexerException.class, () -> lexer.nextToken());
 	}
 
-	@Disabled
 	@Test
 	public void testSingleEscapedDigit() {
 		Lexer lexer = new Lexer("  \\1  ");
@@ -133,27 +123,20 @@ public class Prob1Test {
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testWordWithManyEscapes() {
 		// Lets check for several words...
 		Lexer lexer = new Lexer("  ab\\1\\2cd\\3 ab\\2\\1cd\\4\\\\ \r\n\t   ");
 
 		// We expect the following stream of tokens
-		Token correctData[] = { new Token(TokenType.WORD, "ab12cd3"), new Token(TokenType.WORD, "ab21cd4\\"), // this is
-																												// 8-letter
-																												// long,
-																												// not
-																												// nine!
-																												// Only
-																												// single
-																												// backslash!
+		Token correctData[] = { 
+				new Token(TokenType.WORD, "ab12cd3"), 
+				new Token(TokenType.WORD, "ab21cd4\\"), // this is
 				new Token(TokenType.EOF, null) };
 
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testTwoNumbers() {
 		// Lets check for several numbers...
@@ -165,7 +148,6 @@ public class Prob1Test {
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testTooBigNumber() {
 		Lexer lexer = new Lexer("  12345678912123123432123   ");
@@ -174,23 +156,22 @@ public class Prob1Test {
 		assertThrows(LexerException.class, () -> lexer.nextToken());
 	}
 
-	@Disabled
 	@Test
 	public void testWordWithManyEscapesAndNumbers() {
 		// Lets check for several words...
 		Lexer lexer = new Lexer("  ab\\123cd ab\\2\\1cd\\4\\\\ \r\n\t   ");
 
 		// We expect following stream of tokens
-		Token correctData[] = { new Token(TokenType.WORD, "ab1"), new Token(TokenType.NUMBER, Long.valueOf(23)),
-				new Token(TokenType.WORD, "cd"), new Token(TokenType.WORD, "ab21cd4\\"), // this is 8-letter long, not
-																							// nine! Only single
-																							// backslash!
+		Token correctData[] = { 
+				new Token(TokenType.WORD, "ab1"), 
+				new Token(TokenType.NUMBER, Long.valueOf(23)),
+				new Token(TokenType.WORD, "cd"), 
+				new Token(TokenType.WORD, "ab21cd4\\"), // this is 8-letter long, not
 				new Token(TokenType.EOF, null) };
 
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testSomeSymbols() {
 		// Lets check for several symbols...
@@ -205,14 +186,16 @@ public class Prob1Test {
 		checkTokenStream(lexer, correctData);
 	}
 
-	@Disabled
 	@Test
 	public void testCombinedInput() {
 		// Lets check for several symbols...
 		Lexer lexer = new Lexer("Janko 3! Jasmina 5; -24");
 
-		Token correctData[] = { new Token(TokenType.WORD, "Janko"), new Token(TokenType.NUMBER, Long.valueOf(3)),
-				new Token(TokenType.SYMBOL, Character.valueOf('!')), new Token(TokenType.WORD, "Jasmina"),
+		Token correctData[] = { 
+				new Token(TokenType.WORD, "Janko"), 
+				new Token(TokenType.NUMBER, Long.valueOf(3)),
+				new Token(TokenType.SYMBOL, Character.valueOf('!')), 
+				new Token(TokenType.WORD, "Jasmina"),
 				new Token(TokenType.NUMBER, Long.valueOf(5)), new Token(TokenType.SYMBOL, Character.valueOf(';')),
 				new Token(TokenType.SYMBOL, Character.valueOf('-')), new Token(TokenType.NUMBER, Long.valueOf(24)),
 				new Token(TokenType.EOF, null) };
