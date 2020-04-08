@@ -38,6 +38,12 @@ public class Lexer {
 		symbols.add(';');
 	}
 
+	/**
+	 * Metoda za dohvat sljedećeg tokena ako postoji.
+	 * 
+	 * @throws LexerException ako je došlo do kakve greške prilikom parsiranja
+	 * @return sljedeći token 
+	 */
 	public Token nextToken() {
 
 		// dohvat tokena, ako je već dohvaćen zadnji, izaziva iznimku
@@ -55,7 +61,6 @@ public class Lexer {
 			return token;
 		}
 
-		// ako sadrži neki od simbola
 		if (symbols.contains(data[currentIndex])) {
 			
 			token = new Token(TokenType.SYMBOL, data[currentIndex]);
@@ -83,9 +88,6 @@ public class Lexer {
 
 		if (data[currentIndex] == '\\') {
 
-			// "\\1\\2 ab \\\\\\2c\\3\\4d"
-			// "\1\2 ab\\\2c\3\4d"
-
 			currentIndex++;
 
 			String result = extractEscaped();
@@ -95,9 +97,9 @@ public class Lexer {
 				String result2 = word();
 				result = result + result2;
 			}
+			
 			token = new Token(TokenType.WORD, result);
 			return token;
-
 		}
 		return null;
 	}
@@ -130,6 +132,7 @@ public class Lexer {
 				
 				currentIndex++;
 				
+				// ako je poslije slova escaped znamenka
 				if(Character.isDigit(data[currentIndex])) {
 					
 					String value = extractEscaped();
@@ -167,6 +170,7 @@ public class Lexer {
 		
 		StringBuilder sb = new StringBuilder();
 		
+		// ako je u prethodnom koraku bio "/"
 		boolean oneSlash = false;
 
 		while (Character.isDigit(data[currentIndex]) || data[currentIndex] == '\\') {
@@ -174,7 +178,7 @@ public class Lexer {
 			// prvi puta se može izvesti tek nakon druge iteracije, ako je npr. \1\2
 			if(data[currentIndex] == '\\') {
 				
-				// ako je stigao drugi / poslije broja, onda se broji kao znak
+				// ako je stigao drugi / poslije broja, onda se broji kao znak "/"
 				if(oneSlash) {
 					currentIndex--;
 					return sb.toString();
@@ -184,7 +188,7 @@ public class Lexer {
 				oneSlash = true;
 			
 			}else {
-				
+				// ako nije "/", onda je broj
 				long number = extractNumber(true);
 				oneSlash = false;
 				sb.append(number);
@@ -194,6 +198,7 @@ public class Lexer {
 			if(currentIndex >= data.length) return sb.toString();
 		}
 		
+		// ako se prvo pojavi npr. /1/2 i zatim poslije toga tekst
 		if(Character.isLetter(data[currentIndex])) sb.append(word());
 		
 		return sb.toString();
@@ -202,11 +207,13 @@ public class Lexer {
 	/**
 	 * Metoda za parsiranje broja.
 	 * 
+	 * @param escaped ako se metoda koristi za escaped znamenke 
 	 * @throws LexerException ako je neispravno zapisan decimalni broj u tekstu
 	 * @return long reprezentacija parsiranog broja
 	 */
 	private long extractNumber(boolean escaped) {
 		
+		// ako je znamenka escaped onda se samo doda trenutni broj i vrati
 		if(escaped) {
 			String num = new String(data, currentIndex, 1);
 			long number = Long.valueOf(num);
@@ -214,6 +221,7 @@ public class Lexer {
 			return number;
 		}
 
+		// slučaj kada je normalan broj
 		int start = currentIndex;
 		currentIndex++;
 
@@ -224,7 +232,7 @@ public class Lexer {
 		int end = currentIndex;
 
 		String value = new String(data, start, end - start);
-
+		
 		if (start == end)
 			throw new LexerException("Neispravan decimalni broj.");
 
