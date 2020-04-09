@@ -222,7 +222,7 @@ public class SmartScriptLexer {
 			String number = extractNumber();
 			
 			if(number.contains(".")) {
-				new ElementConstantDouble(Double.parseDouble(number));
+				return new ElementConstantDouble(Double.parseDouble(number));
 			}
 			
 			return new ElementConstantInteger(Integer.parseInt(number));
@@ -235,12 +235,13 @@ public class SmartScriptLexer {
 			
 		}else if(data[currentIndex] == '"') {
 			
+			currentIndex++;
 			String content = extractFromQuoteMarks();
 			currentIndex++; // micanje na znak poslije "
 			return new ElementString(content);
 		}
 		
-		return new ElementString("");
+		throw new SmartScriptParserException("Neispravna sintaksa.");
 	}
 	
 	public String extractNumber() {
@@ -251,8 +252,7 @@ public class SmartScriptLexer {
 		if(data[currentIndex] == '-') {
 			sb.append("-");
 			currentIndex++;
-		}
-		if(data[currentIndex] == '+') { // plus za pozitivne
+		}else if(data[currentIndex] == '+') { // plus za pozitivne
 			sb.append('+');
 			currentIndex++;
 		}
