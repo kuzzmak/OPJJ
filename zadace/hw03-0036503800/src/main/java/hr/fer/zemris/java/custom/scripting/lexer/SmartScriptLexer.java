@@ -23,6 +23,7 @@ public class SmartScriptLexer {
 
 	private static ArrayIndexedCollection operators;
 	private static ArrayIndexedCollection spaces;
+	private static ArrayIndexedCollection tagNames;
 	
 	public SmartScriptLexer(String text) {
 
@@ -36,14 +37,19 @@ public class SmartScriptLexer {
 		operators.add('*');
 		operators.add('/');
 		operators.add('^');
-		operators.add('=');
 
 		spaces = new ArrayIndexedCollection();
 		spaces.add(' ');
 		spaces.add('\t');
 		spaces.add('\n');
 		spaces.add('\r');
-
+		
+		tagNames = new ArrayIndexedCollection();
+		tagNames.add("FOR");
+		tagNames.add("END");
+		tagNames.add("=");
+		
+		
 		tokens = new ArrayIndexedCollection();
 	}
 
@@ -83,12 +89,13 @@ public class SmartScriptLexer {
 			return token;
 		}
 
-		if (data[currentIndex] == '\\') {
-
-			String word = extractText();
-			token = new Token(TokenType.WORD, word);
-			return token;
-		}
+//		// eskejpani znakovi u tekstu izvan tagova
+//		if (data[currentIndex] == '\\') {
+//
+//			String word = extractText();
+//			token = new Token(TokenType.WORD, word);
+//			return token;
+//		}
 
 		// početak taga
 		if (data[currentIndex] == '{' && data[currentIndex + 1] == '$') {
@@ -111,6 +118,14 @@ public class SmartScriptLexer {
 			
 			// operatori unutar taga
 			if(operators.contains(data[currentIndex])) {
+				
+				if(data[currentIndex] == '-' && 
+						Character.isDigit(data[currentIndex + 1])){
+					
+					String number = extractNumber();
+					token = new Token(TokenType.NUMBER, number);
+					return token;
+				}
 				token = new Token(TokenType.OPERATOR, data[currentIndex]);
 				currentIndex++;
 				return token;
@@ -135,6 +150,15 @@ public class SmartScriptLexer {
 				token = new Token(TokenType.WORD, text);
 				return token;
 			}
+			
+			// slučaj kada je samo broj poslije varijable
+			if (Character.isDigit(data[currentIndex])) {
+				
+				String number = extractNumber();
+				token = new Token(TokenType.NUMBER, number);
+				return token;
+			}
+			
 
 		}
 
@@ -147,44 +171,53 @@ public class SmartScriptLexer {
 
 		if (state == SmartScriptLexerState.TAG) {
 			
-			while (currentIndex < data.length && !spaces.contains(data[currentIndex])) {
+			if(Character.isLetter(data[currentIndex])) {
 				
-				if (data[currentIndex] == '\\') {
-
-					if (currentIndex + 1 >= data.length)
-						throw new SmartScriptingLexerException("Nije moguće završiti s \\.");
-
-					// trenutni znak je "/" i provjera za sljedeći
-					// ako je ispravna eskejp sekvenca, samo se doda
-					if (data[currentIndex + 1] == '\\' || data[currentIndex + 1] == '"') {
-
-						sb.append(data[currentIndex + 1]);
-						currentIndex++;
-						currentIndex++;
-						continue;
-
-					} else
-						throw new SmartScriptingLexerException(
-								"Greška kod stvaranja tokena. " + 
-										"Nije moguće eskejpati: " + 
-										data[currentIndex + 1] + " unutar taga.");
-
-				}
-				
-				// ako je kraj taga
-				if(data[currentIndex] == '$') {
-					if(data[currentIndex + 1] == '}') {
-						return sb.toString();
-					}
-				}
-				
-				sb.append(data[currentIndex]);
-				currentIndex++;
+				String word = extractWord();
+				return word;
 				
 			}
 			
-			
+			if (data[currentIndex] == '\\') {
 
+				if (currentIndex + 1 >= data.length)
+					throw new SmartScriptingLexerException("Nije moguće završiti s \\.");
+
+				
+				// trenutni znak je "/" i provjera za sljedeći
+				// ako je ispravna eskejp sekvenca, samo se doda
+				if (data[currentIndex + 1] == '\\' || data[currentIndex + 1] == '"') {
+
+					sb.append(data[currentIndex + 1]);
+					currentIndex++;
+					currentIndex++;
+					return sb.toString();
+
+				} else
+					throw new SmartScriptingLexerException(
+							"Greška kod stvaranja tokena. " + 
+									"Nije moguće eskejpati: " + 
+									data[currentIndex + 1] + " unutar taga.");
+
+			}
+			
+			if(data[currentIndex] == '"') {
+				
+				currentIndex++;
+				String text = extractFromQuoteMarks();
+				currentIndex++;
+				
+				return text;
+				
+			}
+			
+			// ako je kraj taga
+			if(data[currentIndex] == '$') {
+				if(data[currentIndex + 1] == '}') {
+					return sb.toString();
+				}
+			}
+			
 		} else {
 
 			while (currentIndex < data.length && !spaces.contains(data[currentIndex])) {
@@ -212,10 +245,20 @@ public class SmartScriptLexer {
 				currentIndex++;
 			}
 		}
-
 		return sb.toString();
 	}
 
+	public String extractWord() {
+		
+		int start = currentIndex;
+		
+		while(currentIndex < data.length && Character.isLetter(data[currentIndex])) {
+			currentIndex++;
+		}
+		
+		return new String(data, start, currentIndex - start);
+	}
+	
 	public void extractTag() {
 		// u metodu se ulazi kada je pročitana prva lijeva vitičasta zagrada
 		// ako poslije toga ne slijedi $ izaziva se iznimka
