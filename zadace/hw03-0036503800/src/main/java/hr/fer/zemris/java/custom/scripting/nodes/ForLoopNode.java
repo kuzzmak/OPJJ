@@ -9,4 +9,15 @@ public class ForLoopNode extends Node {
 	Element startExpression;
 	Element endExpression;
 	Element stepExpression; // može biti null
+	
+	public ForLoopNode(ElementVariable variable, 
+			Element startExpression, 
+			Element endExpression,
+			Element stepExpression) {
+		
+		this.variable = variable;
+		this.startExpression = startExpression;
+		this.endExpression = endExpression;
+		this.stepExpression = stepExpression;
+	}
 }

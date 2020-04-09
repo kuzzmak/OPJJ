@@ -30,8 +30,10 @@ public class test {
 	public static void main(String[] args) throws IOException {
 		
 		String document = loader("src/test/resources/document1.txt");
-		System.out.println(document);
 		
+		String error1 = "{$ FOR 3 1 10 1 $}"; //OK
+		String error2 = "{$ FOR * \"1\" -10 \"1\" $}"; //OK
 		
+		SmartScriptParser parser = new SmartScriptParser(error2);
 	}
 }
