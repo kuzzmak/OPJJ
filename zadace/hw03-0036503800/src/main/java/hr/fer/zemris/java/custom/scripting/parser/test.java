@@ -30,17 +30,25 @@ public class test {
 	public static void main(String[] args) throws IOException {
 		
 		String document = loader("src/test/resources/document1.txt");
+//		
+//		String error1 = "{$ FOR 3 1 10 1 $}"; //OK
+//		String error2 = "{$ FOR * \"1\" -10 \"1\" $}"; //OK
+//		String error3 = "{$ FOR year @sin 10 $}"; //OK
+//		String error4 = "{$ FOR year 1 10 \"1\" \"10\" $}"; //OK
+//		String error5 = "{$ FOR year $}"; //OK
+//		String error6 = "{$ FOR year 1 10 1 3 $}";
+//		
+//		String for1 = "{$ FOR i-1.35bbb\"1\" $}";
+		String for2 = "{$ FOR i -1.35 bbb   $}";
 		
-		String error1 = "{$ FOR 3 1 10 1 $}"; //OK
-		String error2 = "{$ FOR * \"1\" -10 \"1\" $}"; //OK
-		String error3 = "{$ FOR year @sin 10 $}"; //OK
-		String error4 = "{$ FOR year 1 10 \"1\" \"10\" $}"; //OK
-		String error5 = "{$ FOR year $}"; //OK
-		String error6 = "{$ FOR year 1 10 1 3 $}";
+		String tekst1 = "Example { bla } blu \\{$=1$} Nothing interesting {=here}";
+		String tekst2 = "A tag follows {$= \"Joe \\\"Long\\\" Smith\"$}";
 		
-		String for1 = "{$ FOR i-1.35bbb\"1\" $}";
-		String for2 = "{$ FOR i -1.35 bbb \"1\" $}";
+		SmartScriptParser parser = new SmartScriptParser(tekst2);
 		
-		SmartScriptParser parser = new SmartScriptParser(for2);
+//		Object o = null;
+//		
+//		System.out.println(o == null ? "null": "nije null");
+		
 	}
 }
