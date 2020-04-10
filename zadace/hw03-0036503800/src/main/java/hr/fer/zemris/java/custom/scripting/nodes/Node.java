@@ -12,7 +12,7 @@ public class Node {
 	 * @throws NullPointerException ako je predano dijete <code>null</code>
 	 * @param child dijete koje se dodaje
 	 */
-	void addChild(Node child) {
+	public void addChild(Node child) {
 		
 		if(child == null) throw new NullPointerException("Nije moguće dodati null.");
 		
@@ -26,7 +26,7 @@ public class Node {
 	 * 
 	 * @return veličina kolekcije djece
 	 */
-	int numberOfChildren() {
+	public int numberOfChildren() {
 		return children.size();
 	}
 	
@@ -37,7 +37,7 @@ public class Node {
 	 * @throws IndexOutOfBoundsException ako <code>index</code> nije valjan
 	 * @return dijete na indeksu <code>index</code>
 	 */
-	Node getChild(int index) {
+	public Node getChild(int index) {
 		
 		if(index < 0 || index > children.size() - 1)
 			throw new IndexOutOfBoundsException("Indeks izvan granica.");
