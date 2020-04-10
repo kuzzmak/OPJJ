@@ -75,7 +75,8 @@ public class SmartScriptParser {
 					// pozicija FOR tokena
 					index++;
 					Node node = extractFOR();
-
+					System.out.println();
+					
 				} else if (tagName.equals("END")) {
 
 				} else if (tagName.equals("=")) {
@@ -117,7 +118,7 @@ public class SmartScriptParser {
 
 			token = (Token) tokens.get(index);
 			
-			if(counter == 3) { // ako su svi parametri FOR popunjeni, 
+			if(counter == 4) { // ako su svi parametri FOR popunjeni, 
 							   // a nije token za kraj
 				
 				boolean end = token.getType() == TokenType.TAG_END;
