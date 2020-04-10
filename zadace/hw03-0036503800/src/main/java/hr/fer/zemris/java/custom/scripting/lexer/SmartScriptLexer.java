@@ -74,6 +74,18 @@ public class SmartScriptLexer {
 		System.out.println(token);
 		nextToken();
 		System.out.println(token);
+		nextToken();
+		System.out.println(token);
+		nextToken();
+		System.out.println(token);
+		nextToken();
+		System.out.println(token);
+		nextToken();
+		System.out.println(token);
+		nextToken();
+		System.out.println(token);
+		nextToken();
+		System.out.println(token);
 	}
 
 	public Token nextToken() {
@@ -88,14 +100,6 @@ public class SmartScriptLexer {
 			token = new Token(TokenType.EOF, null);
 			return token;
 		}
-
-//		// eskejpani znakovi u tekstu izvan tagova
-//		if (data[currentIndex] == '\\') {
-//
-//			String word = extractText();
-//			token = new Token(TokenType.WORD, word);
-//			return token;
-//		}
 
 		// početak taga
 		if (data[currentIndex] == '{' && data[currentIndex + 1] == '$') {
@@ -114,6 +118,7 @@ public class SmartScriptLexer {
 			String text = extractText();
 			token = new Token(TokenType.WORD, text);
 			return token;
+			
 		} else {
 			
 			// operatori unutar taga
@@ -144,11 +149,37 @@ public class SmartScriptLexer {
 			// slova i riječi unutar taga
 			if (Character.isLetter(data[currentIndex]) || 
 					data[currentIndex] == '\\' || 
-					data[currentIndex] == '"') {
+					data[currentIndex] == '"' ||
+					data[currentIndex] == '@') {
 					
 				String text = extractText();
-				token = new Token(TokenType.WORD, text);
-				return token;
+				
+				if(text.equals("\"")) { // navodnici
+					
+					token = new Token(TokenType.QUOTEMARK, text);
+					return token;
+					
+				}else if(text.equals("\\")){ // backslash
+					
+					token = new Token(TokenType.BACKSLASH, text);
+					return token;
+					
+				}else if(text.equals("@")) {
+					
+					token = new Token(TokenType.FUNCTION_START, text);
+					return token;
+					
+				}else { // neka druga rječ
+					
+					if(tagNames.contains(text.toUpperCase())) {
+						
+						token = new Token(TokenType.TAG_NAME, text.toUpperCase());
+						return token;
+					}
+					
+					token = new Token(TokenType.WORD, text);
+					return token;
+				}
 			}
 			
 			// slučaj kada je samo broj poslije varijable
@@ -159,7 +190,11 @@ public class SmartScriptLexer {
 				return token;
 			}
 			
-
+			if(data[currentIndex] == '=') {
+				token = new Token(TokenType.TAG_NAME, "=");
+				currentIndex++;
+				return token;
+			}
 		}
 
 		return null;
@@ -167,59 +202,36 @@ public class SmartScriptLexer {
 
 	public String extractText() {
 
-		StringBuilder sb = new StringBuilder();
-
 		if (state == SmartScriptLexerState.TAG) {
 			
 			if(Character.isLetter(data[currentIndex])) {
 				
 				String word = extractWord();
 				return word;
-				
 			}
 			
 			if (data[currentIndex] == '\\') {
 
-				if (currentIndex + 1 >= data.length)
-					throw new SmartScriptingLexerException("Nije moguće završiti s \\.");
-
-				
-				// trenutni znak je "/" i provjera za sljedeći
-				// ako je ispravna eskejp sekvenca, samo se doda
-				if (data[currentIndex + 1] == '\\' || data[currentIndex + 1] == '"') {
-
-					sb.append(data[currentIndex + 1]);
-					currentIndex++;
-					currentIndex++;
-					return sb.toString();
-
-				} else
-					throw new SmartScriptingLexerException(
-							"Greška kod stvaranja tokena. " + 
-									"Nije moguće eskejpati: " + 
-									data[currentIndex + 1] + " unutar taga.");
-
+				currentIndex++;
+				return String.valueOf("\\");
 			}
 			
 			if(data[currentIndex] == '"') {
 				
 				currentIndex++;
-				String text = extractFromQuoteMarks();
-				currentIndex++;
-				
-				return text;
-				
+				return String.valueOf("\"");
 			}
 			
-			// ako je kraj taga
-			if(data[currentIndex] == '$') {
-				if(data[currentIndex + 1] == '}') {
-					return sb.toString();
-				}
+			if(data[currentIndex] == '@') {
+				
+				currentIndex++;
+				return String.valueOf("@");
 			}
 			
 		} else {
 
+			StringBuilder sb = new StringBuilder();
+			
 			while (currentIndex < data.length && !spaces.contains(data[currentIndex])) {
 
 				if (data[currentIndex] == '\\') {
@@ -240,12 +252,17 @@ public class SmartScriptLexer {
 								"Greška kod stvaranja tokena. " + "Nije moguće eskejpati: " + data[currentIndex + 1]);
 
 				}
+				
+				
 
 				sb.append(data[currentIndex]);
 				currentIndex++;
 			}
+			
+			return sb.toString();
 		}
-		return sb.toString();
+		
+		return "";
 	}
 
 	public String extractWord() {

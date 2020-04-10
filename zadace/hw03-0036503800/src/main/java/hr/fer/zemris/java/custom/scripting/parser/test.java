@@ -31,20 +31,22 @@ public class test {
 		
 		String document = loader("src/test/resources/document1.txt");
 //		
-//		String error1 = "{$ FOR 3 1 10 1 $}"; //OK
-//		String error2 = "{$ FOR * \"1\" -10 \"1\" $}"; //OK
-//		String error3 = "{$ FOR year @sin 10 $}"; //OK
-//		String error4 = "{$ FOR year 1 10 \"1\" \"10\" $}"; //OK
-//		String error5 = "{$ FOR year $}"; //OK
-//		String error6 = "{$ FOR year 1 10 1 3 $}";
+		String error1 = "{$ FOR 3 1 10 1 $}"; //OK
+		String error2 = "{$ FOR * \"1\" -10 \"1\" $}"; //OK
+		String error3 = "{$ FOR year @sin 10 $}"; //OK
+		String error4 = "{$ FOR year 1 10 \"1\" \"10\" $}"; //OK
+		String error5 = "{$ FOR year $}"; //OK
+		String error6 = "{$ FOR year 1 10 1 3 $}"; //OK
 //		
-//		String for1 = "{$ FOR i-1.35bbb\"1\" $}";
-		String for2 = "{$ FOR i -1.35 bbb   $}";
+		String for1 = "{$ FOR i-1.35bbb\"1\" $}"; //OK
+		String for2 = "{$ FOR i -1.35 bbb   $}"; //OK
 		
-		String tekst1 = "Example { bla } blu \\{$=1$} Nothing interesting {=here}";
-		String tekst2 = "A tag follows {$= \"Joe \\\"Long\\\" Smith\"$}";
+		String tekst1 = "Example { bla } blu \\{$=1$} Nothing interesting {=here}"; //OK
+		String tekst2 = "A tag follows {$= \"Joe \\\"Long\\\" Smith\"$}"; //OK
 		
-		SmartScriptParser parser = new SmartScriptParser(tekst2);
+		String equals1 = "{$= i i * @sin \"0.000\" @decfmt $}";
+		
+		SmartScriptParser parser = new SmartScriptParser(equals1);
 		
 //		Object o = null;
 //		
