@@ -1,30 +1,37 @@
 package hr.fer.zemris.java.custom.scripting.lexer;
 
 import hr.fer.zemris.java.custom.collections.ArrayIndexedCollection;
-import hr.fer.zemris.java.custom.scripting.elems.Element;
-import hr.fer.zemris.java.custom.scripting.elems.ElementConstantDouble;
-import hr.fer.zemris.java.custom.scripting.elems.ElementConstantInteger;
-import hr.fer.zemris.java.custom.scripting.elems.ElementString;
-import hr.fer.zemris.java.custom.scripting.elems.ElementVariable;
-import hr.fer.zemris.java.custom.scripting.nodes.ForLoopNode;
-import hr.fer.zemris.java.custom.scripting.nodes.Node;
-import hr.fer.zemris.java.custom.scripting.parser.SmartScriptParserException;
 import hr.fer.zemris.java.custom.scripting.lexer.TokenType;
 
+/**
+ * Razred koji ima ulogu leksičke analize predanog teksta. Leksičkom 
+ * analizom nastaju tokeni koji se kasnije predaju parseru na obradu. 
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class SmartScriptLexer {
 
 	private char[] data;
+	
 	private SmartScriptLexerState state;
 
 	private int currentIndex;
 
-	private ArrayIndexedCollection tokens;
+	// trenutni token
 	private Token token;
-
+	// aritmetički operatori
 	private static ArrayIndexedCollection operators;
+	// praznine
 	private static ArrayIndexedCollection spaces;
+	// vrste tagova
 	private static ArrayIndexedCollection tagNames;
 	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 * @param text dokument koji se treba leksički analizirati
+	 */
 	public SmartScriptLexer(String text) {
 
 		data = text.toCharArray();
@@ -48,47 +55,35 @@ public class SmartScriptLexer {
 		tagNames.add("FOR");
 		tagNames.add("END");
 		tagNames.add("=");
-		
-		
-		tokens = new ArrayIndexedCollection();
 	}
 
-	public void parse() {
+	/**
+	 * Metoda za generiranje svih tokena dokumenta.
+	 * 
+	 */
+	public ArrayIndexedCollection tokenize() {
+		
+		ArrayIndexedCollection tokens = new ArrayIndexedCollection();
+		
 		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
-		nextToken();
-		System.out.println(token);
+		tokens.add(token);
+		
+		while(token.getType() != TokenType.EOF) {
+			nextToken();
+			tokens.add(token);
+		}
+		
+		return tokens;
 	}
-
-	public Token nextToken() {
+	
+	/**
+	 * Metoda za dohvat sljedećeg tokena ako postoji.
+	 * 
+	 * @throws SmartScriptingLexerException ako je došlo do nekakve 
+	 *         greške prilikom analize dokumenta
+	 * @return sljedeći token tipa <code>Token</code>
+	 */
+	private Token nextToken() {
 
 		if (token != null && token.getType() == TokenType.EOF) {
 			throw new SmartScriptingLexerException("Nema više tokena.");
@@ -124,6 +119,7 @@ public class SmartScriptLexer {
 			// operatori unutar taga
 			if(operators.contains(data[currentIndex])) {
 				
+				// negativan broj
 				if(data[currentIndex] == '-' && 
 						Character.isDigit(data[currentIndex + 1])){
 					
@@ -131,6 +127,7 @@ public class SmartScriptLexer {
 					token = new Token(TokenType.NUMBER, number);
 					return token;
 				}
+				// neki od operatora 
 				token = new Token(TokenType.OPERATOR, data[currentIndex]);
 				currentIndex++;
 				return token;
@@ -164,7 +161,7 @@ public class SmartScriptLexer {
 					token = new Token(TokenType.BACKSLASH, text);
 					return token;
 					
-				}else if(text.equals("@")) {
+				}else if(text.equals("@")) { // početak funkcije
 					
 					token = new Token(TokenType.FUNCTION_START, text);
 					return token;
@@ -190,6 +187,7 @@ public class SmartScriptLexer {
 				return token;
 			}
 			
+			// početak taga "="
 			if(data[currentIndex] == '=') {
 				token = new Token(TokenType.TAG_NAME, "=");
 				currentIndex++;
@@ -200,7 +198,19 @@ public class SmartScriptLexer {
 		return null;
 	}
 
-	public String extractText() {
+	/**
+	 * Metoda za izvlačenje teksta iz niza znakova. Kada se leksički analizator nalazi
+	 * u stanju <code>TAG</code> moguće je kao povratnu vrijednost dobiti poseban znak ili
+	 * neki niz znakova koji može predstavljati npr. varijablu.
+	 * 
+	 * U stanju <code>TEXT</code> kao povratna vrijednost se može dobiti donekle odijeljen 
+	 * tekst nekom vrstom praznine.
+	 * 
+	 * @throws SmartScriptingLexerException ako je došlo do nekakvog niza znakova koji 
+	 *         ne bi trebali biti eskejpani ili krivog zapisa stringa
+	 * @return string niza znakova
+	 */
+	private String extractText() {
 
 		if (state == SmartScriptLexerState.TAG) {
 			
@@ -229,10 +239,12 @@ public class SmartScriptLexer {
 			}
 			
 		} else {
-
+			
 			StringBuilder sb = new StringBuilder();
 			
-			while (currentIndex < data.length && !spaces.contains(data[currentIndex])) {
+			// tekst izvan tagova se ne tokenizira, uzima se sve do prve pojave "{$"
+			// i pritom se pazi da se eskejpaju samo legalni znakovi
+			while (currentIndex < data.length) {
 
 				if (data[currentIndex] == '\\') {
 
@@ -253,8 +265,15 @@ public class SmartScriptLexer {
 
 				}
 				
+				// ako je u običnom tekstu naišao početak taga
+				if(data[currentIndex] == '{') {
+					
+					if(data[currentIndex + 1] == '$') {
+						
+						return sb.toString();
+					}
+				}
 				
-
 				sb.append(data[currentIndex]);
 				currentIndex++;
 			}
@@ -265,185 +284,35 @@ public class SmartScriptLexer {
 		return "";
 	}
 
-	public String extractWord() {
+	/**
+	 * Metoda za vađenje riječi iz niza znakova. Riječ je kontinuirani niz
+	 * znamenaka engleske abecede, brojeva ili podvlake(""_), a preduvjet 
+	 * je da počinje slovom. Korišteno kod izvlačenja imena varijabli.
+	 * 
+	 * @return riječ
+	 */
+	private String extractWord() {
 		
 		int start = currentIndex;
 		
-		while(currentIndex < data.length && Character.isLetter(data[currentIndex])) {
+		while(currentIndex < data.length && ( 
+				Character.isLetter(data[currentIndex]) ||
+				Character.isDigit(data[currentIndex]) ||
+				data[currentIndex] == '_')) {
+			
 			currentIndex++;
 		}
 		
 		return new String(data, start, currentIndex - start);
 	}
-	
-	public void extractTag() {
-		// u metodu se ulazi kada je pročitana prva lijeva vitičasta zagrada
-		// ako poslije toga ne slijedi $ izaziva se iznimka
-		skipBlanks();
-
-		// ako dokument završava s {
-		if (currentIndex + 1 >= data.length)
-			throw new SmartScriptingLexerException("Greška prilikom parsiranja.");
-
-		if (data[currentIndex + 1] != '$')
-			throw new SmartScriptingLexerException(
-					"Greška prilikom parsiranje taga. index: " + String.valueOf(currentIndex + 1));
-
-		// pozicija s znakom $
-		currentIndex++;
-
-		currentIndex++;
-
-		token = new Token(TokenType.TAG_START, "{$");
-		tokens.add(token);
-
-		// ako ima praznina između $ i "=" ili "FOR"
-		skipBlanks();
-
-		if (data[currentIndex] == '=') { // tag "="
-
-		} else if (Character.isLetter(data[currentIndex])) { // ako je slovo koje počinje na "E" ili "F"
-
-			String tagName = extractTagName();
-
-			token = new Token(TokenType.TAG_NAME, tagName);
-			tokens.add(token);
-
-			// ulazi se metodu odmah znak nakon imena taga
-			Node tag = extractTag(tagName);
-
-			System.out.println();
-
-		} else
-			throw new SmartScriptParserException("Neispravan tag.");
-	}
 
 	/**
-	 * Funkcija koja slži za dobivanje imena taga kojeg treba generirati.
+	 * Metoda za vađenje broja iz niza znamenaka. Broj može bit s negativnim
+	 * predznakom, sadržavati ili biti bez decimalne točke.
 	 * 
-	 * @return ime taga za generiranje
+	 * @return string reprezentacija broja
 	 */
-	public String extractTagName() {
-
-		int start = currentIndex;
-
-		while (!spaces.contains(data[currentIndex])) {
-			currentIndex++;
-		}
-
-		int end = currentIndex;
-
-		return new String(data, start, end - start);
-	}
-
-	public Node extractTag(String tagName) {
-
-		if (tagName.equals("FOR")) { // FOR tag
-
-			ForLoopNode fln = extractFOR();
-
-			return fln;
-		} else { // END tag
-
-			Node END = extractEND();
-
-			return END;
-		}
-	}
-
-	public ForLoopNode extractFOR() {
-
-		Element variable = extractVariableName();
-
-		Element startExpression = extractExpression();
-
-		Element endExpression = extractExpression();
-
-		Element stepExpression = extractExpression();
-
-		skipBlanks();
-
-		if (data[currentIndex] != '$')
-			throw new SmartScriptParserException("Neispravna FOR sintaksa.");
-
-		ForLoopNode fln = new ForLoopNode((ElementVariable) variable, startExpression, endExpression, stepExpression);
-
-		return fln;
-	}
-
-	public Node extractEND() {
-
-		return null;
-	}
-
-	public Element extractVariableName() {
-
-		skipBlanks();
-
-		int start = currentIndex;
-
-		if (!Character.isLetter(data[currentIndex]))
-			throw new SmartScriptParserException(
-					"Neispravan početak imena varijable. " + "\"" + String.valueOf(data[currentIndex]) + "\"");
-
-		// dodavanje prvog slova
-		currentIndex++;
-		// ostatak imena varijable ako ga ima, dopušteno slovo, broj ili "_"
-		while (Character.isLetter(data[currentIndex]) || Character.isDigit(data[currentIndex])
-				|| data[currentIndex] == '_') {
-
-			currentIndex++;
-		}
-
-		int end = currentIndex;
-
-		return new ElementVariable(new String(data, start, end - start));
-	}
-
-	public Element extractExpression() {
-
-		skipBlanks();
-
-		// ako nema step dijela u FOR petlji
-		if (data[currentIndex] == '$')
-			return null;
-
-		if (data[currentIndex] == '@')
-			throw new SmartScriptParserException("Neispravna sintaksa.");
-
-		// slučaj kada je samo broj poslije varijable
-		// slučaj kada je minus i odmah nakon neka znamenka
-		// slučaj kada je + i odmah nakon neka znamenka
-		if (Character.isDigit(data[currentIndex])
-				|| (data[currentIndex] == '-' && Character.isDigit(data[currentIndex + 1]))
-				|| (data[currentIndex] == '-' && Character.isDigit(data[currentIndex + 1]))) {
-
-			String number = extractNumber();
-
-			if (number.contains(".")) {
-				return new ElementConstantDouble(Double.parseDouble(number));
-			}
-
-			return new ElementConstantInteger(Integer.parseInt(number));
-
-		} else if (Character.isLetter(data[currentIndex])) {
-
-			// ako je trenutni znak slovo, vrijede ista pravila
-			// kao i kod imena varijable
-			return extractVariableName();
-
-		} else if (data[currentIndex] == '"') {
-
-			currentIndex++;
-			String content = extractFromQuoteMarks();
-			currentIndex++; // micanje na znak poslije "
-			return new ElementString(content);
-		}
-
-		throw new SmartScriptParserException("Neispravna sintaksa.");
-	}
-
-	public String extractNumber() {
+	private String extractNumber() {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -476,23 +345,13 @@ public class SmartScriptLexer {
 		return sb.toString();
 	}
 
-	public String extractFromQuoteMarks() {
-
-		int start = currentIndex;
-
-		while (currentIndex < data.length && data[currentIndex] != '"') {
-			currentIndex++;
-		}
-
-		return new String(data, start, currentIndex - start);
-	}
-
 	/**
 	 * Metoda za peskakanje bilo kakvih razmaka i praznina u predanom teksu pomičući
 	 * trenutnu kazaljku.
 	 * 
 	 */
 	private void skipBlanks() {
+
 		while (currentIndex < data.length) {
 			char c = data[currentIndex];
 			if (spaces.contains(c)) {
