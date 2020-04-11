@@ -3,17 +3,35 @@ package hr.fer.zemris.java.custom.scripting.nodes;
 import hr.fer.zemris.java.custom.collections.ArrayIndexedCollection;
 import hr.fer.zemris.java.custom.scripting.elems.Element;
 
+/**
+ * Node koji predstavlja naredbu koja dinamički generira neki tekstualni izlaz.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class EchoNode extends Node {
 
 	Element[] elements;
 	
 	ArrayIndexedCollection col;
 	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 */
 	public EchoNode() {
 		
 		this.col = new ArrayIndexedCollection();
 	}
 	
+	/**
+	 * Metoda za dodavanje elemenata u internu kolekciju.
+	 * 
+	 * @throws NullPointerException ako je predani element null
+	 * @throws IllegalArgumentException ako element nije tipa Element
+	 * @param element element koji se pokušava dodati
+	 * @see Element
+	 */
 	public void addElement(Element element) {
 		
 		if(element == null)
@@ -25,6 +43,11 @@ public class EchoNode extends Node {
 		col.add(element);
 	}
 	
+	/**
+	 * Metoda za dohvat elemenata iz kolekcije.
+	 * 
+	 * @return polje elemenata
+	 */
 	public Element[] getElements() {
 		
 		elements = new Element[col.size()];
@@ -34,5 +57,21 @@ public class EchoNode extends Node {
 		}
 		
 		return elements;
+	}
+
+	@Override
+	public String toString() {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("{$ = ");
+		
+		Element[] elements = getElements();
+		
+		for(Element e: elements) sb.append(e.asText()).append(" ");
+		
+		sb.append(" $}");
+		
+		return sb.toString();
 	}
 }
