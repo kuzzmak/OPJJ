@@ -38,6 +38,7 @@ public class ForLoopNode extends Node {
 			sb.append(stepExpression.asText());
 		}
 		
+		sb.append(" ");
 		sb.append("$}");
 
 		return sb.toString();
