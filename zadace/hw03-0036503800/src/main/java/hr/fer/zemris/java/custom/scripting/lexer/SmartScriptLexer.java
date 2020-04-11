@@ -83,13 +83,13 @@ public class SmartScriptLexer {
 			throw new SmartScriptingLexerException("Nema više tokena.");
 		}
 
-		skipBlanks();
-
 		if (currentIndex >= data.length) {
 			token = new Token(TokenType.EOF, null);
 			return token;
 		}
 
+		// mjesto za skipBlanks() ako se brišu praznine u običnom tekstu
+		
 		// početak taga
 		if (data[currentIndex] == '{' && data[currentIndex + 1] == '$') {
 
@@ -110,7 +110,9 @@ public class SmartScriptLexer {
 			return token;
 
 		} else {
-
+				
+			skipBlanks(); // premjestiti iznad da se brišu praznine u običnom teksu
+			
 			// operatori unutar taga
 			if (operators.contains(data[currentIndex])) {
 
