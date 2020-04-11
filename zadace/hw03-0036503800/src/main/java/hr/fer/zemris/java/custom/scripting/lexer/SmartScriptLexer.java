@@ -83,13 +83,13 @@ public class SmartScriptLexer {
 			throw new SmartScriptingLexerException("Nema više tokena.");
 		}
 
+		skipBlanks();
+		
 		if (currentIndex >= data.length) {
 			token = new Token(TokenType.EOF, null);
 			return token;
 		}
 
-		// mjesto za skipBlanks() ako se brišu praznine u običnom tekstu
-		
 		// početak taga
 		if (data[currentIndex] == '{' && data[currentIndex + 1] == '$') {
 
@@ -111,8 +111,6 @@ public class SmartScriptLexer {
 
 		} else {
 				
-			skipBlanks(); // premjestiti iznad da se brišu praznine u običnom teksu
-			
 			// operatori unutar taga
 			if (operators.contains(data[currentIndex])) {
 
@@ -281,7 +279,12 @@ public class SmartScriptLexer {
 						return sb.toString();
 					}
 				}
-
+				
+				if(data[currentIndex] == '\n') {
+					currentIndex++;
+					return sb.toString();
+				}
+				
 				sb.append(data[currentIndex]);
 				currentIndex++;
 			}

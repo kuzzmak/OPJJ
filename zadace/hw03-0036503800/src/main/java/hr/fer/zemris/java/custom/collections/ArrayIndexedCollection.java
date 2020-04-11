@@ -315,4 +315,32 @@ public class ArrayIndexedCollection implements List {
 	public String toString() {
 		return Arrays.toString(elements);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.deepHashCode(elements);
+		result = prime * result + (int) (modificationCount ^ (modificationCount >>> 32));
+		result = prime * result + size;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ArrayIndexedCollection other = (ArrayIndexedCollection) obj;
+		if (!Arrays.deepEquals(elements, other.elements))
+			return false;
+		if (modificationCount != other.modificationCount)
+			return false;
+		if (size != other.size)
+			return false;
+		return true;
+	}
 }

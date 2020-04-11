@@ -23,4 +23,19 @@ public class DocumentNode extends Node {
 		
 		return sb.toString();
 	}
-}
+	
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DocumentNode other = (DocumentNode) obj;
+		if (children == null) {
+			if (other.children != null)
+				return false;
+		} else if (!children.equals(other.children))
+			return false;
+		return true;
+	}}
