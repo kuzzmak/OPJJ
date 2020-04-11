@@ -1,10 +1,13 @@
 package hr.fer.zemris.java.custom.scripting.parser;
 
 import hr.fer.zemris.java.custom.collections.ArrayIndexedCollection;
+import hr.fer.zemris.java.custom.collections.EmptyStackException;
 import hr.fer.zemris.java.custom.collections.ObjectStack;
 import hr.fer.zemris.java.custom.scripting.elems.Element;
 import hr.fer.zemris.java.custom.scripting.elems.ElementConstantDouble;
 import hr.fer.zemris.java.custom.scripting.elems.ElementConstantInteger;
+import hr.fer.zemris.java.custom.scripting.elems.ElementFunction;
+import hr.fer.zemris.java.custom.scripting.elems.ElementOperator;
 import hr.fer.zemris.java.custom.scripting.elems.ElementString;
 import hr.fer.zemris.java.custom.scripting.elems.ElementVariable;
 import hr.fer.zemris.java.custom.scripting.lexer.SmartScriptLexer;
@@ -31,7 +34,7 @@ public class SmartScriptParser {
 
 		tokens = lexer.tokenize();
 
-		parse();
+		documentNode = parse();
 	}
 
 	public DocumentNode getDocmentNode() {
@@ -39,7 +42,7 @@ public class SmartScriptParser {
 		return documentNode;
 	}
 
-	public void parse() {
+	public DocumentNode parse() {
 
 		ObjectStack nodeStack = new ObjectStack();
 
@@ -48,20 +51,9 @@ public class SmartScriptParser {
 
 		Node currentNode = documentNode;
 
-		boolean inTag = false;
-		boolean textNodeCreated = false;
-
-		while (index < tokens.size()) {
-
-			Object value = tokens.get(index);
-
-			if (value == null)
-				throw new NullPointerException("Nije moguće predati null na obradu.");
-
-			if (!(value instanceof Token))
-				throw new IllegalArgumentException("Nije moguće obraditi objekte koji nisu Token.");
-
-			Token token = (Token) value;
+		Token token = (Token) tokens.get(index);
+		
+		while (index < tokens.size() && token.getType() != TokenType.EOF) {
 
 			// token za početak taga
 			if (token.getType() == TokenType.TAG_START) {
@@ -76,30 +68,57 @@ public class SmartScriptParser {
 					// pozicija FOR tokena
 					index++;
 					Node node = extractFOR();
+					currentNode.addChild(node);
 					nodeStack.push(node);
+					currentNode = node;
 					
 				} else if (tagName.toUpperCase().equals("END")) {
 					
-					nodeStack.pop();
+					index++; // pomak na END token
+					
+					try {
+						Node node = (Node) nodeStack.pop();
+						
+						// ako se uzme DocumentNode prije kraja parsiranje onda je greška 
+						if(node instanceof DocumentNode)
+							throw new SmartScriptParserException("Greška prilikom parsiranja.");
+						
+					}catch(EmptyStackException e) {
+						throw new SmartScriptParserException("Greška prilikom parsiranje.");
+					}
+					
+					currentNode = (Node) nodeStack.peek();
+					index++; // pomak ne tagEND token
+					index++; // pomak na token nakon ako postoji 
 					
 				} else if (tagName.equals("=")) {
 
 					index++;
-					Node node = extractEquals();
-					System.out.println();
+					EchoNode node = extractEquals();
+					currentNode.addChild(node);
 					
 				} else
 					throw new SmartScriptParserException("Neispravan tag.");
 
 			} else {
 
-				TextNode textNode = new TextNode((String) token.getValue());
+				TextNode textNode = new TextNode(String.valueOf(token.getValue()));
 				currentNode.addChild(textNode);
 				index++;
 			}
+			
+			token = (Token) tokens.get(index);
 		}
+		
+		return documentNode;
 	}
 	
+	/**
+	 * Metoda za parsiranje tokena vezanih uz tag "=".
+	 * 
+	 * @throws SmartScriptParserException ako je došlo prilikom parsiranja do kakve greške
+	 * @return objetk tipa EchoNode
+	 */
 	public EchoNode extractEquals() {
 		
 		index++; // token poslije "="
@@ -107,7 +126,7 @@ public class SmartScriptParser {
 		
 		EchoNode equals = new EchoNode();
 		
-		while(index < tokens.size() && token.getValue() != TokenType.QUOTEMARK) {
+		while(index < tokens.size() && token.getType() != TokenType.TAG_END) {
 			
 			// slučaj varijable
 			if(token.getType() == TokenType.WORD) {
@@ -132,16 +151,81 @@ public class SmartScriptParser {
 					}
 				}else {
 					
-//					try
-					
+					try {
+
+						ElementConstantInteger num = new ElementConstantInteger(Integer.parseInt(number));
+						equals.addElement(num);
+						index++;
+
+					} catch (NumberFormatException e) {
+						throw new SmartScriptParserException("Nije moguće parsirati broj.");
+					}
 				}
 				
+			}else if(token.getType() == TokenType.QUOTEMARK) { // neki izraz u navodnicima
+				
+				index++; // token poslije navodnika
+				token = (Token) tokens.get(index);
+				
+				StringBuilder sb = new StringBuilder();
+				
+				// sve dok se ne dođe do sljedećeg navodnika koji nije eskejpan
+				while(index < tokens.size() && token.getType() != TokenType.QUOTEMARK) {
+					
+					// eskejpa se neki znak, backslash ili navodnik
+					if(token.getType() == TokenType.BACKSLASH) {
+						
+						index++; // pomak na taj znak
+						token = (Token) tokens.get(index);
+						sb.append(String.valueOf(token.getValue()));
+						sb.append(" ");
+						index++; // pomak na tag poslije eskejpanog znaka
+					}
+					
+					// broj ili riječ, tretira se isto unutar navodnika
+					if(token.getType() == TokenType.WORD ||
+							token.getType() == TokenType.NUMBER) {
+						
+						sb.append(String.valueOf(token.getValue()));
+						sb.append(" ");
+						index++;
+					}
+					
+					token = (Token) tokens.get(index);
+				}
+				
+				index++; // token poslije navodnika
+				ElementString string = new ElementString(sb.toString());
+				equals.addElement(string);
+				
+			}else if(token.getType() == TokenType.FUNCTION_START) { // početak funkcije
+				
+				index++; // pomak na tag neposredno nakon
+				token = (Token) tokens.get(index);
+				
+				boolean ok = checkVarable(token); // ime funkcije ok?
+				
+				if(ok) {
+					
+					ElementFunction function = new ElementFunction(String.valueOf(token.getValue()));
+					equals.addElement(function);
+					index++;
+				}else
+					throw new SmartScriptParserException("Neispravno ime funkcije.");
+				
+			}else if(token.getType() == TokenType.OPERATOR) { // neki od operatora
+				
+				ElementOperator operator = new ElementOperator(String.valueOf(token.getValue()));
+				equals.addElement(operator);
+				index++;
 			}
 			
-			
+			token = (Token) tokens.get(index);
 		}
 		
-		return null;
+		index++; // pomicanje na tokene poslije završnog taga ako postoji
+		
+		return equals;
 	}
 
 	/**
@@ -165,7 +249,7 @@ public class SmartScriptParser {
 		Element stepExpression = null;
 
 		// sve do kraja taga
-		while (index < tokens.size() && token.getValue() != TokenType.TAG_END) {
+		while (index < tokens.size() && token.getType() != TokenType.TAG_END) {
 
 			token = (Token) tokens.get(index);
 			
