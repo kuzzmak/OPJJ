@@ -12,18 +12,23 @@ public class DocumentNode extends Node {
 
 	@Override
 	public String toString() {
-		
-		StringBuilder sb = new StringBuilder();
-		
-		ElementsGetter eg = this.children.createElementsGetter();
-		
-		while(eg.hasNextElement()) {
-			sb.append(eg.getNextElement().toString()).append("\n");
+
+		if (children != null) {
+
+			StringBuilder sb = new StringBuilder();
+
+			ElementsGetter eg = this.children.createElementsGetter();
+
+			while (eg.hasNextElement()) {
+				sb.append(eg.getNextElement().toString()).append("\n");
+			}
+
+			return sb.toString();
 		}
 		
-		return sb.toString();
+		return "";
 	}
-	
+
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -38,4 +43,5 @@ public class DocumentNode extends Node {
 		} else if (!children.equals(other.children))
 			return false;
 		return true;
-	}}
+	}
+}
