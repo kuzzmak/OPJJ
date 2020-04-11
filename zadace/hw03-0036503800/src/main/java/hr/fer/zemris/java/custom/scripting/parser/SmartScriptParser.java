@@ -11,6 +11,7 @@ import hr.fer.zemris.java.custom.scripting.lexer.SmartScriptLexer;
 import hr.fer.zemris.java.custom.scripting.lexer.Token;
 import hr.fer.zemris.java.custom.scripting.lexer.TokenType;
 import hr.fer.zemris.java.custom.scripting.nodes.DocumentNode;
+import hr.fer.zemris.java.custom.scripting.nodes.EchoNode;
 import hr.fer.zemris.java.custom.scripting.nodes.ForLoopNode;
 import hr.fer.zemris.java.custom.scripting.nodes.Node;
 import hr.fer.zemris.java.custom.scripting.nodes.TextNode;
@@ -40,10 +41,10 @@ public class SmartScriptParser {
 
 	public void parse() {
 
-		ObjectStack tokenStack = new ObjectStack();
+		ObjectStack nodeStack = new ObjectStack();
 
 		DocumentNode documentNode = new DocumentNode();
-		tokenStack.push(documentNode);
+		nodeStack.push(documentNode);
 
 		Node currentNode = documentNode;
 
@@ -68,19 +69,25 @@ public class SmartScriptParser {
 				if (index + 1 >= tokens.size())
 					throw new SmartScriptParserException("Početak taga ne može bit na kraju dokumenta.");
 
-				String tagName = (String) ((Token) tokens.get(index + 1)).getValue();
+				String tagName = String.valueOf(((Token) tokens.get(index + 1)).getValue());
 
-				if (tagName.equals("FOR")) {
+				if (tagName.toUpperCase().equals("FOR")) {
 
 					// pozicija FOR tokena
 					index++;
 					Node node = extractFOR();
-					System.out.println();
+					nodeStack.push(node);
 					
-				} else if (tagName.equals("END")) {
-
+				} else if (tagName.toUpperCase().equals("END")) {
+					
+					nodeStack.pop();
+					
 				} else if (tagName.equals("=")) {
 
+					index++;
+					Node node = extractEquals();
+					System.out.println();
+					
 				} else
 					throw new SmartScriptParserException("Neispravan tag.");
 
@@ -91,6 +98,50 @@ public class SmartScriptParser {
 				index++;
 			}
 		}
+	}
+	
+	public EchoNode extractEquals() {
+		
+		index++; // token poslije "="
+		Token token = (Token) tokens.get(index);
+		
+		EchoNode equals = new EchoNode();
+		
+		while(index < tokens.size() && token.getValue() != TokenType.QUOTEMARK) {
+			
+			// slučaj varijable
+			if(token.getType() == TokenType.WORD) {
+				
+				ElementVariable variable = new ElementVariable(String.valueOf(token.getValue()));
+				equals.addElement(variable);
+				index++;
+				
+			}else if(token.getType() == TokenType.NUMBER) {
+				
+				String number = String.valueOf(token.getValue());
+				
+				if(number.contains(".")) {
+					
+					try {
+						ElementConstantDouble num = new ElementConstantDouble(Double.valueOf(number));
+						equals.addElement(num);
+						index++;
+						
+					}catch(NumberFormatException e) {
+						throw new SmartScriptParserException("Nije moguće parsirati broj.");
+					}
+				}else {
+					
+//					try
+					
+				}
+				
+			}
+			
+			
+		}
+		
+		return null;
 	}
 
 	/**
@@ -138,7 +189,7 @@ public class SmartScriptParser {
 				boolean ok = checkVarable(token);
 
 				if (ok) {
-					variable = new ElementVariable((String) token.getValue());
+					variable = new ElementVariable(String.valueOf(token.getValue()));
 					counter++;
 					index++;
 				} else
@@ -178,13 +229,28 @@ public class SmartScriptParser {
 		return new ForLoopNode(variable, startExpression, endExpression, stepExpression);
 	}
 
+	/**
+	 * Metoda za parsiranje tokena unutar FOR petlje.
+	 * 
+	 * @return objekt tipa Element koji predstavlja pojedini dio FOR petlje
+	 */
 	public Element extractElement() {
 
 		Token token = (Token) tokens.get(index);
 
 		Element expression = null;
-
-		if (token.getType() == TokenType.QUOTEMARK) { // konstanta kao string
+		
+		if(token.getType() == TokenType.WORD){
+			
+			boolean ok = checkVarable(token);
+			
+			if(ok) {
+				
+				expression = new ElementVariable(String.valueOf(token.getValue()));
+				index++;
+			}
+			
+		}else if (token.getType() == TokenType.QUOTEMARK) { // konstanta kao string
 
 			index++; // pomak do broja unutar navodnika
 
