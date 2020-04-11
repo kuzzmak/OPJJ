@@ -28,6 +28,12 @@ public class SmartScriptParser {
 	// index trenutnog tokena
 	private int index = 0;
 
+	/**
+	 * Inicijalni konstruktor kojim se automatski vrši tokenizacija 
+	 * i parsiranje predanog teksta.
+	 * 
+	 * @param text dokument koji se parsira
+	 */
 	public SmartScriptParser(String text) {
 
 		SmartScriptLexer lexer = new SmartScriptLexer(text);
@@ -42,6 +48,13 @@ public class SmartScriptParser {
 		return documentNode;
 	}
 
+	/**
+	 * Metoda za parsiranje tokena.
+	 * 
+	 * @throws SmartScriptParserException ako je prilikom parsiranja došlo do pogreške
+	 * @return objekt tipa DocumentNode koji predstavlja 
+	 *         dokument podijeljen u manje semantičke cjeline
+	 */
 	public DocumentNode parse() {
 
 		ObjectStack nodeStack = new ObjectStack();
@@ -100,7 +113,7 @@ public class SmartScriptParser {
 				} else
 					throw new SmartScriptParserException("Neispravan tag.");
 
-			} else {
+			} else { // ako nije nikakav tag onda je tekst
 
 				TextNode textNode = new TextNode(String.valueOf(token.getValue()));
 				currentNode.addChild(textNode);
