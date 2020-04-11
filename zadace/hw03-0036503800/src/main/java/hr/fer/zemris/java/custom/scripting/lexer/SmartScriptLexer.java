@@ -264,6 +264,7 @@ public class SmartScriptLexer {
 						sb.append(data[currentIndex + 1]);
 						currentIndex++;
 						currentIndex++;
+						continue;
 
 					} else
 						throw new SmartScriptingLexerException(
