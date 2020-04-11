@@ -24,6 +24,7 @@ public class ForLoopNode extends Node {
 	public String toString() {
 
 		StringBuilder sb = new StringBuilder();
+		
 		sb.append("{$");
 		sb.append(" FOR ");
 		sb.append(variable.asText());
@@ -40,11 +41,13 @@ public class ForLoopNode extends Node {
 		sb.append(" ");
 		sb.append("$}");
 
-		// dodavanje djece ako ima
-		ElementsGetter eg = this.children.createElementsGetter();
+		if (children != null) {
+			// dodavanje djece ako ima
+			ElementsGetter eg = this.children.createElementsGetter();
 
-		while (eg.hasNextElement()) {
-			sb.append(eg.getNextElement().toString()).append("\n");
+			while (eg.hasNextElement()) {
+				sb.append(eg.getNextElement().toString()).append("\n");
+			}
 		}
 		
 		sb.append("{$END$}");

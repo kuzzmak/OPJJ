@@ -280,11 +280,6 @@ public class SmartScriptLexer {
 					}
 				}
 				
-				if(data[currentIndex] == '\n') {
-					currentIndex++;
-					return sb.toString();
-				}
-				
 				sb.append(data[currentIndex]);
 				currentIndex++;
 			}
