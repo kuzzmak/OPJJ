@@ -1,5 +1,11 @@
 package hr.fer.zemris.java.custom.scripting.elems;
 
+/**
+ * Razred koji predstavlja neku vrstu operatora.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class ElementOperator extends Element {
 
 	private String symbol;

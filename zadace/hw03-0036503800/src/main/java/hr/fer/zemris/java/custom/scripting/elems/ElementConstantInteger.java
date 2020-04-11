@@ -1,5 +1,11 @@
 package hr.fer.zemris.java.custom.scripting.elems;
 
+/**
+ * Razred koji predstavlja konstantu cijelog broja.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class ElementConstantInteger extends Element {
 
 	private int value;
