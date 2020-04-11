@@ -2,9 +2,16 @@ package hr.fer.zemris.java.custom.scripting.nodes;
 
 import hr.fer.zemris.java.custom.collections.ArrayIndexedCollection;
 
+/**
+ * Rezred kojeg sve druge vrste Node-ova nasljeđuju. Svaki Node ima 
+ * kolekciju djece, odnosno Node-ova koje mu pripadaju i označavaju jednu cjelinu.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class Node {
 
-	private  ArrayIndexedCollection children;
+	public  ArrayIndexedCollection children;
 	
 	/**
 	 * Metoda za dodavanje djece u kolekciju.
