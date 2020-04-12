@@ -1,9 +1,6 @@
 package hr.fer.zemris.java.hw03;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -15,8 +12,6 @@ import hr.fer.zemris.java.custom.scripting.parser.SmartScriptParser;
 public class SmartScriptTester {
 
 	public static void main(String[] args) throws IOException {
-		
-//		String docBody = loader("src/test/resources/document1.txt");
 		
 		if(args.length != 1)
 			throw new IllegalArgumentException("Broj argumenata mora biti 1 - staza do datoteke koja se parsira.");
