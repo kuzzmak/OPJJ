@@ -1,1 +1,1 @@
-Ovo se ruši ${ = \n $}
+Ovo se ruši {$ = \n $}
