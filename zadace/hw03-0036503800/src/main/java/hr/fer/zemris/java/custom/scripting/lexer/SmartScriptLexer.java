@@ -84,7 +84,7 @@ public class SmartScriptLexer {
 		}
 
 		skipBlanks();
-		
+
 		if (currentIndex >= data.length) {
 			token = new Token(TokenType.EOF, null);
 			return token;
@@ -110,7 +110,7 @@ public class SmartScriptLexer {
 			return token;
 
 		} else {
-				
+
 			// operatori unutar taga
 			if (operators.contains(data[currentIndex])) {
 
@@ -158,7 +158,12 @@ public class SmartScriptLexer {
 					token = new Token(TokenType.FUNCTION_START, text);
 					return token;
 
-				} else { // neka druga rječ
+				} else if(text.equals("\n") || text.equals("\r") || text.equals("\t")) {
+				
+					token = new Token(TokenType.SPACES, text);
+					return token;
+					
+				}else{ // neka druga rječ
 
 					// ako je zadnji generirani token početak taga, onda
 					// mora doći ime taga
@@ -227,7 +232,27 @@ public class SmartScriptLexer {
 			}
 
 			if (data[currentIndex] == '\\') {
+				
+				if(data[currentIndex + 1] == 'n') {
+					currentIndex++;
+					currentIndex++;
+					return String.valueOf('\n');
+					
+				}else if(data[currentIndex + 1] == 'r') {
+					currentIndex++;
+					currentIndex++;
+					return String.valueOf('\r');
+					
+				}else if(data[currentIndex + 1] == 't') {
+					currentIndex++;
+					currentIndex++;
+					return String.valueOf('\t');
+				}
 
+//				if(data[currentIndex + 1] != '\"' && 
+//						data[currentIndex + 1] != '\\')
+//					throw new SmartScriptingLexerException("Nedozvoljen eskejpan znak u stringu: " + data[currentIndex]);
+					
 				currentIndex++;
 				return String.valueOf("\\");
 			}
@@ -243,6 +268,9 @@ public class SmartScriptLexer {
 				currentIndex++;
 				return String.valueOf("@");
 			}
+//			else
+//				throw new SmartScriptingLexerException("Nedozvoljen znak u stringu: " + data[currentIndex]);
+			
 
 		} else {
 
@@ -287,7 +315,6 @@ public class SmartScriptLexer {
 
 			return sb.toString();
 		}
-
 		return "";
 	}
 

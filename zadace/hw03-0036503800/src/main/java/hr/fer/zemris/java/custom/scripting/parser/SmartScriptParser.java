@@ -162,6 +162,7 @@ public class SmartScriptParser {
 				if (number.contains(".")) {
 
 					try {
+						
 						ElementConstantDouble num = new ElementConstantDouble(Double.valueOf(number));
 						equals.addElement(num);
 						index++;
@@ -197,16 +198,27 @@ public class SmartScriptParser {
 
 						index++; // pomak na taj znak
 						token = (Token) tokens.get(index);
+						
+						String tokenValue = String.valueOf(token.getValue());
+						
+						// mogu se jedino eskejpati navodnici ii backslash u stringu taga
+						if(tokenValue.equals("\\") || tokenValue.equals("\"")) {
+							
+							sb.append(tokenValue);
+							sb.append(" ");
+							index++; // pomak na tag poslije eskejpanog znaka
+							
+						}else
+							throw new SmartScriptParserException("Neispravan znak eskejpan u stringu taga.");
+					
+					}else if (token.getType() == TokenType.WORD || token.getType() == TokenType.NUMBER) {
+						// broj ili riječ, tretira se isto unutar navodnika
 						sb.append(String.valueOf(token.getValue()));
 						sb.append(" ");
-						index++; // pomak na tag poslije eskejpanog znaka
-					}
-
-					// broj ili riječ, tretira se isto unutar navodnika
-					if (token.getType() == TokenType.WORD || token.getType() == TokenType.NUMBER) {
-
+						index++;
+						
+					}else if(token.getType() == TokenType.SPACES) { // ako je neka vrsta razmaka u navodnicima
 						sb.append(String.valueOf(token.getValue()));
-						sb.append(" ");
 						index++;
 					}
 
@@ -214,6 +226,7 @@ public class SmartScriptParser {
 				}
 
 				index++; // token poslije navodnika
+				sb.replace(sb.length() - 1, sb.length(), "");
 				ElementString string = new ElementString(sb.toString());
 				equals.addElement(string);
 
@@ -222,13 +235,12 @@ public class SmartScriptParser {
 				index++; // pomak na tag neposredno nakon
 				token = (Token) tokens.get(index);
 
-				boolean ok = checkVarable(token); // ime funkcije ok?
-
-				if (ok) {
+				if (checkVarable(token)) {
 
 					ElementFunction function = new ElementFunction(String.valueOf(token.getValue()));
 					equals.addElement(function);
 					index++;
+					
 				} else
 					throw new SmartScriptParserException("Neispravno ime funkcije.");
 
@@ -237,7 +249,9 @@ public class SmartScriptParser {
 				ElementOperator operator = new ElementOperator(String.valueOf(token.getValue()));
 				equals.addElement(operator);
 				index++;
-			}
+				
+			}else 
+				throw new SmartScriptParserException("Greška prilikom parsiranja dokumenta."); 
 
 			token = (Token) tokens.get(index);
 		}

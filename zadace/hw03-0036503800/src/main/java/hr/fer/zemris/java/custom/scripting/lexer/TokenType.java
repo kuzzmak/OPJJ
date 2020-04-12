@@ -27,5 +27,7 @@ public enum TokenType {
 	// znak za početak taga {$
 	TAG_START,
 	// znak za kraj taga $}
-	TAG_END
+	TAG_END,
+	// praznine
+	SPACES
 }
