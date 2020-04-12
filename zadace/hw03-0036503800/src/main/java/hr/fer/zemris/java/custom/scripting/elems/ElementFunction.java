@@ -40,7 +40,7 @@ public class ElementFunction extends Element {
 		if (name == null) {
 			if (other.name != null)
 				return false;
-		} else if (!name.toLowerCase().equals(other.name.toLowerCase()))
+		} else if (!name.strip().toLowerCase().equals(other.name.strip().toLowerCase()))
 			return false;
 		return true;
 	}

@@ -39,7 +39,7 @@ public class ElementString extends Element {
 		if (value == null) {
 			if (other.value != null)
 				return false;
-		} else if (!value.equals(other.value))
+		} else if (!value.strip().equals(other.value.strip()))
 			return false;
 		return true;
 	}

@@ -41,7 +41,7 @@ public class ElementVariable extends Element {
 		if (name == null) {
 			if (other.name != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!name.strip().equals(other.name.strip()))
 			return false;
 		return true;
 	}

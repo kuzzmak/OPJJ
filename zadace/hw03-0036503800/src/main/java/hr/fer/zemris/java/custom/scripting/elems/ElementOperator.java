@@ -39,7 +39,7 @@ public class ElementOperator extends Element {
 		if (symbol == null) {
 			if (other.symbol != null)
 				return false;
-		} else if (!symbol.equals(other.symbol))
+		} else if (!symbol.strip().equals(other.symbol.strip()))
 			return false;
 		return true;
 	}

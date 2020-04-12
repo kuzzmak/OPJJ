@@ -72,6 +72,7 @@ public class EchoNode extends Node {
 		
 		for(Element e: elements) sb.append(e.asText()).append(" ");
 		
+		sb.replace(sb.length() - 1, sb.length(), "");
 		sb.append(" $}");
 		
 		return sb.toString();
@@ -100,8 +101,8 @@ public class EchoNode extends Node {
 				return false;
 		} else if (!col.equals(other.col))
 			return false;
-		if (!Arrays.equals(elements, other.elements))
-			return false;
+//		if (!Arrays.equals(elements, other.elements))
+//			return false;
 		return true;
 	}
 }

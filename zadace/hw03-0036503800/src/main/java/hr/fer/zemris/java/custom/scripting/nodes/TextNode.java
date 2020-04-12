@@ -33,7 +33,7 @@ public class TextNode extends Node {
 		if (text == null) {
 			if (other.text != null)
 				return false;
-		} else if (!text.equals(other.text))
+		} else if (!text.strip().equals(other.text.strip()))
 			return false;
 		return true;
 	}
