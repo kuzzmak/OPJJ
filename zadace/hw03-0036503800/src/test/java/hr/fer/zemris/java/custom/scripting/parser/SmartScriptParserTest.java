@@ -52,7 +52,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer1() {
 
-		String docBody = loader("src/test/resources/extra/primjer1.txt");
+		String docBody = loader("src/test/resources/primjer1.txt");
 
 		SmartScriptParser parser = new SmartScriptParser(docBody);
 
@@ -65,7 +65,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer2() {
 
-		String docBody = loader("src/test/resources/extra/primjer2.txt");
+		String docBody = loader("src/test/resources/primjer2.txt");
 
 		SmartScriptParser parser = new SmartScriptParser(docBody);
 
@@ -78,7 +78,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer3() {
 
-		String docBody = loader("src/test/resources/extra/primjer3.txt");
+		String docBody = loader("src/test/resources/primjer3.txt");
 
 		SmartScriptParser parser = new SmartScriptParser(docBody);
 
@@ -91,7 +91,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer4() {
 
-		String docBody = loader("src/test/resources/extra/primjer4.txt");
+		String docBody = loader("src/test/resources/primjer4.txt");
 
 		assertThrows(SmartScriptParserException.class, () -> new SmartScriptParser(docBody));
 	}
@@ -99,7 +99,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer5() {
 
-		String docBody = loader("src/test/resources/extra/primjer5.txt");
+		String docBody = loader("src/test/resources/primjer5.txt");
 
 		assertThrows(SmartScriptParserException.class, () -> new SmartScriptParser(docBody));
 	}
@@ -107,7 +107,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer6() {
 
-		String docBody = loader("src/test/resources/extra/primjer6.txt");
+		String docBody = loader("src/test/resources/primjer6.txt");
 
 		SmartScriptParser parser = new SmartScriptParser(docBody);
 
@@ -121,7 +121,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer7() {
 
-		String docBody = loader("src/test/resources/extra/primjer7.txt");
+		String docBody = loader("src/test/resources/primjer7.txt");
 
 		SmartScriptParser parser = new SmartScriptParser(docBody);
 
@@ -135,7 +135,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer8() {
 
-		String docBody = loader("src/test/resources/extra/primjer8.txt");
+		String docBody = loader("src/test/resources/primjer8.txt");
 
 		assertThrows(SmartScriptParserException.class, () -> new SmartScriptParser(docBody));
 	}
@@ -143,7 +143,7 @@ public class SmartScriptParserTest {
 	@Test
 	public void primjer9() {
 
-		String docBody = loader("src/test/resources/extra/primjer9.txt");
+		String docBody = loader("src/test/resources/primjer9.txt");
 
 		assertThrows(SmartScriptParserException.class, () -> new SmartScriptParser(docBody));
 	}
