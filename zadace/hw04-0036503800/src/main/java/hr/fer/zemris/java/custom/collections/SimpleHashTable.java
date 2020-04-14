@@ -104,15 +104,53 @@ public class SimpleHashTable<K, V> {
 		}
 	}
 	
+	/**
+	 * Metoda za dohvat vrijednosti pod ključem <code>key</code> ako taj
+	 * ključ postoji.
+	 * 
+	 * @param key ključ čija se vrjiednost traži
+	 * @return vrijednost pod traženim ključem ili <code>null</code> ako
+	 *         ključ ne postoji ili je predani ključ <code>null</code>
+	 */
 	public V get(Object key) {
+		
+		if(key == null) return null;
+		
+		int slot = Math.abs(key.hashCode()) % entries.length;
+		
+		TableEntry<K, V> entry = entries[slot];
+		
+		while(entry != null) {
+			
+			if(entry.getKey().equals(key)) return entry.getValue();
+			else entry = entry.next;
+		}
+		
 		return null;
 	}
 	
+	/**
+	 * Metoda za dohvat veličine tablice.
+	 * 
+	 * @return broj pohranjenih zapisa
+	 */
 	public int size() {
-		return 0;
+		return size;
 	}
 	
 	public boolean containsKey(Object key) {
+		
+		if(key == null) return false;
+		
+		int slot = Math.abs(key.hashCode()) % entries.length;
+		
+		TableEntry<K, V> entry = entries[slot];
+		
+		while(entry != null) {
+			if(entry.getKey().equals(key)) return true;
+			else entry = entry.next;
+		}
+		
 		return false;
 	}
 	
