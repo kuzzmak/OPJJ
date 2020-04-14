@@ -1,5 +1,15 @@
 package hr.fer.zemris.java.custom.collections;
 
+/**
+ * Razred koji predstavlja implementaciju rječnika u ulozi adaptera
+ * oko razreda kolekcije <code>ArrayIndexedCollection</code> gdje 
+ * je svaki element rječnika objekt tipa <code>Tuple<K, V></code>.
+ * 
+ * @author Antonio Kuzminski
+ *
+ * @param <K> ključ rječnika
+ * @param <V> vrijednost pod ključem <code>K</code>
+ */
 public class Dictionary<K, V> {
 
 	/**
