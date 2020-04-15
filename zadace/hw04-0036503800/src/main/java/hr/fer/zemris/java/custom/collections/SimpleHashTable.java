@@ -35,6 +35,37 @@ public class SimpleHashTable<K, V> {
 		}
 
 		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((key == null) ? 0 : key.hashCode());
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			TableEntry other = (TableEntry) obj;
+			if (key == null) {
+				if (other.key != null)
+					return false;
+			} else if (!key.equals(other.key))
+				return false;
+			if (value == null) {
+				if (other.value != null)
+					return false;
+			} else if (!value.equals(other.value))
+				return false;
+			return true;
+		}
+
+		@Override
 		public String toString() {
 			return key + "=" + value;
 		}
@@ -42,6 +73,7 @@ public class SimpleHashTable<K, V> {
 	
 	private TableEntry<K, V>[] entries;
 	private int size = 0;
+	private static final double threshold = 0.75;
 	
 	/**
 	 * Inicijalni konstruktor koji postavlja veličinu tablice na 16 slotova.
@@ -50,7 +82,7 @@ public class SimpleHashTable<K, V> {
 	@SuppressWarnings("unchecked")
 	public SimpleHashTable() {
 		
-		entries = (TableEntry<K, V>[]) new TableEntry[2];
+		entries = (TableEntry<K, V>[]) new TableEntry[16];
 	}
 	
 	/**
@@ -85,6 +117,11 @@ public class SimpleHashTable<K, V> {
 		
 		if(key == null)
 			throw new NullPointerException("Ključ ne može biti null.");
+		
+		if(size >= threshold * entries.length) {
+			
+			resize();
+		}
 		
 		int slot = getSlot(key);
 		
@@ -252,6 +289,37 @@ public class SimpleHashTable<K, V> {
 	}
 	
 	/**
+	 * Metoda za povećanje veličine tablice ako je zauzetost
+	 * prešla {@code threshold * trenutni limit}.
+	 * 
+	 */
+	@SuppressWarnings("unchecked")
+	public void resize() {
+		
+		int newSize = 2 * entries.length;
+		
+		TableEntry<K, V>[] oldEntries = entries;
+		
+		entries = (TableEntry<K, V>[]) new TableEntry[newSize];
+		size = 0;
+		
+		for(int i = 0; i < oldEntries.length; i++) {
+			
+			if(oldEntries[i] != null) {
+				
+				TableEntry<K, V> entry = oldEntries[i];
+				
+				while(entry != null) {
+					
+					entry.next = null;
+					put(entry.getKey(), entry.getValue());
+					entry = entry.next;
+				}
+			}
+		}
+	}
+	
+	/**
 	 * Funkcija za izračun mjesta u tablici u koje se novi par
 	 * {@code (K, V)} mora ubaciti.
 	 * 
@@ -262,6 +330,18 @@ public class SimpleHashTable<K, V> {
 		return Math.abs(key.hashCode()) % entries.length;
 	}
 
+	/**
+	 * Metoda čija je zadaća izbrisati sve uređene parove tablice. 
+	 * Ne mijenja kapacitet tablice.
+	 * 
+	 */
+	public void clear() {
+		
+		for(int i = 0; i < entries.length; i++) {
+			entries[i] = null;
+		}
+	}
+	
 	@Override
 	public String toString() {
 		
