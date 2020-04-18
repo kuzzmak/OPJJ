@@ -3,7 +3,15 @@ package hr.fer.zemris.java.custom.collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
+/**
+ * Jednostavna implementacija mape gdje se elementi smještaju
+ * u tablicu raspršenog adresiranja. 
+ * 
+ * @author Antonio Kuzminski
+ *
+ * @param <K> tip ključa
+ * @param <V> tip vrijednosti
+ */
 public class SimpleHashTable<K, V> implements Iterable<SimpleHashTable.TableEntry<K, V>> {
 
 	/**
@@ -368,6 +376,7 @@ public class SimpleHashTable<K, V> implements Iterable<SimpleHashTable.TableEntr
 			entries[i] = null;
 			modificationCount++;
 		}
+		size = 0;
 	}
 
 	@Override
