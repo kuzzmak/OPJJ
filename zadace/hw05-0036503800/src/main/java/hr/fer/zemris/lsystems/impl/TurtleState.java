@@ -52,4 +52,36 @@ public class TurtleState {
 	public TurtleState copy() {
 		return new TurtleState(position, direction, color, step);
 	}
+
+	public Vector2D getPosition() {
+		return position;
+	}
+
+	public Vector2D getDirection() {
+		return direction;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public double getStep() {
+		return step;
+	}
+
+	public void setPosition(Vector2D position) {
+		this.position = position;
+	}
+
+	public void setDirection(Vector2D direction) {
+		this.direction = direction;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
+
+	public void setStep(double step) {
+		this.step = step;
+	}
 }
