@@ -26,7 +26,7 @@ public class Context {
 	 * 
 	 * @return trenutno stanje kornjače.
 	 */
-	TurtleState getCurrentState() {
+	public TurtleState getCurrentState() {
 		return contextStack.peek();
 	}
 	
@@ -36,7 +36,7 @@ public class Context {
 	 * 
 	 * @param state stanje koje se stavlja na stog
 	 */
-	void pushState(TurtleState state) {
+	public void pushState(TurtleState state) {
 		contextStack.push(state);
 	}
 	
@@ -44,7 +44,7 @@ public class Context {
 	 * Micanje zadnjeg stanja na stogu.
 	 * 
 	 */
-	void popState() {
+	public void popState() {
 		contextStack.pop();
 	}
 }
