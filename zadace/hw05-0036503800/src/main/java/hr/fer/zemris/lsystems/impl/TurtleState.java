@@ -84,4 +84,10 @@ public class TurtleState {
 	public void setStep(double step) {
 		this.step = step;
 	}
+
+	@Override
+	public String toString() {
+		return "TurtleState [position=" + position + ", direction=" + direction + ", color=" + color + ", step=" + step
+				+ "]";
+	}
 }
