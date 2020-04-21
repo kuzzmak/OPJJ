@@ -30,4 +30,8 @@ public class ColorCommand implements Command{
 		ctx.getCurrentState().setColor(color);
 	}
 
+	@Override
+	public String toString() {
+		return "ColorCommand [color=" + color + "]";
+	}
 }

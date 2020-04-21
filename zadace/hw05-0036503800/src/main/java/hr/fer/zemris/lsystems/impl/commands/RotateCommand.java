@@ -31,4 +31,9 @@ public class RotateCommand implements Command {
 		
 		ctx.getCurrentState().setDirection(currentDirection.rotated(angle));
 	}
+
+	@Override
+	public String toString() {
+		return "RotateCommand [angle=" + angle + "]";
+	}
 }
