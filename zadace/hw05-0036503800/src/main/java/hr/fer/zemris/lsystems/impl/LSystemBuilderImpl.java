@@ -35,22 +35,55 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 
 			context = new Context();
 			// početno stanje
-			context.pushState(new TurtleState());
+			context.pushState(new TurtleState(
+					origin, 
+					new Vector2D(Math.cos(Math.toRadians(angle)), Math.sin(Math.toRadians(angle))), 
+					Color.BLACK, 
+					unitLength * Math.pow(unitLengthDegreeScaler, arg0)));
 
+			String generated = generate(arg0);
+			
+			char[] characters = generated.toCharArray();
+			
+			for(char c: characters) {
+				
+				Command command = actions.get(c);
+				
+//				System.out.println(command);
+				command.execute(context, arg1);
+			}
+//			System.out.println();
 		}
 
 		@Override
 		public String generate(int arg0) {
 			
 			if(arg0 == 0) return axiom;
+			if(arg0 == 1) return productions.get(axiom.charAt(0));
 			
+			StringBuilder sb = new StringBuilder();
+			// dodavanje produkcije aksioma
+			sb.append(productions.get(axiom.charAt(0)));
 			
+			StringBuilder nextProduction = new StringBuilder();
 			
+			for(int i = 1; i < arg0; i++) {
+				
+				for(int j = 0; j < sb.length(); j++) {
+					
+					// ako smo naišli na neki znak koji ide u produkciju
+					if(productions.get(sb.charAt(j)) != null) {
+						
+						nextProduction.append(productions.get(sb.charAt(j)));
+						
+					}else nextProduction.append(sb.charAt(j)); // neki operator/akcija
+				}
+				
+				sb = nextProduction;
+			}
 			
-			
-			return null;
+			return sb.toString();
 		}
-
 	}
 
 	@Override
