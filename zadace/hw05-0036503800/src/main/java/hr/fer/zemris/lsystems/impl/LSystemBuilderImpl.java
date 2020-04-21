@@ -12,15 +12,22 @@ import hr.fer.zemris.lsystems.impl.commands.PopCommand;
 import hr.fer.zemris.lsystems.impl.commands.RotateCommand;
 import hr.fer.zemris.lsystems.impl.commands.ScaleCommand;
 import hr.fer.zemris.lsystems.impl.commands.SkipCommand;
+import hr.fer.zemris.math.Vector2D;
 
 public class LSystemBuilderImpl implements LSystemBuilder {
 
 	private Dictionary<Character, Command> actions = new Dictionary<>();
-	private Dictionary<String, Command> productions = new Dictionary<>();
+	private Dictionary<Character, String> productions = new Dictionary<>();
 	
-	Context context;
+	private Context context;
 	private LSystem system;
 
+	private double unitLength = 0.1;
+	private double unitLengthDegreeScaler = 1;
+	private Vector2D origin = new Vector2D(0, 0);
+	private double angle = 0;
+	private String axiom = "";
+	
 	class LSystemImpl implements LSystem {
 
 		@Override
@@ -34,7 +41,13 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 
 		@Override
 		public String generate(int arg0) {
-			// TODO Auto-generated method stub
+			
+			if(arg0 == 0) return axiom;
+			
+			
+			
+			
+			
 			return null;
 		}
 
@@ -61,9 +74,12 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 
 				String parameter = splitted[0];
 
+				// dodavanje neke naredbe
 				if (parameter.equals("command")) {
 
-					registerCommand(splitted[0].charAt(0), splitted[1]);
+					String[] args = splitted[1].split("\\s+", 2);
+ 					
+					registerCommand(args[0].charAt(0), args[1]);
 					continue;
 				}
 
@@ -96,13 +112,39 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 					setUnitLength(length);
 					continue;
 				}
+				
+				// postavljanje faktora skaliranja
+				if(parameter.equals("unitLengthDegreeScalar")) {
+					
+					if(splitted[1].contains("/")) {
+						
+						String[] args = splitted[1].split("/");
+						setUnitLengthDegreeScaler(Double.parseDouble(args[0]) / Double.parseDouble(args[1]));
+						continue;
+					}else {
+						
+						setUnitLengthDegreeScaler(Double.parseDouble(splitted[1]));
+						continue;
+					}
+				}
+				
+				// postavljanje početnog znaka
+				if(parameter.equals("axiom")) {
+					
+					setAxiom(splitted[1]);
+					continue;
+				}
 
-
+				// dodavanje produkcijskih pravila
+				if(parameter.equals("production")) {
+					
+					String[] args = splitted[1].split("\\s+");
+ 					
+					registerProduction(args[0].charAt(0), args[1]);
+				}
 			}
-			System.out.println(s);
 		}
-
-		return null;
+		return this;
 	}
 
 	@Override
@@ -156,42 +198,43 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 			actions.put(arg0, new ColorCommand(color));
 			return this;
 		}
-		return null;
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder registerProduction(char arg0, String arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		productions.put(arg0, arg1);
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder setAngle(double arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		angle = arg0;
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder setAxiom(String arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		axiom = arg0;
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder setOrigin(double arg0, double arg1) {
-		// TODO Auto-generated method stub
-		return null;
+		origin = new Vector2D(arg0, arg1);
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder setUnitLength(double arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		unitLength = arg0;
+		return this;
 	}
 
 	@Override
 	public LSystemBuilder setUnitLengthDegreeScaler(double arg0) {
-		// TODO Auto-generated method stub
-		return null;
+		unitLengthDegreeScaler = arg0;
+		return this;
 	}
 }
