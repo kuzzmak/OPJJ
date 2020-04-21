@@ -123,4 +123,9 @@ public class Vector2D {
 	public double getY() {
 		return y;
 	}
+
+	@Override
+	public String toString() {
+		return "x=" + x + ", y=" + y + "]";
+	}
 }
