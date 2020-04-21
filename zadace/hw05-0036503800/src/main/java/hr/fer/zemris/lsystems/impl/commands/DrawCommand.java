@@ -28,10 +28,13 @@ public class DrawCommand implements Command {
 	public void execute(Context ctx, Painter painter) {
 		
 		Vector2D oldPosition = ctx.getCurrentState().getPosition();
-		Vector2D direction = ctx.getCurrentState().getPosition();
+		Vector2D direction = ctx.getCurrentState().getDirection();
 
 		Vector2D newPosition = new Vector2D(oldPosition.getX() + step * direction.getX(),
 				oldPosition.getY() + step * direction.getY());
+		
+		System.out.println(oldPosition);
+		System.out.println(newPosition);
 		
 		painter.drawLine(oldPosition.getX(), 
 				oldPosition.getY(), 
@@ -41,4 +44,8 @@ public class DrawCommand implements Command {
 				1f);
 	}
 
+	@Override
+	public String toString() {
+		return "DrawCommand [step=" + step + "]";
+	}
 }
