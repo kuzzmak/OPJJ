@@ -80,6 +80,7 @@ public class LSystemBuilderImpl implements LSystemBuilder {
 				}
 				
 				sb = nextProduction;
+				nextProduction = new StringBuilder();
 			}
 			
 			return sb.toString();

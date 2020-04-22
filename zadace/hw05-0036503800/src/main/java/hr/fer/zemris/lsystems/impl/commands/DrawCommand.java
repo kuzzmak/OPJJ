@@ -3,6 +3,7 @@ package hr.fer.zemris.lsystems.impl.commands;
 import hr.fer.zemris.lsystems.Painter;
 import hr.fer.zemris.lsystems.impl.Command;
 import hr.fer.zemris.lsystems.impl.Context;
+import hr.fer.zemris.lsystems.impl.TurtleState;
 import hr.fer.zemris.math.Vector2D;
 
 /**
@@ -13,7 +14,7 @@ import hr.fer.zemris.math.Vector2D;
  */
 public class DrawCommand implements Command {
 
-	private double step;
+	private double effectiveStep;
 	
 	/**
 	 * Inicijalni konstruktor.
@@ -21,31 +22,37 @@ public class DrawCommand implements Command {
 	 * @param step veličina koraka kornjače
 	 */
 	public DrawCommand(double step) {
-		this.step = step;
+		effectiveStep = step;
 	}
 	
 	@Override
 	public void execute(Context ctx, Painter painter) {
 		
-		Vector2D oldPosition = ctx.getCurrentState().getPosition();
-		Vector2D direction = ctx.getCurrentState().getDirection();
-
-		Vector2D newPosition = new Vector2D(oldPosition.getX() + step * direction.getX(),
-				oldPosition.getY() + step * direction.getY());
+		TurtleState state = ctx.getCurrentState();
 		
-		System.out.println(oldPosition);
-		System.out.println(newPosition);
+		Vector2D oldPosition = state.getPosition();
+		Vector2D direction = state.getDirection();
+		double step = state.getStep();
+		
+		double x = oldPosition.getX() + 
+				+ direction.getX() * step * effectiveStep;
+		double y = oldPosition.getY() + 
+				 direction.getY() * step * effectiveStep;
+		
+		Vector2D newPosition = new Vector2D(x, y);
+		
+		state.setPosition(newPosition);
 		
 		painter.drawLine(oldPosition.getX(), 
 				oldPosition.getY(), 
 				newPosition.getX(), 
 				newPosition.getY(), 
-				ctx.getCurrentState().getColor(), 
+				state.getColor(), 
 				1f);
 	}
 
 	@Override
 	public String toString() {
-		return "DrawCommand [step=" + step + "]";
+		return "DrawCommand [effectiveStep=" + effectiveStep + "]";
 	}
 }
