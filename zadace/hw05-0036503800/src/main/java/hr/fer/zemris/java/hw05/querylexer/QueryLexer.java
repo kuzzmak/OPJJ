@@ -44,10 +44,6 @@ public class QueryLexer {
 		
 		// odvajanje riječi query od ostatka upita
 		data = query.split("\\s+", 2)[1].toCharArray();
-		
-		List<Token> tokens = tokenize();
-		tokens.forEach(System.out::println);
-
 	}
 
 	/**
