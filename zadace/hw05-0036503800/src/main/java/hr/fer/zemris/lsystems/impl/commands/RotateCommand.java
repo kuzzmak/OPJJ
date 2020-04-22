@@ -29,7 +29,7 @@ public class RotateCommand implements Command {
 		
 		Vector2D currentDirection = ctx.getCurrentState().getDirection();
 		
-		ctx.getCurrentState().setDirection(currentDirection.rotated(angle));
+		ctx.getCurrentState().setDirection(currentDirection.rotated(Math.toRadians(angle)));
 	}
 
 	@Override
