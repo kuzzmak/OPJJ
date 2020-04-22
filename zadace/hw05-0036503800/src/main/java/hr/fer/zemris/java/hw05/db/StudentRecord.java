@@ -29,6 +29,22 @@ public class StudentRecord {
 		this.finalGrade = finalGrade;
 	}
 	
+	public String getJmbag() {
+		return jmbag;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public int getFinalGrade() {
+		return finalGrade;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
