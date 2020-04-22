@@ -15,6 +15,11 @@ public class ScaleCommand implements Command {
 
 	private double scale;
 	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 * @param scale faktor kojim se skalira trenutni korak
+	 */
 	public ScaleCommand(double scale) {
 		this.scale = scale;
 	}
