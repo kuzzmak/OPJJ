@@ -35,7 +35,7 @@ public class DrawCommand implements Command {
 		double step = state.getStep();
 		
 		double x = oldPosition.getX() + 
-				+ direction.getX() * step * effectiveStep;
+				 direction.getX() * step * effectiveStep;
 		double y = oldPosition.getY() + 
 				 direction.getY() * step * effectiveStep;
 		
