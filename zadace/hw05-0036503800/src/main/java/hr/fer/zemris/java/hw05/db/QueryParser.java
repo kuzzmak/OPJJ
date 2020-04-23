@@ -7,15 +7,25 @@ import hr.fer.zemris.java.hw05.querylexer.QueryLexer;
 import hr.fer.zemris.java.hw05.querylexer.Token;
 import hr.fer.zemris.java.hw05.querylexer.TokenType;
 
+/**
+ * Razred za parsiranje tokena u upite.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class QueryParser {
 
 	List<Token> tokens;
 	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 * @param query string upita koji je potrebno parsirati
+	 */
 	public QueryParser(String query) {
 		
 		QueryLexer ql = new QueryLexer(query);
 		tokens = ql.tokenize();
-		List<ConditionalExpression> queries = getQuerry();
 	}
 	
 	/**
