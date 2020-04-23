@@ -69,4 +69,10 @@ public class StudentRecord {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "StudentRecord [jmbag=" + jmbag + ", firstName=" + firstName + ", lastName=" + lastName + ", finalGrade="
+				+ finalGrade + "]";
+	}
 }
