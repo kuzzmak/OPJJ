@@ -30,6 +30,7 @@ public class QueryLexer {
 	/**
 	 * Inicijalni konstruktor.
 	 * 
+	 * @throws QueryLexerException ako je predana nepoznata naredba za upit
 	 * @param query tekst upita
 	 */
 	public QueryLexer(String query) {
@@ -41,9 +42,15 @@ public class QueryLexer {
 		logicalOperators = new ArrayList<>(Arrays.asList("and", "or", "not"));
 
 		spaces = new ArrayList<>(Arrays.asList(' ', '\t', '\n', '\r'));
-		
+
 		// odvajanje riječi query od ostatka upita
-		data = query.split("\\s+", 2)[1].toCharArray();
+		String[] splitted = query.split("\\s+", 2);
+		
+		if(!splitted[0].equals("query"))
+			throw new QueryLexerException("Nepoznata naredba: " + splitted[0]);
+		
+		// ostatatk upita nakon riječi query
+		data = splitted[1].toCharArray();
 	}
 
 	/**
@@ -68,6 +75,7 @@ public class QueryLexer {
 	/**
 	 * Metoda za dohvat sljedećeg tokena.
 	 * 
+	 * @throws QueryLexerException ako je došlo do greške prilikom parsiranja teksta
 	 * @return sljedeći token 
 	 */
 	public Token nextToken() {
@@ -95,8 +103,12 @@ public class QueryLexer {
 					return token;
 				}
 
-				token = new Token(TokenType.ATTRIBUTE_NAME, text);
-				return token;
+				if(attributeNames.contains(text)) {
+					token = new Token(TokenType.ATTRIBUTE_NAME, text);
+					return token;
+				}
+				
+				throw new QueryLexerException("Neispravno ime atributa ili operatora: " + text);
 			}
 
 			// trenutni simbol je operator ili prvi dio operatora
@@ -125,7 +137,10 @@ public class QueryLexer {
 				token = new Token(TokenType.STRING_LITERAL, text);
 				return token;
 			}
+			
+			throw new QueryLexerException("Neispravni simbol: " + data[currentIndex]);
 		}
+		
 		return null;
 	}
 
