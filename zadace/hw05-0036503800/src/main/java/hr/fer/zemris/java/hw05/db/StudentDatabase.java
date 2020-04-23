@@ -82,9 +82,24 @@ public class StudentDatabase {
 				finalGrade = Integer.parseInt(splitted[4]);
 			}
 			
+			StudentRecord record = new StudentRecord(jmbag, firstName, lastName, finalGrade);
+			
+			if(records.contains(record)) {
+				System.err.println("Baza već sadrži jmbag: " + record.getJmbag());
+				System.err.println("Terminiranje programa.");
+				System.exit(-1);
+			}
+			
+			if(record.getFinalGrade() < 1 || record.getFinalGrade() > 5) {
+				System.err.println("Finalna ocjena ne može biti manja od 1 i veća od 5.");
+				System.err.println("Terminiranje programa.");
+				System.exit(-1);
+			}
+			
 			indexes.put(jmbag, i);
 			i++;
-			records.add(new StudentRecord(jmbag, firstName, lastName, finalGrade));
+			
+			records.add(record);
 		}
 	}
 }
