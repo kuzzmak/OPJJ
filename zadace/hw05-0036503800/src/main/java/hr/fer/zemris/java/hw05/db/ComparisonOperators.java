@@ -25,6 +25,9 @@ public class ComparisonOperators {
 		@Override
 		public boolean satisfied(String value1, String value2) {
 
+			// ako je jedno jednako drugome ili je uzorak podriječ prve riječi
+			if(value1.contains(value2)) return true;
+			
 			if (value2.length() - value1.length() >= 2)
 				return false;
 
