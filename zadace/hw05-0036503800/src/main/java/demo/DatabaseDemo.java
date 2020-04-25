@@ -17,6 +17,7 @@ public class DatabaseDemo {
 //		System.out.println(s1.compareTo(s2));
 		
 		IComparisonOperator oper = ComparisonOperators.LIKE;
+		oper.satisfied("Blažića", "Blažić");
 		System.out.println(oper.satisfied("Blažić", "B*ć"));
 		System.out.println(oper.satisfied("AAAA", "A*A"));
 		

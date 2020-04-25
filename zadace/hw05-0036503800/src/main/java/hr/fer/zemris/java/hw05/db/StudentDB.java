@@ -45,7 +45,7 @@ public class StudentDB {
 	 * @throws QueryParserException ako je došlo do greške prilikom stvaranja parsera
 	 * @param query upit koji je potrebno izvršiti
 	 */
-	private void query(String query) {
+	public void query(String query) {
 
 		QueryParser qp;
 		
@@ -76,33 +76,31 @@ public class StudentDB {
 		}
 	}
 
+	/**
+	 * Metoda iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args argumenti glavnog programas
+	 */
 	public static void main(String[] args) {
 
 		StudentDB db = new StudentDB();
 		
-		String query1 = "query jmbag=\"0000000003\"";
-//		String query2 = "query  lastName =  \"Blažić\"";
-		String query3 = "query firstName>\"A\" and lastName LIKE \"B*\"";
-		String query4 = "query firstName>\"A\" and firstName<\"C\" and "
-				+ "lastName LIKE \"B*ć\" and jmbag>\"0000000002\"";
-		String query5 = "query firstName=\"Ivan\" and lastName LIKE \"R*\"";
-//
-		String query6 = "query and lastName \"A\"";
-		db.query(query3);
+		System.out.print("> ");
 		
-//		try (Scanner sc = new Scanner(System.in)) {
-//
-//			while (sc.hasNextLine()) {
-//
-//				String line = sc.nextLine().strip();
-//
-//				if (line.equals("exit")) {
-//					System.out.println("Goodbye!");
-//					System.exit(0);
-//				}
-//
-//				db.query(line);
-//			}
-//		}
+		try (Scanner sc = new Scanner(System.in)) {
+
+			while (sc.hasNextLine()) {
+
+				String line = sc.nextLine().strip();
+
+				if (line.equals("exit")) {
+					System.out.println("Goodbye!");
+					System.exit(0);
+				}
+
+				db.query(line);
+				System.out.print("\n> ");
+			}
+		}
 	}
 }
