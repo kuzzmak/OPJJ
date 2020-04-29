@@ -2,9 +2,7 @@ package hr.fer.zemris.java.hw06.crypto;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +35,13 @@ public class Crypto {
 	 *             generiranom hashu
 	 * @throws NoSuchAlgorithmException ako algoritam za stvaranje hasha ne postoji
 	 */
-	private static void checksha(Path file, String hash) throws NoSuchAlgorithmException {
+	private static void checksha(Path file, String hash){
 
-		MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+		MessageDigest messageDigest = null;
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e1) {
+		}
 
 		try (InputStream is = Files.newInputStream(file)) {
 
@@ -48,14 +50,13 @@ public class Crypto {
 			while (true) {
 				int r = is.read(buff);
 
-				if (r < 1)
-					break;
-				else
-					messageDigest.update(buff);
+				if (r < 1) break;
+				else messageDigest.update(buff);
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Datoteka ne postoji.");
+			System.exit(-1);
 		}
 
 		byte[] digest = messageDigest.digest();
@@ -71,6 +72,14 @@ public class Crypto {
 
 	}
 
+	/**
+	 * Metoda za stvaranje objekta preko kojeg se krptira ili dekriptira.
+	 * 
+	 * @param keyText ključ kojim se kriptira ili dekriptira
+	 * @param ivText početni vektor
+	 * @param encrypt kriptira li se ili dekriptira
+	 * @return objekt tipa {@code Cipher}
+	 */
 	private static Cipher getCipher(String keyText, String ivText, boolean encrypt) {
 
 		SecretKeySpec keySpec = new SecretKeySpec(Util.hextobyte(keyText), "AES");
@@ -95,6 +104,15 @@ public class Crypto {
 		return null;
 	}
 
+	/**
+	 * Metoda za kriptiranje ili dekriptiranje predane datoteke.
+	 * 
+	 * @param inputFile datoteka koja se kriptira ili dekriptira
+	 * @param outputFile datoteka koja nastaje kao rezultat kriptiranja ili dekriptiranja
+	 * @param keyText ključ kojim se kriptira ili dekriptira
+	 * @param ivText početni vektor 
+	 * @param encrypt kriptira li se ili dekriptira
+	 */
 	private static void encryptDecrypt(String inputFile, String outputFile, String keyText, String ivText, boolean encrypt) {
 
 		Cipher cipher = getCipher(keyText, ivText, encrypt);
@@ -129,15 +147,13 @@ public class Crypto {
 		}
 	}
 
-	public static void main(String[] args) throws IOException, InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidAlgorithmParameterException {
-
-		// encrypt src/test/resources/hw06.pdf src/test/resources/hw06.crypted.pdf
-		// decrypt src/test/resources/hw06.crypted.pdf src/test/resources/hw06orig.pdf
-		// 2e7b3a91235ad72cb7e7f6a721f077faacfeafdea8f3785627a5245bea112598
-		// checksha src/test/resources/hw06part2.bin
-		// 603ce08075a10ea3f781301bfafc01e3e9c9487ba33790d4afa7fd15dffd2b94
-		// decrypt src/test/resources/hw06part2.bin src/test/resources/hw06part2.pdf
+	/**
+	 * Funkcija iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args predani argumenti programu
+	 * @throws IOException ukoliko ne postoji datoteka koja se kriptira ili dekriptira
+	 */
+	public static void main(String[] args) throws IOException{
 
 		String function = args[0].toLowerCase();
 
@@ -145,24 +161,18 @@ public class Crypto {
 
 			String path = args[1];
 
-			try {
+			String hash = "";
 
-				String hash = "";
+			System.out.println("Please provide expected sha-256 digest for: " + path + ":");
 
-				System.out.println("Please provide expected sha-256 digest for: " + path + ":");
+			try (Scanner sc = new Scanner(System.in)) {
 
-				try (Scanner sc = new Scanner(System.in)) {
-
-					hash = sc.nextLine();
-				}
-
-				checksha(Paths.get(path), hash);
-
-			} catch (NoSuchAlgorithmException e) {
-				System.err.print("Datoteka ne postoji.");
+				hash = sc.nextLine();
 			}
-			
-		} else if (function.equals("encrypt")) {
+
+			checksha(Paths.get(path), hash);
+
+		} else if (function.equals("encrypt") || function.equals("decrypt")) {
 
 			String fileName = args[1];
 			String encryptedFileName = args[2];
@@ -170,41 +180,17 @@ public class Crypto {
 			String keyText;
 			String ivText;
 
-			// e52217e3ee213ef1ffdee3a192e2ac7e
-			// 000102030405060708090a0b0c0d0e0f
-
 			try (Scanner sc = new Scanner(System.in)) {
 
-				System.out.println("Please provide password as hex-encoded " + "text (16 bytes, i.e. 32 hex-digits):");
+				System.out.println("Please provide password as hex-encoded text (16 bytes, i.e. 32 hex-digits):");
 				keyText = sc.nextLine();
-				System.out.println("Please provide initalization vector " + "as hex-encoded text (32 hex-digits):");
+				System.out.println("Please provide initalization vector as hex-encoded text (32 hex-digits):");
 				ivText = sc.nextLine();
-
-				encryptDecrypt(fileName, encryptedFileName, keyText, ivText, true);
 			}
-
-		} else if (function.equals("decrypt")) {
 			
-			String fileName = args[1];
-			String decryptedFileName = args[2];
+			encryptDecrypt(fileName, encryptedFileName, keyText, ivText, true);
 
-			String keyText;
-			String ivText;
-
-			// e52217e3ee213ef1ffdee3a192e2ac7e
-			// 000102030405060708090a0b0c0d0e0f
-
-			try (Scanner sc = new Scanner(System.in)) {
-
-				System.out.println("Please provide password as hex-encoded " + "text (16 bytes, i.e. 32 hex-digits):");
-				keyText = sc.nextLine();
-				System.out.println("Please provide initalization vector " + "as hex-encoded text (32 hex-digits):");
-				ivText = sc.nextLine();
-
-				encryptDecrypt(fileName, decryptedFileName, keyText, ivText, false);
-			}
-
-		} else
+		} else 
 			throw new IllegalArgumentException("Nepostojeća naredba: " + args[0]);
 	}
 }
