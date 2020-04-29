@@ -26,7 +26,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Jednostavna implementacija kriptiranja i dekriptiranja datoteka.
- * Usto, moguće je provjeriti hash neke datoteke uz poznati hash.
+ * Usto, moguće je provjeriti sažetak neke datoteke uz poznati sha256 sažetak.
  * 
  * @author Antonio Kuzminski
  *
@@ -34,10 +34,10 @@ import javax.crypto.spec.SecretKeySpec;
 public class Crypto {
 
 	/**
-	 * Metoda za provjeru hasha koji se dobije primjenom sha256 na predanoj
+	 * Metoda za provjeru sažetka koji se dobije primjenom sha256 na predanoj
 	 * datoteci.
 	 * 
-	 * @param file datoteka čiji se hash provjerava
+	 * @param file datoteka čiji se sažetak provjerava
 	 * @param hash heksadekatska reprezentacija hasha koji treba biti jednak
 	 *             generiranom hashu
 	 * @throws NoSuchAlgorithmException ako algoritam za stvaranje hasha ne postoji
