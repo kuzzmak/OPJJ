@@ -24,6 +24,13 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * Jednostavna implementacija kriptiranja i dekriptiranja datoteka.
+ * Usto, moguće je provjeriti hash neke datoteke uz poznati hash.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class Crypto {
 
 	/**
@@ -156,13 +163,15 @@ public class Crypto {
 	 */
 	public static void main(String[] args) throws IOException{
 
+		// ime funkcije koja se treba izvršiti
 		String function = args[0].toLowerCase();
 
 		if (function.equals("checksha")) {
 			
 			if(args.length != 2)
 				throw new IllegalArgumentException("Neispravan broj argumenata.");
-
+			
+			// staza datoteke
 			String path = args[1];
 
 			String hash = "";
@@ -181,8 +190,10 @@ public class Crypto {
 			if(args.length != 3)
 				throw new IllegalArgumentException("Neispravan broj argumenata.");
 
-			String fileName = args[1];
-			String encryptedFileName = args[2];
+			// datoteka koja se kriptira ili dekriptira
+			String inputFile = args[1];
+			// datoteka u koju je spremljen rezultat
+			String outputFile = args[2];
 
 			String keyText;
 			String ivText;
@@ -195,7 +206,7 @@ public class Crypto {
 				ivText = sc.nextLine();
 			}
 			
-			encryptDecrypt(fileName, encryptedFileName, keyText, ivText, true);
+			encryptDecrypt(inputFile, outputFile, keyText, ivText, true);
 
 		} else 
 			throw new IllegalArgumentException("Nepostojeća naredba: " + args[0]);
