@@ -152,12 +152,16 @@ public class Crypto {
 	 * 
 	 * @param args predani argumenti programu
 	 * @throws IOException ukoliko ne postoji datoteka koja se kriptira ili dekriptira
+	 * @throws IllegalArgumentException ako je predan krivi broj argumenata
 	 */
 	public static void main(String[] args) throws IOException{
 
 		String function = args[0].toLowerCase();
 
 		if (function.equals("checksha")) {
+			
+			if(args.length != 2)
+				throw new IllegalArgumentException("Neispravan broj argumenata.");
 
 			String path = args[1];
 
@@ -173,6 +177,9 @@ public class Crypto {
 			checksha(Paths.get(path), hash);
 
 		} else if (function.equals("encrypt") || function.equals("decrypt")) {
+			
+			if(args.length != 3)
+				throw new IllegalArgumentException("Neispravan broj argumenata.");
 
 			String fileName = args[1];
 			String encryptedFileName = args[2];
