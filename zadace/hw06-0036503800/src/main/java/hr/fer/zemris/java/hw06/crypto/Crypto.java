@@ -25,8 +25,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Jednostavna implementacija kriptiranja i dekriptiranja datoteka.
- * Usto, moguće je provjeriti sažetak neke datoteke uz poznati sha256 sažetak.
+ * Jednostavna implementacija kriptiranja i dekriptiranja datoteka. Usto, moguće
+ * je provjeriti sažetak neke datoteke uz poznati sha256 sažetak.
  * 
  * @author Antonio Kuzminski
  *
@@ -42,7 +42,7 @@ public class Crypto {
 	 *             generiranom hashu
 	 * @throws NoSuchAlgorithmException ako algoritam za stvaranje hasha ne postoji
 	 */
-	private static void checksha(Path file, String hash){
+	private static void checksha(Path file, String hash) {
 
 		MessageDigest messageDigest = null;
 		try {
@@ -57,8 +57,10 @@ public class Crypto {
 			while (true) {
 				int r = is.read(buff);
 
-				if (r < 1) break;
-				else messageDigest.update(buff);
+				if (r < 1)
+					break;
+				else
+					messageDigest.update(buff);
 			}
 
 		} catch (IOException e) {
@@ -83,7 +85,7 @@ public class Crypto {
 	 * Metoda za stvaranje objekta preko kojeg se krptira ili dekriptira.
 	 * 
 	 * @param keyText ključ kojim se kriptira ili dekriptira
-	 * @param ivText početni vektor
+	 * @param ivText  početni vektor
 	 * @param encrypt kriptira li se ili dekriptira
 	 * @return objekt tipa {@code Cipher}
 	 */
@@ -114,13 +116,15 @@ public class Crypto {
 	/**
 	 * Metoda za kriptiranje ili dekriptiranje predane datoteke.
 	 * 
-	 * @param inputFile datoteka koja se kriptira ili dekriptira
-	 * @param outputFile datoteka koja nastaje kao rezultat kriptiranja ili dekriptiranja
-	 * @param keyText ključ kojim se kriptira ili dekriptira
-	 * @param ivText početni vektor 
-	 * @param encrypt kriptira li se ili dekriptira
+	 * @param inputFile  datoteka koja se kriptira ili dekriptira
+	 * @param outputFile datoteka koja nastaje kao rezultat kriptiranja ili
+	 *                   dekriptiranja
+	 * @param keyText    ključ kojim se kriptira ili dekriptira
+	 * @param ivText     početni vektor
+	 * @param encrypt    kriptira li se ili dekriptira
 	 */
-	private static void encryptDecrypt(String inputFile, String outputFile, String keyText, String ivText, boolean encrypt) {
+	private static void encryptDecrypt(String inputFile, String outputFile, String keyText, String ivText,
+			boolean encrypt) {
 
 		Cipher cipher = getCipher(keyText, ivText, encrypt);
 
@@ -143,14 +147,12 @@ public class Crypto {
 		} catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
-		
-		if(encrypt) {
-			System.out.println(
-					"Encryption completed. Generated file " + outputFile + " based on file " + inputFile);
-			
-		}else {
-			System.out.println(
-					"Decryption completed. Generated file " + outputFile + " based on file " + inputFile);
+
+		if (encrypt) {
+			System.out.println("Encryption completed. Generated file " + outputFile + " based on file " + inputFile);
+
+		} else {
+			System.out.println("Decryption completed. Generated file " + outputFile + " based on file " + inputFile);
 		}
 	}
 
@@ -158,19 +160,20 @@ public class Crypto {
 	 * Funkcija iz koje kreće izvođenje glavnog programa.
 	 * 
 	 * @param args predani argumenti programu
-	 * @throws IOException ukoliko ne postoji datoteka koja se kriptira ili dekriptira
+	 * @throws IOException              ukoliko ne postoji datoteka koja se kriptira
+	 *                                  ili dekriptira
 	 * @throws IllegalArgumentException ako je predan krivi broj argumenata
 	 */
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException {
 
 		// ime funkcije koja se treba izvršiti
 		String function = args[0].toLowerCase();
 
 		if (function.equals("checksha")) {
-			
-			if(args.length != 2)
+
+			if (args.length != 2)
 				throw new IllegalArgumentException("Neispravan broj argumenata.");
-			
+
 			// staza datoteke
 			String path = args[1];
 
@@ -186,8 +189,8 @@ public class Crypto {
 			checksha(Paths.get(path), hash);
 
 		} else if (function.equals("encrypt") || function.equals("decrypt")) {
-			
-			if(args.length != 3)
+
+			if (args.length != 3)
 				throw new IllegalArgumentException("Neispravan broj argumenata.");
 
 			// datoteka koja se kriptira ili dekriptira
@@ -205,10 +208,10 @@ public class Crypto {
 				System.out.println("Please provide initalization vector as hex-encoded text (32 hex-digits):");
 				ivText = sc.nextLine();
 			}
-			
+
 			encryptDecrypt(inputFile, outputFile, keyText, ivText, true);
 
-		} else 
+		} else
 			throw new IllegalArgumentException("Nepostojeća naredba: " + args[0]);
 	}
 }
