@@ -44,7 +44,16 @@ public class CatShellCommand implements ShellCommand {
 		
 		Charset charset = null;
 		
-		if(splitted.length == 2) charset = Charset.forName(splitted[1]);
+		if(splitted.length == 2) {
+			
+			if(!Charset.isSupported(splitted[1])) {
+				env.writeln("Predani skup znakova nije podržan.");
+				return ShellStatus.CONTINUE;
+			}
+				
+			
+			charset = Charset.forName(splitted[1]);
+		}
 		else charset = Charset.defaultCharset();
 		
 		try(Reader reader = new BufferedReader(
@@ -56,7 +65,7 @@ public class CatShellCommand implements ShellCommand {
 			char[] buffer = new char[1024];
 			int bytesRead;
 			while((bytesRead = reader.read(buffer)) != -1) {
-				env.write(String.valueOf(buffer));
+				env.write(new String(buffer, 0, bytesRead));
 			}
 			
 		} catch (FileNotFoundException e) {
