@@ -36,5 +36,4 @@ public class CharsetsShellCommand implements ShellCommand {
 				Arrays.asList("Ova naredba se koristi za dohvat mogućih",
 						"skupova znakova koji postoje na računalu."));
 	}
-
 }
