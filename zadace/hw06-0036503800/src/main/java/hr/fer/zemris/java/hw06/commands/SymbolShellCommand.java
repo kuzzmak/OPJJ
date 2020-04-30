@@ -61,5 +61,4 @@ public class SymbolShellCommand implements ShellCommand {
 				">symbol PROMPT #",
 				"Symbol for PROMPT changed from '>' to '#'"));
 	}
-
 }
