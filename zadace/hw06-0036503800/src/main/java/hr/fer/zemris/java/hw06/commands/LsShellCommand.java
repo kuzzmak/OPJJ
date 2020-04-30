@@ -20,10 +20,23 @@ import hr.fer.zemris.java.hw06.shell.Environment;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
+/**
+ * Naredba za ispis sadržaja predanog direktorija.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class LsShellCommand implements ShellCommand {
 
 	SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
 	
+	/**
+	 * Mapper koji iz staze direktorija ili datoteke dobiva string 
+	 * koji opisuje svojstva te datoteke/direktorija.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
 	private class pathToStringMapper implements Function<Path, String> {
 
 		@Override
@@ -91,10 +104,9 @@ public class LsShellCommand implements ShellCommand {
 	@Override
 	public List<String> getCommandDescription() {
 		return new ArrayList<String>(Arrays.asList("Ova naredba se koristi za ispis datoteka",
-				"i direktorija predanog direktorija preko", "argumenta funkcija. Ispis se sastoji od 4 stupca: ",
-				"\t 1. stupac: ", "\t\t je li direktorij(d)", "\t\t je li moguće čitati(r)",
+				"i direktorija predanog direktorija preko", "argumenta funkcija. Ispis se sastoji", 
+				"od 4 stupca: ", "\t 1. stupac: ", "\t\t je li direktorij(d)", "\t\t je li moguće čitati(r)",
 				"\t\t je li moguće pisati(w)", "\t\t je li moguće izvršiti(x)", "\t 2. stupac: veličina objekta",
 				"\t 3: stupac: vrijeme stvaranja", "\t 4. stupac: ime datoteke/direktorija"));
 	}
-
 }
