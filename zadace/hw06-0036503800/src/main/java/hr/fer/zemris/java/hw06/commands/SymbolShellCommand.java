@@ -9,7 +9,7 @@ import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
 /**
- * Naredba za postavljanje simbola koji se interno koriste u {@code MyShell}
+ * Naredba za postavljanje simbola koji se interno koriste u {@code MyShell}.
  * 
  * @author Antonio Kuzminski
  *
