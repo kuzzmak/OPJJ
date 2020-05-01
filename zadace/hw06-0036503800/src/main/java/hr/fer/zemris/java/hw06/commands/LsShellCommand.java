@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -78,13 +79,20 @@ public class LsShellCommand implements ShellCommand {
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
 		
-		if(!Files.isDirectory(Paths.get(arguments))) {
+		List<String> splitted = MyShell.extractNormalLine(arguments);
+		
+		if(splitted.size() != 1) {
+			env.writeln("Predan krivi broj argumenata u naredbu: " + getCommandName());
+			return ShellStatus.CONTINUE;
+		}
+		
+		if(!Files.isDirectory(Paths.get(splitted.get(0)))) {
 				env.writeln("Predana staza nije direktorij.");
 				return ShellStatus.CONTINUE;
 		}else {
 			
 			try {
-				Files.list(Paths.get(arguments))
+				Files.list(Paths.get(splitted.get(0)))
 				.map(new pathToStringMapper())
 				.forEach(env::writeln);
 				

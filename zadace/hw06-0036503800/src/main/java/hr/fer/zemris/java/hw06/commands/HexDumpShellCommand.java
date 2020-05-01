@@ -112,7 +112,7 @@ public class HexDumpShellCommand implements ShellCommand {
 		List<String> splitted = MyShell.extractNormalLine(arguments);
 
 		if (splitted.size() != 1) {
-			env.writeln("Pogrešan broj argumenata za naredbu: " + getCommandName() + ".");
+			env.writeln("Pogrešan broj argumenata za naredbu: " + getCommandName());
 		}
 
 		File f = new File(splitted.get(0));
