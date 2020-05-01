@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -52,16 +53,16 @@ public class CopyShellCommand implements ShellCommand {
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
 		
-		String[] splitted = arguments.split("\\s+");
+		List<String> splitted = MyShell.extractNormalLine(arguments);
 		
 		// datoteka koja se kopira
-		File f1 = new File(splitted[0]);
+		File f1 = new File(splitted.get(0));
 		// direkrorij ili datoteka koja se gazi
-		File f2 = new File(splitted[1]);
+		File f2 = new File(splitted.get(1));
 		
 		// ako ne postoji, vraća se u MyShell
 		if(!f1.exists()) {
-			env.writeln("Datoteka: " + splitted[0] + " ne postoji.");
+			env.writeln("Datoteka: " + splitted.get(0) + " ne postoji.");
 			return ShellStatus.CONTINUE;
 		}
 		
@@ -93,7 +94,7 @@ public class CopyShellCommand implements ShellCommand {
 			
 			// ako je ok pregaziti postojeću datoteku
 			if(f2.isFile()) {
-				env.writeln(splitted[1] + " već postoji.");
+				env.writeln(splitted.get(1) + " već postoji.");
 				env.writeln("Prekopirati preko postojeće? [y/n]");
 				env.write(String.valueOf(env.getPromptSymbol()));
 				ok = env.readLine().strip().toLowerCase().equals("y") ? true: false;
