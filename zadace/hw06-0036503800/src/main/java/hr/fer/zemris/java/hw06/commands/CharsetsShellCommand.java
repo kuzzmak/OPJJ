@@ -20,8 +20,14 @@ public class CharsetsShellCommand implements ShellCommand {
 
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
+		
+		if(!arguments.equals("")) {
+			env.writeln("Naredba: " + getCommandName() + " ne prima argumente.");
+			return ShellStatus.CONTINUE;
+		}
+		
 		SortedMap<String, Charset> charsets = Charset.availableCharsets();
-		charsets.forEach((k, v) -> env.writeln(k + v));
+		charsets.forEach((k, v) -> env.writeln(v.toString()));
 		return ShellStatus.CONTINUE;
 	}
 
