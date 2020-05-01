@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -16,13 +17,13 @@ import hr.fer.zemris.java.hw06.shell.ShellStatus;
  *
  */
 public class TreeShellCommand implements ShellCommand {
-	
+
 	/**
 	 * Metoda za rekurzivan ispis sadržaja direktorija.
 	 * 
 	 * @param indent razmak sljedeće razine
-	 * @param file trenutna datoteka ili direktorij
-	 * @param env referenca do {@code MyShell} za ispis
+	 * @param file   trenutna datoteka ili direktorij
+	 * @param env    referenca do {@code MyShell} za ispis
 	 */
 	private void tree(int indent, File file, Environment env) {
 
@@ -35,8 +36,8 @@ public class TreeShellCommand implements ShellCommand {
 		if (file.isDirectory()) {
 
 			File[] files = file.listFiles();
-			
-			for(File f: files) {
+
+			for (File f : files) {
 				tree(indent + 2, f, env);
 			}
 		}
@@ -44,16 +45,23 @@ public class TreeShellCommand implements ShellCommand {
 
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
-		
-		File f = new File(arguments);
-		
-		if(!f.isDirectory()) {
+
+		List<String> splitted = MyShell.extractNormalLine(arguments);
+
+		if (splitted.size() != 1) {
+			env.writeln("Predan krivi broj argumenata u naredbu: " + getCommandName());
+			return ShellStatus.CONTINUE;
+		}
+
+		File f = new File(splitted.get(0));
+
+		if (!f.isDirectory()) {
 			env.writeln("Predani argument nije direktorij.");
 			return ShellStatus.CONTINUE;
 		}
-		
+
 		tree(0, f, env);
-		
+
 		return ShellStatus.CONTINUE;
 	}
 
@@ -65,9 +73,7 @@ public class TreeShellCommand implements ShellCommand {
 	@Override
 	public List<String> getCommandDescription() {
 		return new ArrayList<String>(Arrays.asList("Ova naredba se koristi za ispis izgleda direktorija.",
-				"Predani direktorij se obilazi rekurzivno, a svaka razina",
-				"unutar je odvojena s dva razmaka.",
-				"Primjer korištenja:",
-				"\ttree /home/user/OPJJ/predavanja"));
+				"Predani direktorij se obilazi rekurzivno, a svaka razina", "unutar je odvojena s dva razmaka.",
+				"Primjer korištenja:", "\ttree /home/user/OPJJ/predavanja"));
 	}
 }
