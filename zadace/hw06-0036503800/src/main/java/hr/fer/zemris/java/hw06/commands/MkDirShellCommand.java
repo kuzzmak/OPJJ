@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -22,7 +23,14 @@ public class MkDirShellCommand implements ShellCommand {
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
 		
-		File f = new File(arguments);
+		List<String> splitted = MyShell.extractNormalLine(arguments);
+		
+		if(splitted.size() != 1) {
+			env.writeln("Predan krivi broj argumenata u naredbu: " + getCommandName());
+			return ShellStatus.CONTINUE;
+		}
+		
+		File f = new File(splitted.get(0));
 		
 		if(!f.exists()) {
 			
