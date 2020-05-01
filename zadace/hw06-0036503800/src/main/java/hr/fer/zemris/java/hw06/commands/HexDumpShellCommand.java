@@ -11,6 +11,7 @@ import java.util.List;
 
 import hr.fer.zemris.java.hw06.crypto.Util;
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -21,12 +22,12 @@ import hr.fer.zemris.java.hw06.shell.ShellStatus;
  *
  */
 public class HexDumpShellCommand implements ShellCommand {
-	
+
 	/**
 	 * Funkcija koja stvara jedan redak hexdump-a iz predanog polja bajtova.
 	 * 
 	 * @param bytes polje bajtova koje se oblikuje u string
-	 * @param row redak ispisa
+	 * @param row   redak ispisa
 	 * @return string reprezentacija hexdump retka
 	 */
 	private String hexFormat(byte[] bytes, int row) {
@@ -67,7 +68,7 @@ public class HexDumpShellCommand implements ShellCommand {
 			}
 		}
 
-		// srednja crta koja dijeli dva dijela tablice		
+		// srednja crta koja dijeli dva dijela tablice
 		sb.replace(sb.length() - 1, sb.length(), "");
 		sb.append("|");
 
@@ -84,9 +85,14 @@ public class HexDumpShellCommand implements ShellCommand {
 			// drugi dio koji ne postoji
 			for (int i = hex.length(); i < 32; i += 2)
 				sb.append("   ");
+		} else {
+
+			// drugi dio koji ne postoji
+			for (int i = 0; i < 16; i += 2)
+				sb.append("   ");
 		}
-		
-		// znakovi 		
+
+		// znakovi
 		sb.append("| ");
 
 		for (byte b : bytes) {
@@ -102,30 +108,36 @@ public class HexDumpShellCommand implements ShellCommand {
 
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
-		
-		File f = new File(arguments);
-		
-		if(!f.exists()) {
+
+		List<String> splitted = MyShell.extractNormalLine(arguments);
+
+		if (splitted.size() != 1) {
+			env.writeln("Pogrešan broj argumenata za naredbu: " + getCommandName() + ".");
+		}
+
+		File f = new File(splitted.get(0));
+
+		if (!f.exists()) {
 			env.writeln("Datoteka: " + arguments + " ne postoji.");
 			return ShellStatus.CONTINUE;
 		}
-		
-		try(InputStream is = new FileInputStream(f)){
-			
+
+		try (InputStream is = new FileInputStream(f)) {
+
 			byte[] buffer = new byte[16];
 			int bytesRead;
 			int row = 0;
-			
-			while((bytesRead = is.read(buffer)) != -1) {
-				
+
+			while ((bytesRead = is.read(buffer)) != -1) {
+
 				env.writeln(hexFormat(Arrays.copyOf(buffer, bytesRead), row));
 				row++;
 			}
-			
+
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
-		
+
 		return ShellStatus.CONTINUE;
 	}
 
@@ -136,8 +148,7 @@ public class HexDumpShellCommand implements ShellCommand {
 
 	@Override
 	public List<String> getCommandDescription() {
-		return new ArrayList<>(Arrays.asList("Naredba za stvaranje hexdump-a datoteke.",
-				"Primjer korištenja:",
+		return new ArrayList<>(Arrays.asList("Naredba za stvaranje hexdump-a datoteke.", "Primjer korištenja:",
 				"\thexdump /home/test.txt"));
 	}
 }
