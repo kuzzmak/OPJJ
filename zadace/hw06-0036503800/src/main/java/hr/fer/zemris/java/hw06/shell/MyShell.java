@@ -91,7 +91,7 @@ public class MyShell {
 			@Override
 			public String readLine() throws ShellIOException {
 				if (sc.hasNextLine())
-					return sc.nextLine();
+					return sc.nextLine().strip();
 				else
 					throw new ShellIOException("Nije bilo nikakvog unosa.");
 			}
