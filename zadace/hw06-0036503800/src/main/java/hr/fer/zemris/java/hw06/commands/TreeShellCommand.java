@@ -8,6 +8,7 @@ import java.util.List;
 import hr.fer.zemris.java.hw06.shell.Environment;
 import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
+import hr.fer.zemris.java.hw06.shell.ShellIOException;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
 /**
@@ -46,7 +47,14 @@ public class TreeShellCommand implements ShellCommand {
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
 
-		List<String> splitted = MyShell.extractNormalLine(arguments);
+		List<String> splitted = null;
+
+		try {
+			splitted = MyShell.extractNormalLine(arguments);
+		} catch (ShellIOException e) {
+			env.writeln(e.getMessage());
+			return ShellStatus.CONTINUE;
+		}
 
 		if (splitted.size() != 1) {
 			env.writeln("Predan krivi broj argumenata u naredbu: " + getCommandName());

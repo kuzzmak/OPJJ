@@ -10,6 +10,7 @@ import java.util.List;
 import hr.fer.zemris.java.hw06.shell.Environment;
 import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
+import hr.fer.zemris.java.hw06.shell.ShellIOException;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
 /**
@@ -22,25 +23,32 @@ public class MkDirShellCommand implements ShellCommand {
 
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
-		
-		List<String> splitted = MyShell.extractNormalLine(arguments);
-		
-		if(splitted.size() != 1) {
+
+		List<String> splitted = null;
+
+		try {
+			splitted = MyShell.extractNormalLine(arguments);
+		} catch (ShellIOException e) {
+			env.writeln(e.getMessage());
+			return ShellStatus.CONTINUE;
+		}
+
+		if (splitted.size() != 1) {
 			env.writeln("Predan krivi broj argumenata u naredbu: " + getCommandName());
 			return ShellStatus.CONTINUE;
 		}
-		
+
 		File f = new File(splitted.get(0));
-		
-		if(!f.exists()) {
-			
+
+		if (!f.exists()) {
+
 			try {
 				Files.createDirectories(f.toPath());
 			} catch (IOException e) {
 				env.writeln("Nije moguće stvoriti: " + arguments);
 			}
 		}
-		
+
 		return ShellStatus.CONTINUE;
 	}
 
@@ -51,8 +59,7 @@ public class MkDirShellCommand implements ShellCommand {
 
 	@Override
 	public List<String> getCommandDescription() {
-		return new ArrayList<>(Arrays.asList("Ova naredba se koristi za stvaranje direktorija.",
-				"Primjer korištenja:",
+		return new ArrayList<>(Arrays.asList("Ova naredba se koristi za stvaranje direktorija.", "Primjer korištenja:",
 				"\tmkdir src/test/java"));
 	}
 }
