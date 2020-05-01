@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
+import hr.fer.zemris.java.hw06.shell.MyShell;
 import hr.fer.zemris.java.hw06.shell.ShellCommand;
 import hr.fer.zemris.java.hw06.shell.ShellStatus;
 
@@ -27,9 +28,9 @@ public class CatShellCommand implements ShellCommand {
 	@Override
 	public ShellStatus executeCommand(Environment env, String arguments) {
 		
-		String[] splitted = arguments.split("\\s+");
+		List<String> splitted = MyShell.extractNormalLine(arguments);
 		
-		String fileName = splitted[0];
+		String fileName = splitted.get(0);
 		File file = new File(fileName);
 		
 		if(!file.exists()) {
@@ -44,15 +45,15 @@ public class CatShellCommand implements ShellCommand {
 		
 		Charset charset = null;
 		
-		if(splitted.length == 2) {
+		if(splitted.size() == 2) {
 			
-			if(!Charset.isSupported(splitted[1])) {
+			if(!Charset.isSupported(splitted.get(1))) {
 				env.writeln("Predani skup znakova nije podržan.");
 				return ShellStatus.CONTINUE;
 			}
 				
 			
-			charset = Charset.forName(splitted[1]);
+			charset = Charset.forName(splitted.get(1));
 		}
 		else charset = Charset.defaultCharset();
 		
