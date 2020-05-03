@@ -121,10 +121,12 @@ public class CopyShellCommand implements ShellCommand {
 	@Override
 	public List<String> getCommandDescription() {
 		return new ArrayList<>(Arrays.asList("Ova naredba služi za kopiranje datoteke u odredišni",
-				"direktorij. Ukoliko predani direktorij ne postoji, stvara se.",
-				"Ako je datoteka istog imena u odredišnom direktoriju,",
-				"korisnika se pita je li uredu prepisati. Ako je,", "prepisuje se datotekom istog imena. Nije moguće",
-				"kopirati direktorij, samo datoteke.", "Primjer korištenja:",
+				"direktorij. Ukoliko predani direktorij ne postoji, ",
+				"stvara se. Ako je datoteka istog imena u odredišnom ",
+				"direktoriju, korisnika se pita je li uredu prepisati.", 
+				"Ako je, prepisuje se datotekom istog imena. Nije moguće",
+				"kopirati direktorij, samo datoteke.", "Kao argumente naredbe mogu biti i stringovi s navodnicima.",
+				"Primjer korištenja:",
 				"\tcopy /home/user/OPJJ/zadace/zad/hw06.pdf /home/user/OPJJ/testing"));
 	}
 }

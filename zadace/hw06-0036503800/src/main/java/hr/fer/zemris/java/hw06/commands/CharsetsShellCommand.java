@@ -40,6 +40,8 @@ public class CharsetsShellCommand implements ShellCommand {
 	public List<String> getCommandDescription() {
 		return new ArrayList<String>(
 				Arrays.asList("Ova naredba se koristi za dohvat mogućih",
-						"skupova znakova koji postoje na računalu."));
+						"skupova znakova koji postoje na računalu.",
+						"Primjer korištenja: ",
+						"\tcharsets"));
 	}
 }

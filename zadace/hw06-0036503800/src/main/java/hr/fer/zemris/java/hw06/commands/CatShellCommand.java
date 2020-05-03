@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import hr.fer.zemris.java.hw06.shell.Environment;
@@ -90,7 +92,11 @@ public class CatShellCommand implements ShellCommand {
 
 	@Override
 	public List<String> getCommandDescription() {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<>(Arrays.asList("Ova naredba se koristi za ispis predane datoteke",
+				"u MyShell-u. Kao drugi argument moguće je predati",
+				"skup znakova koji se koristi za dekodiranje.",
+				"Primjer korištenja: ",
+				"\tcat file.txt",
+				"\tcat file.txt utf-8"));
 	}
 }

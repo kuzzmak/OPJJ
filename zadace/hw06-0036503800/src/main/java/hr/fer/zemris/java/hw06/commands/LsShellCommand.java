@@ -119,10 +119,12 @@ public class LsShellCommand implements ShellCommand {
 
 	@Override
 	public List<String> getCommandDescription() {
-		return new ArrayList<String>(Arrays.asList("Ova naredba se koristi za ispis datoteka",
-				"i direktorija predanog direktorija preko", "argumenta funkcija. Ispis se sastoji", 
-				"od 4 stupca: ", "\t 1. stupac: ", "\t\t je li direktorij(d)", "\t\t je li moguće čitati(r)",
+		return new ArrayList<String>(Arrays.asList("Ova naredba se koristi za ispis sadržaja",
+				"predanog direktorija preko argumenta funkcije.", "Ispis se sastoji od 4 stupca: ", 
+				"\t 1. stupac: ", "\t\t je li direktorij(d)", "\t\t je li moguće čitati(r)",
 				"\t\t je li moguće pisati(w)", "\t\t je li moguće izvršiti(x)", "\t 2. stupac: veličina objekta",
-				"\t 3: stupac: vrijeme stvaranja", "\t 4. stupac: ime datoteke/direktorija"));
+				"\t 3: stupac: vrijeme stvaranja", "\t 4. stupac: ime datoteke/direktorija",
+				"Primjer korištenja: ",
+				"\tls src"));
 	}
 }
