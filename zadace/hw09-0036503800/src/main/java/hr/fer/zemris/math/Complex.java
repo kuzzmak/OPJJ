@@ -3,6 +3,14 @@ package hr.fer.zemris.math;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Razred koji modelira jedan kompleksni broj. Razred također
+ * omogućuje izvođenje svih operacije među kompleksnim brojevima
+ * popu zbrajanja, oduzimanje, potenciranje, korjenovanje i drugih.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class Complex {
 	
 	private double re;

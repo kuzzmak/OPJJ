@@ -1,5 +1,13 @@
 package hr.fer.zemris.math;
 
+/**
+ * Razred koji ima ulogu trodimenzionalnog vektora. Moguće je
+ * izvoditi sve standardne operacije među vektorima poput zbrajanja,
+ * skalarnog množenja, vektorskog množenja i drugih.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class Vector3 {
 	
 	private double x, y, z;
