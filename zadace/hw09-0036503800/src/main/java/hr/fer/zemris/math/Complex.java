@@ -199,16 +199,27 @@ public class Complex {
 		
 		return roots;
 	}
+	
+	public double getRe() {
+		return re;
+	}
+
+	public double getIm() {
+		return im;
+	}
 
 	@Override
 	public String toString() {
 
 		StringBuilder sb = new StringBuilder();
+		sb.append("(");
 
 		if (this.re != 0) {
 			sb.append(this.re);
-			if (this.im == 0)
+			if (this.im == 0) {
+				sb.append(")");
 				return sb.toString();
+			}
 
 			if (this.im > 0) {
 				sb.append("+");
@@ -228,7 +239,8 @@ public class Complex {
 
 		if (this.re == 0 && this.im == 0)
 			sb.append(0);
-
+		
+		sb.append(")");
 		return sb.toString();
 	}
 	
