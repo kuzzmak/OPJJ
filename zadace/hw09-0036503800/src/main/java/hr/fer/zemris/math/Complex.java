@@ -214,31 +214,16 @@ public class Complex {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
 
-		if (this.re != 0) {
-			sb.append(this.re);
-			if (this.im == 0) {
-				sb.append(")");
-				return sb.toString();
-			}
-
-			if (this.im > 0) {
-				sb.append("+");
-			}
+		sb.append(re);
+		
+		if(im >= 0) {
+			sb.append("+");
+			sb.append(im);
+			sb.append("i");
+		}else {
+			sb.append(im);
+			sb.append("i");
 		}
-
-		if (this.im != 0) {
-			if (this.im == 1)
-				sb.append("i");
-			else if (this.im == -1)
-				sb.append("-i");
-			else {
-				sb.append(this.im);
-				sb.append("i");
-			}
-		}
-
-		if (this.re == 0 && this.im == 0)
-			sb.append(0);
 		
 		sb.append(")");
 		return sb.toString();
