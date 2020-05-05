@@ -66,8 +66,8 @@ public class Complex {
 	 * Metoda za zbrajanje dva kompleksna broja.
 	 * 
 	 * @param other kompleksni broj koji se pribraja trenutnom
-	 * @throws NullPointerException ako je predan null
 	 * @return zbroj koji je novi objekt tipa {@code Complex}
+	 * @throws NullPointerException ako je predan null
 	 */
 	public Complex add(Complex other) {
 
@@ -81,8 +81,8 @@ public class Complex {
 	 * Metoda za oduzimanje dva kompleksna broja.
 	 * 
 	 * @param other kompleksni broj koji se oduzima od trenutnog
-	 * @throws NullPointerException ako je predan null
 	 * @return razlika koja je novi objekt tipa {@code Complex}
+	 * @throws NullPointerException ako je predan null
 	 */
 	public Complex sub(Complex other) {
 		if (other == null)
@@ -95,8 +95,8 @@ public class Complex {
 	 * Metoda za množenje dva kompleksna broja.
 	 * 
 	 * @param other kompleksni broj koji množi trenutno
-	 * @throws NullPointerException ako je predan null
 	 * @return umnožak koji je novi objekt tipa {@code Complex}
+	 * @throws NullPointerException ako je predan null
 	 */
 	public Complex multiply(Complex other) {
 		if (other == null)
@@ -206,6 +206,35 @@ public class Complex {
 
 	public double getIm() {
 		return im;
+	}
+
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(im);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(re);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Complex other = (Complex) obj;
+		if (Double.doubleToLongBits(im) != Double.doubleToLongBits(other.im))
+			return false;
+		if (Double.doubleToLongBits(re) != Double.doubleToLongBits(other.re))
+			return false;
+		return true;
 	}
 
 	@Override
