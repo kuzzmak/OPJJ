@@ -8,6 +8,22 @@ public class Complex {
 	private double re;
 	private double im;
 
+	public static final Complex ZERO = new Complex(0, 0);
+	public static final Complex ONE = new Complex(1, 0);
+	public static final Complex ONE_NEG = new Complex(-1, 0);
+	public static final Complex IM = new Complex(0, 1);
+	public static final Complex IM_NEG = new Complex(0, -1);
+	
+	public Complex() {
+		
+	}
+	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 * @param re realni dio kompleksnog broja
+	 * @param im imaginarni dio kompleksnog broja
+	 */
 	public Complex(double re, double im) {
 		this.re = re;
 		this.im = im;
@@ -30,7 +46,7 @@ public class Complex {
 	 * @throw ArithmeticException kada je imaginarni i realni dio 0
 	 * @return kut kompleksnog broja
 	 */
-	public double angle() {
+	private double angle() {
 
 		if(this.im < 0) {
 			return Math.atan2(this.im, this.re) + 2 * Math.PI;
@@ -98,7 +114,7 @@ public class Complex {
 	 * 
 	 * @return kompleksno konjugirani broj trenutnog broja
 	 */
-	public Complex conjugate() {
+	private Complex conjugate() {
 		return new Complex(this.re, -this.im);
 	}
 	
