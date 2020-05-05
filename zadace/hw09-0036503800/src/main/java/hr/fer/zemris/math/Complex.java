@@ -194,7 +194,34 @@ public class Complex {
 
 	@Override
 	public String toString() {
-		return "(" + re + ", " + im + ")";
+
+		StringBuilder sb = new StringBuilder();
+
+		if (this.re != 0) {
+			sb.append(this.re);
+			if (this.im == 0)
+				return sb.toString();
+
+			if (this.im > 0) {
+				sb.append("+");
+			}
+		}
+
+		if (this.im != 0) {
+			if (this.im == 1)
+				sb.append("i");
+			else if (this.im == -1)
+				sb.append("-i");
+			else {
+				sb.append(this.im);
+				sb.append("i");
+			}
+		}
+
+		if (this.re == 0 && this.im == 0)
+			sb.append(0);
+
+		return sb.toString();
 	}
 	
 }
