@@ -114,7 +114,17 @@ public class Complex {
 	 * @return minus vrijednost trenutnog kompleksnog broja
 	 */
 	public Complex negate() {
-		return new Complex(-this.re, -this.im);
+		
+		double real;
+		double imaginary;
+		
+		if(re == 0) real = 0;
+		else real = -re;
+		
+		if(im == 0) imaginary = 0;
+		else imaginary = -im;
+		
+		return new Complex(real, imaginary);
 	}
 	
 	/**
