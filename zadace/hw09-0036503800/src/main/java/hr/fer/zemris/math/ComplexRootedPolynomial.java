@@ -47,7 +47,7 @@ public class ComplexRootedPolynomial {
 		Complex result = new Complex(constant.getRe(), constant.getIm());
 		
 		for(Complex root: roots) {
-			result.multiply(z.sub(root));
+			result = result.multiply(z.sub(root));
 		}
 		
 		return result;
