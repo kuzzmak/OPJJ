@@ -114,11 +114,11 @@ public class ComplexPolynomial {
 		if(z == null)
 			throw new NullPointerException("Ako je predani kompleksni broj null.");
 
-		Complex result = new Complex(factors.get(0).getRe(), factors.get(0).getIm());
+		Complex result = Complex.ZERO;
 
-		for (int i = 1; i < factors.size(); i++) {
+		for (int i = 0; i < factors.size(); i++) {
 
-			result.add(factors.get(i).multiply(z.power(i)));
+			result = result.add(factors.get(i).multiply(z.power(i)));
 		}
 
 		return result;
