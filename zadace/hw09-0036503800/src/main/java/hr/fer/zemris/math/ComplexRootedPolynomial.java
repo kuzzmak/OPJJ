@@ -53,9 +53,29 @@ public class ComplexRootedPolynomial {
 		return result;
 	}
 	
+	/**
+	 * Metoda za pretvorbu polinoma iz oblika {@code ComplexRootedPolynomial} 
+	 * u {@code ComplexPolynomial}.
+	 * 
+	 * @return polinom u obliku {@code ComplexPolynomial}
+	 */
 	public ComplexPolynomial toComplexPolyNomial() {
 		
-		return null;
+		if(roots.size() == 1) {
+			return new ComplexPolynomial(
+					constant.multiply(roots.get(0).negate()),
+					constant);
+		}
+		
+		ComplexPolynomial cp = new ComplexPolynomial(roots.get(0).negate(), Complex.ONE);
+		
+		for(int i = 1; i < roots.size(); i++) {
+			cp = cp.multiply(new ComplexPolynomial(roots.get(i).negate(), Complex.ONE));
+		}
+		
+		cp = cp.multiply(new ComplexPolynomial(constant));
+		
+		return cp;
 	}
 	
 	/**
@@ -91,7 +111,7 @@ public class ComplexRootedPolynomial {
 		sb.append(constant);
 		
 		for(Complex root: roots) {
-			sb.append("*(z - ");
+			sb.append("*(z-");
 			sb.append(root);
 			sb.append(")");
 		}
