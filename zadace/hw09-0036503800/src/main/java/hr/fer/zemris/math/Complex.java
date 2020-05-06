@@ -210,6 +210,148 @@ public class Complex {
 		return roots;
 	}
 	
+	/**
+	 * Metoda za stvaranje kopije trenutnog kompleksnog broja.
+	 * 
+	 * @return kopija trenutnog kompleksnog broja
+	 */
+	public Complex copy() {
+		
+		return new Complex(re, im);
+	}
+	
+	/**
+	 * Funkcija za parsiranje imaginarnog dijela kompleksnog broja oblika (i, -i,
+	 * 2i, 2.1i, -2.1i...)
+	 * 
+	 * @param s imaginarni dio koji se parsira
+	 * @return double vrijednost imaginarnog dijela
+	 */
+	public static double parseImaginary(String s) {
+
+		if (s.equals("i")) {
+			return 1;
+		} else if (s.equals("-i")) {
+			return -1;
+		} else {
+			return Double.parseDouble(s.replace("i", ""));
+		}
+	}
+
+	/**
+	 * Metoda za parsiranje kompleksnog broja zadanog preko stringa. Valjani zapisi
+	 * su:
+	 * <p>
+	 * "351", "+351", "-351", "3.51", "1+i", "1 + i", "+2.1+1.1i", "-i", "+i" ...
+	 * </p>
+	 * 
+	 * Nedozvoljeni zapisi su:
+	 * <p>
+	 * "+-351", "i3.51", "-2.71+-3.1i" ...
+	 * </p>
+	 * 
+	 * @param s string koji se parsira
+	 * @throws NumberFormatException ako je umjesto i korišten neki znak
+	 * @return objekt tipa ComplexNumber
+	 */
+	public static Complex parse(String s) {
+
+		// uklonjene sve praznine iz broja
+		String noSpaces = s.replaceAll("\\s+", "");
+
+		// imaginarni broj
+		if (noSpaces.contains("i")) {
+
+			if (noSpaces.startsWith("+")) {
+				noSpaces = noSpaces.replaceFirst("\\+", "");
+			}
+
+			// ako ima neki plus nakon potencijalnog micanja prvog plusa
+			// (brojevi s plusom između realnom i imaginarnog dijela)
+			if (noSpaces.contains("+")) {
+
+				String[] realAndImaginary = noSpaces.split("\\+");
+
+				if (realAndImaginary.length == 2) {
+
+					// ako je prvi dio kompleksnog broja imaginarni dio, npr. "-i + 1"
+					if (realAndImaginary[0].contains("i")) {
+
+						double real = Double.parseDouble(realAndImaginary[1]);
+						double imaginary = parseImaginary(realAndImaginary[0]);
+						return new Complex(real, imaginary);
+
+					} else { // oblik kompleksnog broja "-1 + i"
+
+						double real = Double.parseDouble(realAndImaginary[0]);
+						double imaginary = parseImaginary(realAndImaginary[1]);
+						return new Complex(real, imaginary);
+					}
+				}
+			} else { // kompleksni brojevi s minusom
+
+				String[] realAndImaginary = noSpaces.split("-");
+
+				// oblik broja 2i, 1.1i
+				if (realAndImaginary.length == 1) {
+
+					double imaginary = parseImaginary(realAndImaginary[0]);
+
+					return new Complex(0, imaginary);
+
+				} else if (realAndImaginary.length == 2) {
+
+					// oblik broja -2i
+					if (realAndImaginary[0].equals("")) { // kada se splita -2i, dobije se ["", 2i]
+						double imaginary = -parseImaginary(realAndImaginary[1]);
+
+						return new Complex(0, imaginary);
+
+					} else {
+
+						if (realAndImaginary[0].contains("i")) { // oblik broja i - 1
+
+							double real = -Double.parseDouble(realAndImaginary[1]);
+							double imaginary = parseImaginary(realAndImaginary[0]);
+							return new Complex(real, imaginary);
+
+						} else { // oblik broja 1 - i
+
+							double real = Double.parseDouble(realAndImaginary[0]);
+							double imaginary = -parseImaginary(realAndImaginary[1]);
+							return new Complex(real, imaginary);
+						}
+					}
+
+				} else { // broj oblika -1 -i, -2.1i - 2, split napravi ["", 2.1, 2]
+
+					if (realAndImaginary[1].contains("i")) {
+
+						double real = -Double.parseDouble(realAndImaginary[2]);
+						double imaginary = -parseImaginary(realAndImaginary[1]);
+						return new Complex(real, imaginary);
+
+					} else {
+
+						double real = -Double.parseDouble(realAndImaginary[1]);
+						double imaginary = -parseImaginary(realAndImaginary[2]);
+						return new Complex(real, imaginary);
+					}
+				}
+			}
+
+		} else { // kompleksni broj koji nema imaginarni dio
+			try { // ako je umjesto i korišten neki drugi znak, događa se iznimka
+				double real = Double.parseDouble(noSpaces);
+				return new Complex(real, 0);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return null;
+	}
+	
 	public double getRe() {
 		return re;
 	}
