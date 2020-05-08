@@ -249,8 +249,8 @@ public class RayCasterParallel2 {
 			
 			@Override
 			public Point3D getEye() {
-				double t = (time) / 10000 * 2 * Math.PI;
-				double t2 = (time) / 5000 * 2 * Math.PI;
+				double t = (time) / 10000. * 2 * Math.PI;
+				double t2 = (time) / 5000. * 2 * Math.PI;
 				double x = 50 * Math.cos(t);
 				double y = 50 * Math.sin(t);
 				double z = 30 * Math.sin(t2);
