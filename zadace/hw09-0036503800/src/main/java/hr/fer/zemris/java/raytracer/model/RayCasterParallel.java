@@ -165,8 +165,6 @@ public class RayCasterParallel {
 
 		private static int threshold = 20;
 		
-		
-
 		public Job(Point3D screenCorner, Point3D eye, Scene scene, int ymin, int ymax, int width, int height,
 				double horizontal, double vertical, short[] red, short[] green, short[] blue) {
 			this.screenCorner = screenCorner;
@@ -185,8 +183,6 @@ public class RayCasterParallel {
 
 		@Override
 		protected void compute() {
-			
-			
 
 			if (ymax - ymin <= threshold) {
 				computeDirect();
@@ -201,9 +197,8 @@ public class RayCasterParallel {
 		}
 
 		protected void computeDirect() {
-
 			
-			int innerOffset = 0;
+			int offset = 0;
 
 			for (int y = ymin; y < ymax; y++) {
 				for (int x = 0; x < width; x++) {
@@ -218,12 +213,12 @@ public class RayCasterParallel {
 
 					tracer(scene, ray, rgb);
 					
-					red[y * width + innerOffset] = rgb[0];
-					green[y * width + innerOffset] = rgb[1];
-					blue[y * width + innerOffset] = rgb[2];
-					innerOffset++;
+					red[y * width + offset] = rgb[0];
+					green[y * width + offset] = rgb[1];
+					blue[y * width + offset] = rgb[2];
+					offset++;
 				}
-				innerOffset = 0;
+				offset = 0;
 			}
 		}
 
@@ -259,17 +254,9 @@ public class RayCasterParallel {
 				Scene scene = RayTracerViewer.createPredefinedScene();
 
 				ForkJoinPool pool = new ForkJoinPool();
-
-				long start = System.currentTimeMillis();
-				
 				Job job = new Job(screenCorner, eye, scene, 0, height, width, height, horizontal, vertical, red, green,
 						blue);
 				pool.invoke(job);
-				
-				long end = System.currentTimeMillis();
-				
-				System.out.println(end - start);
-
 				pool.shutdown();
 				
 				System.out.println("Izračuni gotovi...");
