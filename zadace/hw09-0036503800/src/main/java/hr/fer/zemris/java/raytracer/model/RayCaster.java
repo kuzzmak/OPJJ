@@ -54,11 +54,11 @@ public class RayCaster {
 		// polje doprinosa difuzne komponente
 		short[] rgb = new short[3];
 		
-		Point3D p1 = ls.getPoint();
-		Point3D p2 = closestObjectIntersection.getNormal();
+		Point3D lightSourceDirection = ls.getPoint().sub(closestObjectIntersection.getPoint());
+		Point3D n = closestObjectIntersection.getNormal();
 		
-		Vector3 v1 = new Vector3(p1.x, p1.y, p1.z);
-		Vector3 v2 = new Vector3(p2.x, p2.y, p2.z);
+		Vector3 v1 = new Vector3(lightSourceDirection.x, lightSourceDirection.y, lightSourceDirection.z);
+		Vector3 v2 = new Vector3(n.x, n.y, n.z);
 		
 		
 		// kosinus kuta između vektora: od izvor do najbliže točke i normale objekta u točki
