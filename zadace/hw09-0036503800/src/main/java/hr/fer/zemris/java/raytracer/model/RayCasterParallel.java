@@ -72,6 +72,7 @@ public class RayCasterParallel {
 		
 		// kosinus kuta između vektora: od izvor do najbliže točke i normale objekta u točki
 		double cosfi = v1.cosAngle(v2);
+		if(cosfi < 0) return;
 		
 		short r = (short) (ls.getR() * closestObjectIntersection.getKdr() * cosfi);
 		short g = (short) (ls.getG() * closestObjectIntersection.getKdg() * cosfi);
@@ -107,6 +108,8 @@ public class RayCasterParallel {
 		Vector3 r = normal.scale(2).scale(l.dot(normal)).sub(l);
 		
 		double cosa = r.cosAngle(v);
+		if(cosa < 0) return;
+		
 		double n = closestObjectIntersection.getKrn();
 		
 		rgb[0] += (short) (ls.getR() * closestObjectIntersection.getKrr() * Math.pow(cosa, n));
@@ -183,6 +186,8 @@ public class RayCasterParallel {
 		private Point3D screenCorner;
 		private Point3D eye;
 		private Scene scene;
+		private Point3D xAxis;
+		private Point3D yAxis;
 		private int ymin;
 		private int ymax;
 		private int width;
@@ -195,11 +200,13 @@ public class RayCasterParallel {
 
 		private static int threshold = 20;
 		
-		public Job(Point3D screenCorner, Point3D eye, Scene scene, int ymin, int ymax, int width, int height,
+		public Job(Point3D screenCorner, Point3D eye, Scene scene, Point3D xAxis, Point3D yAxis, int ymin, int ymax, int width, int height,
 				double horizontal, double vertical, short[] red, short[] green, short[] blue) {
 			this.screenCorner = screenCorner;
 			this.eye = eye;
 			this.scene = scene;
+			this.xAxis = xAxis;
+			this.yAxis = yAxis;
 			this.ymin = ymin;
 			this.ymax = ymax;
 			this.width = width;
@@ -220,9 +227,9 @@ public class RayCasterParallel {
 			}
 
 			invokeAll(
-					new Job(screenCorner, eye, scene, ymin, ymin + (ymax - ymin) / 2, width, height, horizontal,
+					new Job(screenCorner, eye, scene, xAxis, yAxis, ymin, ymin + (ymax - ymin) / 2, width, height, horizontal,
 							vertical, red, green, blue),
-					new Job(screenCorner, eye, scene, ymin + (ymax - ymin) / 2, ymax, width, height, horizontal,
+					new Job(screenCorner, eye, scene, xAxis, yAxis, ymin + (ymax - ymin) / 2, ymax, width, height, horizontal,
 							vertical, red, green, blue));
 		}
 
@@ -238,9 +245,9 @@ public class RayCasterParallel {
 			for (int y = ymin; y < ymax; y++) {
 				for (int x = 0; x < width; x++) {
 					
-					Point3D screenPoint = new Point3D(screenCorner.x,
-							screenCorner.y + (double) x / (width - 1) * horizontal,
-							screenCorner.z - (double) y / (height - 1) * vertical);
+					Point3D screenPoint = screenCorner
+							.add(xAxis.scalarMultiply(horizontal * x / (width - 1.0)))
+							.sub(yAxis.scalarMultiply(vertical * y / (height - 1.0)));
 
 					Ray ray = Ray.fromPoints(eye, screenPoint);
 
@@ -276,13 +283,26 @@ public class RayCasterParallel {
 				short[] red = new short[width * height];
 				short[] green = new short[width * height];
 				short[] blue = new short[width * height];
+				
+				Point3D screenCorner = new Point3D(
+		        		view.x, 
+		        		view.y - horizontal / 2, 
+		        		view.z + vertical / 2);
+		        
+		        Point3D g_o = view.sub(eye);
+				Point3D og = g_o.scalarMultiply(1 / g_o.norm());
+				Point3D viewNormalized = viewUp.normalize();
 
-				Point3D screenCorner = new Point3D(view.x, view.y - horizontal / 2, view.z + vertical / 2);
+				Point3D yAxis = viewNormalized.sub(og.scalarMultiply(og.scalarProduct(viewNormalized)));
+		        yAxis.modifyNormalize();
+
+		        Point3D xAxis = og.vectorProduct(yAxis);
+		        xAxis.modifyNormalize();
 
 				Scene scene = RayTracerViewer.createPredefinedScene();
 
 				ForkJoinPool pool = new ForkJoinPool();
-				Job job = new Job(screenCorner, eye, scene, 0, height, width, height, horizontal, vertical, red, green,
+				Job job = new Job(screenCorner, eye, scene, xAxis, yAxis, 0, height, width, height, horizontal, vertical, red, green,
 						blue);
 				pool.invoke(job);
 				pool.shutdown();
