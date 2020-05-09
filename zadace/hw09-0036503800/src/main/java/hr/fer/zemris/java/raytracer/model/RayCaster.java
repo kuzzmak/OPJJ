@@ -91,13 +91,15 @@ public class RayCaster {
 		Point3D p1 = ls.getPoint();
 		Point3D p2 = closestObjectIntersection.getNormal();
 		Point3D p3 = ray.direction;
+		// vektor od točke na objektu do izvora svjetla
+		Point3D lv = p1.sub(closestObjectIntersection.getPoint()).modifyNormalize();
 		
 		// vektor od točke na objektu do izvora svjetla
-		Vector3 l = new Vector3(p1.x, p1.y, p1.z);
+		Vector3 l = new Vector3(lv.x, lv.y, lv.z);
 		// normala u točki na objektu
 		Vector3 normal = new Vector3(p2.x, p2.y, p2.z);
 		// vektor od promatrača do točke na objektu
-		Vector3 v = new Vector3(p3.x, p3.y, p3.z);
+		Vector3 v = new Vector3(-p3.x, -p3.y, -p3.z);
 		// reflektirana zraka/vektor
 		Vector3 r = normal.scale(2).scale(l.dot(normal)).sub(l);
 		
@@ -180,9 +182,9 @@ public class RayCaster {
 				short[] green = new short[width * height];
 				short[] blue = new short[width * height];
 				
-				Point3D g_o = view.sub(eye);
-				Point3D og = g_o.scalarMultiply(1 / g_o.norm());
-				Point3D viewNormalized = viewUp.normalize();
+//				Point3D g_o = view.sub(eye);
+//				Point3D og = g_o.scalarMultiply(1 / g_o.norm());
+//				Point3D viewNormalized = viewUp.normalize();
 
 //				Point3D yAxis = viewNormalized.sub(og.scalarMultiply(og.scalarProduct(viewNormalized)));
 //		        yAxis.modifyNormalize();
@@ -191,7 +193,7 @@ public class RayCaster {
 //		        xAxis.modifyNormalize();
 //		        
 //		        Point3D zAxis = og.copy();
-		        
+				
 		        Point3D screenCorner = new Point3D(
 		        		view.x, 
 		        		view.y - horizontal / 2, 
@@ -201,7 +203,7 @@ public class RayCaster {
 				
 				short[] rgb = new short[3];
 				int offset = 0;
-				
+
 				for(int y = 0; y < height; y++) {
 					for(int x = 0; x < width; x++) {
 						
@@ -220,7 +222,7 @@ public class RayCaster {
 						offset++;
 					}
 				}
-				
+						
 				System.out.println("Izračuni gotovi...");
 				observer.acceptResult(red, green, blue, requestNo);
 				System.out.println("Dojava gotova...");
