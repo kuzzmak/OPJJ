@@ -68,14 +68,15 @@ public class RayCaster {
 		
 		// kosinus kuta između vektora: od izvor do najbliže točke i normale objekta u točki
 		double cosfi = v1.cosAngle(v2);
+		if(cosfi < 0) return;
 		
 		short r = (short) (ls.getR() * closestObjectIntersection.getKdr() * cosfi);
 		short g = (short) (ls.getG() * closestObjectIntersection.getKdg() * cosfi);
 		short b = (short) (ls.getB() * closestObjectIntersection.getKdb() * cosfi);
 		
-		rgb[0] += r > 0 ? r : 0;
-		rgb[1] += g > 0 ? g : 0;
-		rgb[2] += b > 0 ? b : 0;
+		rgb[0] += r;
+		rgb[1] += g;
+		rgb[2] += b;
 	}
 	
 	/**
@@ -94,7 +95,6 @@ public class RayCaster {
 		// vektor od točke na objektu do izvora svjetla
 		Point3D lv = p1.sub(closestObjectIntersection.getPoint()).modifyNormalize();
 		
-		// vektor od točke na objektu do izvora svjetla
 		Vector3 l = new Vector3(lv.x, lv.y, lv.z);
 		// normala u točki na objektu
 		Vector3 normal = new Vector3(p2.x, p2.y, p2.z);
@@ -104,6 +104,8 @@ public class RayCaster {
 		Vector3 r = normal.scale(2).scale(l.dot(normal)).sub(l);
 		
 		double cosa = r.cosAngle(v);
+		if(cosa < 0) return;
+		
 		double n = closestObjectIntersection.getKrn();
 		
 		rgb[0] += (short) (ls.getR() * closestObjectIntersection.getKrr() * Math.pow(cosa, n));
@@ -149,9 +151,7 @@ public class RayCaster {
 				
 				// udaljenost od izvora svjetla do najbliže točke na objektu koja
 				// je izračunata kao najbliža na nekom objektu
-				double d2 = Math.sqrt(Math.pow(lsPoint.x - objectPoint.x, 2) + 
-						Math.pow(lsPoint.y - objectPoint.y, 2) +
-						Math.pow(lsPoint.z - objectPoint.z, 2));
+				double d2 = lsPoint.difference(lsPoint, objectPoint).norm();
 				
 				// objekt zaklonjen
 				if(d1 - d2 < 0) {
@@ -182,22 +182,20 @@ public class RayCaster {
 				short[] green = new short[width * height];
 				short[] blue = new short[width * height];
 				
-//				Point3D g_o = view.sub(eye);
-//				Point3D og = g_o.scalarMultiply(1 / g_o.norm());
-//				Point3D viewNormalized = viewUp.normalize();
-
-//				Point3D yAxis = viewNormalized.sub(og.scalarMultiply(og.scalarProduct(viewNormalized)));
-//		        yAxis.modifyNormalize();
-//
-//		        Point3D xAxis = og.vectorProduct(yAxis);
-//		        xAxis.modifyNormalize();
-//		        
-//		        Point3D zAxis = og.copy();
-				
 		        Point3D screenCorner = new Point3D(
 		        		view.x, 
 		        		view.y - horizontal / 2, 
 		        		view.z + vertical / 2);
+		        
+		        Point3D g_o = view.sub(eye);
+				Point3D og = g_o.scalarMultiply(1 / g_o.norm());
+				Point3D viewNormalized = viewUp.normalize();
+
+				Point3D yAxis = viewNormalized.sub(og.scalarMultiply(og.scalarProduct(viewNormalized)));
+		        yAxis.modifyNormalize();
+
+		        Point3D xAxis = og.vectorProduct(yAxis);
+		        xAxis.modifyNormalize();
 		        
 				Scene scene = RayTracerViewer.createPredefinedScene();
 				
@@ -207,9 +205,9 @@ public class RayCaster {
 				for(int y = 0; y < height; y++) {
 					for(int x = 0; x < width; x++) {
 						
-						Point3D screenPoint = new Point3D(screenCorner.x,
-				        		screenCorner.y  + (double)x / (width - 1) * horizontal,
-				        		screenCorner.z - (double)y / (height - 1) * vertical);
+						Point3D screenPoint = screenCorner
+								.add(xAxis.scalarMultiply(horizontal * x / (width - 1.0)))
+								.sub(yAxis.scalarMultiply(vertical * y / (height - 1.0)));
 						
 						Ray ray = Ray.fromPoints(eye, screenPoint);
 						

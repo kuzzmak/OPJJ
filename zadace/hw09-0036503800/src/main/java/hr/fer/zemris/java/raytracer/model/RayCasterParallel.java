@@ -155,9 +155,7 @@ public class RayCasterParallel {
 				
 				// udaljenost od izvora svjetla do najbliže točke na objektu koja
 				// je izračunata kao najbliža na nekom objektu
-				double d2 = Math.sqrt(Math.pow(lsPoint.x - objectPoint.x, 2) + 
-						Math.pow(lsPoint.y - objectPoint.y, 2) +
-						Math.pow(lsPoint.z - objectPoint.z, 2));
+				double d2 = lsPoint.difference(lsPoint, objectPoint).norm();
 				
 				// objekt zaklonjen
 				if(d1 - d2 < 0) {
