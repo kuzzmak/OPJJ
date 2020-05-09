@@ -1,23 +1,28 @@
-package hr.fer.zemris.java.raytracer.model;
+package hr.fer.zemris.java.raytracer;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import hr.fer.zemris.java.raytracer.model.GraphicalObject;
+import hr.fer.zemris.java.raytracer.model.IRayTracerAnimator;
+import hr.fer.zemris.java.raytracer.model.IRayTracerProducer;
+import hr.fer.zemris.java.raytracer.model.IRayTracerResultObserver;
+import hr.fer.zemris.java.raytracer.model.LightSource;
+import hr.fer.zemris.java.raytracer.model.Point3D;
+import hr.fer.zemris.java.raytracer.model.Ray;
+import hr.fer.zemris.java.raytracer.model.RayIntersection;
+import hr.fer.zemris.java.raytracer.model.Scene;
 import hr.fer.zemris.java.raytracer.viewer.RayTracerViewer;
 import hr.fer.zemris.math.Vector3;
 
-public class RayCaster {
+public class RayCasterParallel2 {
 	
 	public static void main(String[] args) {
-		RayTracerViewer.show(getIRayTracerProducer(), 
-				new Point3D(10, 0, 0),
-				new Point3D(0, 0, 0),
-				new Point3D(0, 0, 10),
-				20,
-				20);
+		RayTracerViewer.show(getIRayTracerProducer(), getIRayTracerAnimator(), 30, 30);
 	}
-	
+
 	/**
 	 * Funkcija za pronalazak sjecišta trenutne zrake {@code ray} i objekata
 	 * scene {@code scene}. Ako ih postoji više, uzima se bliže.
@@ -147,14 +152,14 @@ public class RayCaster {
 				// točka najbliža izvoru svjetla
 				Point3D lsPoint = ls.getPoint();
 				// točka najbliža gledatelju
-				Point3D objectPoint = closestLightSourceIntersection.getPoint();
+				Point3D objectPoint = closestObjectIntersection.getPoint();
 				
 				// udaljenost od izvora svjetla do najbliže točke na objektu koja
 				// je izračunata kao najbliža na nekom objektu
 				double d2 = lsPoint.difference(lsPoint, objectPoint).norm();
 				
 				// objekt zaklonjen
-				if(d1 - d2 < 0) {
+				if(d1 + 1E-6 <= d2) {
 					continue;
 				}else {
 					diffuseComponent(ls, closestObjectIntersection, rgb);
@@ -163,26 +168,165 @@ public class RayCaster {
 			}
 		}
 	}
+
+	/**
+	 * Razred koji predstavlja posao izračuna piksela. Posao izračuna
+	 * se raspolavlja tako dugo do kada broj redaka piksela koji
+	 * svaki objekt ovog razreda mora napraviti ne pdane ispod broja 
+	 * {@code threshold}.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
+	private static class Job extends RecursiveAction {
+
+		private static final long serialVersionUID = 1L;
+
+		private Point3D screenCorner;
+		private Point3D eye;
+		private Scene scene;
+		private Point3D xAxis;
+		private Point3D yAxis;
+		private int ymin;
+		private int ymax;
+		private int width;
+		private int height;
+		private double horizontal;
+		private double vertical;
+		private short[] red;
+		private short[] green;
+		private short[] blue;
+
+		private static int threshold = 20;
+		
+		public Job(Point3D screenCorner, Point3D eye, Scene scene, Point3D xAxis, Point3D yAxis, int ymin, int ymax, int width, int height,
+				double horizontal, double vertical, short[] red, short[] green, short[] blue) {
+			this.screenCorner = screenCorner;
+			this.eye = eye;
+			this.scene = scene;
+			this.xAxis = xAxis;
+			this.yAxis = yAxis;
+			this.ymin = ymin;
+			this.ymax = ymax;
+			this.width = width;
+			this.height = height;
+			this.horizontal = horizontal;
+			this.vertical = vertical;
+			this.red = red;
+			this.green = green;
+			this.blue = blue;
+		}
+
+		@Override
+		protected void compute() {
+
+			if (ymax - ymin <= threshold) {
+				computeDirect();
+				return;
+			}
+
+			invokeAll(
+					new Job(screenCorner, eye, scene, xAxis, yAxis, ymin, ymin + (ymax - ymin) / 2, width, height, horizontal,
+							vertical, red, green, blue),
+					new Job(screenCorner, eye, scene, xAxis, yAxis, ymin + (ymax - ymin) / 2, ymax, width, height, horizontal,
+							vertical, red, green, blue));
+		}
+
+		/**
+		 * Funkcija za direktan izračun zadatka ako je broj redaka
+		 * piksela ispod broja {@code threshold}.
+		 * 
+		 */
+		protected void computeDirect() {
+			
+			int offset = 0;
+
+			for (int y = ymin; y < ymax; y++) {
+				for (int x = 0; x < width; x++) {
+					
+					Point3D screenPoint = new Point3D(screenCorner.x,
+							screenCorner.y + (double) x / (width - 1) * horizontal,
+							screenCorner.z - (double) y / (height - 1) * vertical);
+
+					Ray ray = Ray.fromPoints(eye, screenPoint);
+
+					short[] rgb = new short[3];
+
+					tracer(scene, ray, rgb);
+					
+					red[y * width + offset] = rgb[0];
+					green[y * width + offset] = rgb[1];
+					blue[y * width + offset] = rgb[2];
+					offset++;
+				}
+				offset = 0;
+			}
+		}
+
+	}
 	
 	/**
-	 * Metoda za stvaranje objekta za ray tracing.
+	 * Metoda za stvaranje objekta animacije.
+	 * 
+	 * @return objekt tipa {@code IRayTracerAnimator}
+	 */
+	private static IRayTracerAnimator getIRayTracerAnimator() {
+		return new IRayTracerAnimator() {
+			
+			long time;
+			
+			@Override
+			public void update(long deltaTime) {
+				time += deltaTime;
+			}
+			
+			@Override
+			public Point3D getViewUp() {
+				return new Point3D(0, 0, 10);
+			}
+			
+			@Override
+			public Point3D getView() {
+				return new Point3D(-2, 0, -0.5);
+			}
+			
+			@Override
+			public long getTargetTimeFrameDuration() {
+				return 150;
+			}
+			
+			@Override
+			public Point3D getEye() {
+				double t = (time) / 10000. * 2 * Math.PI;
+				double t2 = (time) / 5000. * 2 * Math.PI;
+				double x = 50 * Math.cos(t);
+				double y = 50 * Math.sin(t);
+				double z = 30 * Math.sin(t2);
+				return new Point3D(x, y, z);
+			}
+		};
+		
+	}
+
+	/**
+	 * Metoda za stvaranje ray tracer objekta.
 	 * 
 	 * @return objekt tipa {@code IRayTracerProducer}
 	 */
 	private static IRayTracerProducer getIRayTracerProducer() {
 		return new IRayTracerProducer() {
-			
+
 			@Override
-			public void produce(Point3D eye, Point3D view, Point3D viewUp, double horizontal, double vertical, int width,
-					int height, long requestNo, IRayTracerResultObserver observer, AtomicBoolean cancel) {
-				
+			public void produce(Point3D eye, Point3D view, Point3D viewUp, double horizontal, double vertical,
+					int width, int height, long requestNo, IRayTracerResultObserver observer, AtomicBoolean cancel) {
+
 				System.out.println("Započinjem izračune...");
-				
+
 				short[] red = new short[width * height];
 				short[] green = new short[width * height];
 				short[] blue = new short[width * height];
-				
-		        Point3D screenCorner = new Point3D(
+
+				Point3D screenCorner = new Point3D(
 		        		view.x, 
 		        		view.y - horizontal / 2, 
 		        		view.z + vertical / 2);
@@ -196,31 +340,15 @@ public class RayCaster {
 
 		        Point3D xAxis = og.vectorProduct(yAxis);
 		        xAxis.modifyNormalize();
-		        
-				Scene scene = RayTracerViewer.createPredefinedScene();
-				
-				short[] rgb = new short[3];
-				int offset = 0;
 
-				for(int y = 0; y < height; y++) {
-					for(int x = 0; x < width; x++) {
-						
-						Point3D screenPoint = screenCorner
-								.add(xAxis.scalarMultiply(horizontal * x / (width - 1.0)))
-								.sub(yAxis.scalarMultiply(vertical * y / (height - 1.0)));
-						
-						Ray ray = Ray.fromPoints(eye, screenPoint);
-						
-						tracer(scene, ray, rgb);
-						
-						red[offset] = rgb[0] > 255 ? 255 : rgb[0];
-						green[offset] = rgb[1] > 255 ? 255 : rgb[1];
-						blue[offset] = rgb[2] > 255 ? 255 : rgb[2];
-						
-						offset++;
-					}
-				}
-						
+				Scene scene = RayTracerViewer.createPredefinedScene2();
+
+				ForkJoinPool pool = new ForkJoinPool();
+				Job job = new Job(screenCorner, eye, scene, xAxis, yAxis, 0, height, width, height, horizontal, vertical, red, green,
+						blue);
+				pool.invoke(job);
+				pool.shutdown();
+				
 				System.out.println("Izračuni gotovi...");
 				observer.acceptResult(red, green, blue, requestNo);
 				System.out.println("Dojava gotova...");
