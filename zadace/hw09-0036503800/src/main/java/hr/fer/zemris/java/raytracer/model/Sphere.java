@@ -1,5 +1,12 @@
 package hr.fer.zemris.java.raytracer.model;
 
+/**
+ * Razred koji predstvalja model grafičkog objekta kugle koji
+ * se može dodati u scenu.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class Sphere extends GraphicalObject {
 	
 	private Point3D center; 
@@ -12,6 +19,19 @@ public class Sphere extends GraphicalObject {
 	private double krb;
 	private double krn;
 	
+	/**
+	 * Inicijalni konstruktor.
+	 * 
+	 * @param center središte kugle
+	 * @param radius radijus kugle
+	 * @param kdr koeficijent difuzne komponente crvene boje
+	 * @param kdg koeficijent difuzne komponente zelene boje
+	 * @param kdb koeficijent difuzne komponente plave boje
+	 * @param krr koeficijent zrcalne komponente crvene boje
+	 * @param krg koeficijent zrcalne komponente zelene boje
+	 * @param krb koeficijent zrcalne komponente plave boje
+	 * @param krn koeficijent zrcalne komponente {@code n}
+	 */
 	public Sphere(Point3D center, double radius, double kdr, double kdg, double kdb, double krr, double krg, double krb,
 			double krn) {
 		super();
@@ -29,11 +49,6 @@ public class Sphere extends GraphicalObject {
 	@Override
 	public RayIntersection findClosestRayIntersection(Ray ray) {
 		
-//		System.out.println(center.x + ", " + center.y + ", " + center.z);
-//		System.out.println(ray.start.x + ", " + ray.start.y + ", " + ray.start.z);
-//		System.out.println(ray.direction.x + ", " + ray.direction.y + ", " + ray.direction.z);
-		
-		
 		// traži se presjek kugle i polupravca
 		// formula preuzeta iz https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
 		
@@ -50,9 +65,7 @@ public class Sphere extends GraphicalObject {
 				(Math.pow(o_c.norm(), 2) - Math.pow(this.radius, 2));
 	    
 	    if(underSquare < 0) {
-	    	
 	    	return null;
-	    	
 	    }else {
 	    	
 	    	// svaka točka može se napisati: x = o + d * l, gdje je "o" početak
@@ -66,22 +79,12 @@ public class Sphere extends GraphicalObject {
 	    	Point3D start = ray.start;
 	    	
 	    	// točke dobivene koeficijentima
-	    	Point3D p1 = new Point3D(start.x + direction.x * d1,
-	    			start.y + direction.y * d1,
-	    			start.z + direction.z * d1);
-	    	
-	    	Point3D p2 = new Point3D(start.x + direction.x * d2,
-	    			start.y + direction.y * d2,
-	    			start.z + direction.z * d2);
+	    	Point3D p1 = start.add(direction.scalarMultiply(d1));
+	    	Point3D p2 = start.add(direction.scalarMultiply(d2));
 	    	
 	    	// udaljenosti pojedine točke
-	    	double dist1 = Math.sqrt(Math.pow(start.x - p1.x, 2) + 
-	    			Math.pow(start.y - p1.y, 2) + 
-	    			Math.pow(start.z - p1.z, 2));
-	    	
-	    	double dist2 = Math.sqrt(Math.pow(start.x - p2.x, 2) + 
-	    			Math.pow(start.y - p2.y, 2) + 
-	    			Math.pow(start.z - p2.z, 2));
+	    	double dist1 = start.difference(start, p1).norm();
+	    	double dist2 = start.difference(start, p2).norm();
 	    	
 	    	Point3D closer;
 	    	double closerDist = dist1;
