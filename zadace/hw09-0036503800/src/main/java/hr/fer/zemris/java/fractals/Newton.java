@@ -233,42 +233,44 @@ public class Newton {
 		}
 	}
 	
-	
-
+	/**
+	 * Funkcija iz koje započinje izvođenje glavnog programa.
+	 * 
+	 * @param args argumenti glavnog programaS
+	 */
 	public static void main(String[] args) {
 		
-//		System.out.println("Welcome to Newton-Raphson iteration-based fractal viewer.");
-//		System.out.println("Please enter at least two roots, one root per line. Enter 'done' when done.");
+		System.out.println("Welcome to Newton-Raphson iteration-based fractal viewer.");
+		System.out.println("Please enter at least two roots, one root per line. Enter 'done' when done.");
 		
 		List<Complex> roots = new ArrayList<>();
 		Scanner sc = new Scanner(System.in);
 		int rowCounter = 0;
 		
-//		System.out.print("Root " + rowCounter + ">");
+		System.out.print("Root " + rowCounter + ">");
 		
-		roots.addAll(new ArrayList<>(Arrays.asList(Complex.ONE, Complex.ONE_NEG, Complex.IM, Complex.IM_NEG)));
-		
-//		while(sc.hasNextLine()) {
-//			
-//			rowCounter++;
-//			
-//			String line = sc.nextLine();
-//			if(line.equals("done")) break;
-//			
-//			Complex root;
-//			try {
-//				
-//				root = Complex.parse(line);
-//				roots.add(root);
-//				
-//			}catch(NumberFormatException e) {
-//				System.out.println("Pogrešno unesen kompleksni broj.");
-//			}
-//		}
+		while(sc.hasNextLine()) {
+			
+			rowCounter++;
+			
+			String line = sc.nextLine();
+			if(line.equals("done")) break;
+			
+			Complex root;
+			try {
+				
+				root = Complex.parse(line);
+				roots.add(root);
+				
+			}catch(NumberFormatException e) {
+				System.out.println("Pogrešno unesen kompleksni broj.");
+			}
+			
+			System.out.print("Root " + rowCounter + ">");
+		}
 		
 		System.out.println("Image of fractal will appear shortly. Thank you.");
 		Newton n = new Newton(16, roots);
-		
 	}
 	
 }
