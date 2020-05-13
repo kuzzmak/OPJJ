@@ -1,5 +1,9 @@
 package hr.fer.zemris.java.gui.layouts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Razred koji predstavlja jednu poziciju u {@code CalcLayout} manageru.
  * 
@@ -11,6 +15,11 @@ public class RCPosition {
 
 	private int row;
 	private int column;
+	// prvi indeks 
+	public static RCPosition FIRST = new RCPosition(1, 1);
+	// nedozvoljeni indeksi jer prvi redak zauzima 5 pozicija prva ćelija
+	public static List<RCPosition> invalidPositions = new ArrayList<>(Arrays.asList(new RCPosition(1, 2),
+			new RCPosition(1, 3), new RCPosition(1, 4), new RCPosition(1, 5)));
 
 	/**
 	 * Konstruktor.
@@ -41,7 +50,9 @@ public class RCPosition {
 		try {
 			int row = Integer.parseInt(splitted[0]);
 			int column = Integer.parseInt(splitted[1]);
+			
 			return new RCPosition(row, column);
+			
 		} catch (NumberFormatException | IndexOutOfBoundsException e) {
 			throw new CalcLayoutException("Krivi unos pozicije.");
 		}
@@ -53,6 +64,11 @@ public class RCPosition {
 
 	public int getColumn() {
 		return column;
+	}
+
+	@Override
+	public String toString() {
+		return "(" + row + "," + column + ")";
 	}
 
 	@Override
