@@ -135,6 +135,9 @@ public class CalcLayout implements LayoutManager2 {
 		}else 
 			throw new IllegalArgumentException("Pozicija mora biti string ili rcposition.");
 			
+		if(RCPosition.invalidPositions.contains(pos))
+			throw new CalcLayoutException("Nije moguće dodati ćeliju na indeks: " + pos.getRow() + ", " + pos.getColumn());
+		
 		setPosition(comp, pos);		
 	}
 
