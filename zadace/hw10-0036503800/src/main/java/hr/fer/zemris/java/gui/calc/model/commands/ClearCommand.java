@@ -2,6 +2,12 @@ package hr.fer.zemris.java.gui.calc.model.commands;
 
 import hr.fer.zemris.java.gui.calc.model.CalcModel;
 
+/**
+ * Razred koji predstavlja naredbu {@link hr.fer.zemris.java.gui.calc.model.CalcModelIMpl#clear() clear()}.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class ClearCommand implements ICalcCommand {
 
 	@Override
