@@ -38,7 +38,6 @@ public class BarChartComponent extends JComponent {
 	public BarChartComponent(BarChart chart) {
 		super();
 		this.chart = chart;
-		setPreferredSize(new Dimension(500, 500));
 	}
 
 	@Override
@@ -107,7 +106,7 @@ public class BarChartComponent extends JComponent {
 		g.drawLine(XOFFSET, size.height - XOFFSET + TOPOFFSET, size.width, size.height - XOFFSET + TOPOFFSET);
 
 		drawAllignedString(g, chart.getxName(),
-				new Rectangle(YOFFSET, size.height - XOFFSET + 30, size.width - 10 - YOFFSET, 20), "center");
+				new Rectangle(YOFFSET, size.height - XOFFSET + 30, size.width - 10 - YOFFSET, 10), "center");
 		
 		// strelica
 		g.drawLine(size.width, size.height - XOFFSET + TOPOFFSET, size.width - 5, size.height - XOFFSET + 5 +TOPOFFSET);
@@ -237,6 +236,17 @@ public class BarChartComponent extends JComponent {
 		}
 
 		g.setColor(oldColor);
+		
+		repaint();
 	}
 
+	@Override
+	public Dimension getPreferredSize() {
+		
+		Rectangle size = super.getParent().getBounds();
+		
+		return new Dimension(size.width, size.height);
+	}
+
+	
 }
