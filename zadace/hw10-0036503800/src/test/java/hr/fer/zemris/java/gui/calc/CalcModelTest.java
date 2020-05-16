@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import hr.fer.zemris.java.gui.calc.model.CalcModel;
 import hr.fer.zemris.java.gui.calc.model.CalcModelIMpl;
-import hr.fer.zemris.java.gui.calc.model.CalcValueListener;
 import hr.fer.zemris.java.gui.calc.model.CalculatorInputException;
-
-import java.util.function.DoubleBinaryOperator;
 
 public class CalcModelTest {
 	
