@@ -154,6 +154,14 @@ public class BarChart extends JFrame{
 			return null;
 		}
 		
+		if(yMin < 0) 
+			throw new IllegalArgumentException("Minimalna vrijednost ne može biti negativna.");
+		
+		for(XYValue value: values) {
+			if(value.getY() < yMin)
+				throw new IllegalArgumentException("Minimalna vrijednost je krivo zadana.");
+		}
+		
 		return new BarChart(values, xName, yName, yMin, yMax, diff, file);
 	}
 	
