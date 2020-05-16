@@ -46,5 +46,14 @@ public class CalcLayoutTest {
 		JLabel l = new JLabel();
 		assertThrows(CalcLayoutException.class, () -> p.add(l, new RCPosition(1, 2)));
 	}
+	
+	@Test
+	public void umetanjeNaZauzetoMjesto() {
+		JPanel p = new JPanel(new CalcLayout(2));
+		JLabel l = new JLabel();
+		JLabel l2 = new JLabel();
+		p.add(l, new RCPosition(1, 6));
+		assertThrows(CalcLayoutException.class, () -> p.add(l2, new RCPosition(1, 6)));
+	}
 
 }
