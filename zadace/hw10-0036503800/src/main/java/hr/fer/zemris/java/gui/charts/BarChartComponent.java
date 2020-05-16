@@ -2,7 +2,6 @@ package hr.fer.zemris.java.gui.charts;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -12,15 +11,30 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+/**
+ * Razred koji grafički prikazuje vrijednosti u obliku stupčastog grafa.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class BarChartComponent extends JComponent {
 
 	private static final long serialVersionUID = 1L;
 
 	private BarChart chart;
 
+	// pomak x osi od dna prozora
 	private static final int XOFFSET = 50;
+	// pomak y osi od lijeve strane prozora
 	private static final int YOFFSET = 50;
+	
+	private static final int TOPOFFSET = 10;
 
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param chart objekt koji sadrži vrijednosti grafa i druge važne informacije
+	 */
 	public BarChartComponent(BarChart chart) {
 		super();
 		this.chart = chart;
@@ -32,74 +46,125 @@ public class BarChartComponent extends JComponent {
 		super.paintComponent(g);
 
 		drawMesh(g);
-		drawRectangles(g, Color.green, 2);
+		drawRectangles(g, Color.green, 5);
 		drawYaxis(g);
 		drawXAxis(g, 2);
 	}
 
-	public void drawCenteredString(Graphics g, String text, Rectangle rect) {
+	/**
+	 * Funkcija za crtanje poravnatog teksta u nekom pravokutniku.
+	 * 
+	 * @param g objekt po kojem se crta
+	 * @param text tekst koji se upisuje
+	 * @param rect pravokutnik u kojem se tekst centrira
+	 * @param allignment vrsta poravnanja
+	 * @throws IllegalArgumentException uslijed neispravnog poravnanja
+	 */
+	public void drawAllignedString(Graphics g, String text, Rectangle rect, String allignment) {
 
 		FontMetrics metrics = g.getFontMetrics(g.getFont());
-		int x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+		int x;
+		
+		if(allignment.equals("center")) {
+			x = rect.x + (rect.width - metrics.stringWidth(text)) / 2;
+		}else if(allignment.equals("right")){
+			x = 20 + rect.width - metrics.stringWidth(text);
+		}else
+			throw new IllegalArgumentException("Neispravno poravnanje.");
+		
 		int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
 		g.drawString(text, x, y);
 	}
 
-	public void drawRightCenteredString(Graphics g, String text, Rectangle rect) {
-
-		FontMetrics metrics = g.getFontMetrics(g.getFont());
-		int x = rect.width - metrics.stringWidth(text);
-		int y = rect.y + ((rect.height - metrics.getHeight()) / 2) + metrics.getAscent();
-		g.fillRect(rect.x, rect.y, rect.width, rect.height);
-		g.setColor(Color.yellow);
-		g.drawString(text, x, y);
-		g.setColor(Color.black);
-	}
-
+	/**
+	 * Metoda za crtanje x osi grafa.
+	 * 
+	 * @param g objekt po kojem se crta
+	 * @param lineSpacing razmak među pojedinim stupcima grafa
+	 */
 	public void drawXAxis(Graphics g, int lineSpacing) {
 
 		int valuesSize = chart.getValues().size();
 		Dimension size = getSize();
 
+		// vrijednosti osi x
 		int x = 50 + lineSpacing / 2;
 		for (int i = 0; i < chart.getValues().size(); i++) {
 
-			int lineWidthNormalized = (size.width - 50 - 10) / valuesSize;
+			int lineWidthNormalized = (size.width - 50 - 20) / valuesSize;
 
-			drawCenteredString(g, String.valueOf(i + 1), new Rectangle(x + lineWidthNormalized * i,
-					size.height - XOFFSET, lineWidthNormalized - lineSpacing, 20));
+			drawAllignedString(g, 
+					String.valueOf(i + 1), 
+					new Rectangle(
+							x + lineWidthNormalized * i,
+							size.height - XOFFSET + TOPOFFSET, 
+							lineWidthNormalized - lineSpacing, 
+							20 + TOPOFFSET),
+					"center");
 		}
 
-		g.drawLine(XOFFSET, size.height - XOFFSET, size.width - 10, size.height - XOFFSET);
+		//os x
+		g.drawLine(XOFFSET, size.height - XOFFSET + TOPOFFSET, size.width, size.height - XOFFSET + TOPOFFSET);
 
-		drawCenteredString(g, chart.getxName(),
-				new Rectangle(YOFFSET, size.height - XOFFSET + 20, size.width - 10 - YOFFSET, 25));
+		drawAllignedString(g, chart.getxName(),
+				new Rectangle(YOFFSET, size.height - XOFFSET + 30, size.width - 10 - YOFFSET, 20), "center");
+		
+		// strelica
+		g.drawLine(size.width, size.height - XOFFSET + TOPOFFSET, size.width - 5, size.height - XOFFSET + 5 +TOPOFFSET);
+		g.drawLine(size.width, size.height - XOFFSET + TOPOFFSET, size.width - 5, size.height - XOFFSET - 5 +TOPOFFSET);
 	}
 	
+	/**
+	 * Metoda za crtanje mreže grafa.
+	 * 
+	 * @param g objekt po kojem se crta
+	 */
 	public void drawMesh(Graphics g) {
 		
 		Dimension size = getSize();
 		int yMax = chart.getMaxY();
+		int yMin = chart.getMinY();
 		int diff = chart.getDiff();
 		
-		int lineHeightNormalized = (size.height - XOFFSET) / yMax;
+		int lineHeightNormalized = (size.height - XOFFSET) / (yMax - yMin);
 		
-		for(int i = 0; i <= yMax; i += diff) {
-			g.drawLine(XOFFSET - 5, size.height - YOFFSET - i * lineHeightNormalized, size.width - 10, size.height - YOFFSET - i * lineHeightNormalized);
+		// horizontalne linije
+		for(int i = 0; i <= yMax - yMin; i += diff) {
+			g.drawLine(YOFFSET - 5, 
+					size.height - XOFFSET - i * lineHeightNormalized + TOPOFFSET, 
+					size.width - 20, 
+					size.height - XOFFSET - i * lineHeightNormalized + TOPOFFSET);
+		}
+		
+		int valuesSize = chart.getValues().size();
+		int lineWidthNormalized = (size.width - 50 - 20) / valuesSize;
+		
+		// vertikalne linije
+		for(int i = 0;  i < valuesSize; i++) {
+			int x1 = YOFFSET;
+			int y1 = TOPOFFSET;
+			int x2 = YOFFSET;
+			int y2 = size.height - XOFFSET + TOPOFFSET;
+			g.drawLine(x1 + i * lineWidthNormalized, y1, x2 + i * lineWidthNormalized, y2);
 		}
 	}
 
+	/**
+	 * Metoda za crtanje y osi.
+	 * 
+	 * @param g objekt po kojem se crta
+	 */
 	public void drawYaxis(Graphics g) {
 
 		Dimension size = getSize();
 		Graphics2D g2d = (Graphics2D) g;
-		AffineTransform defaultAt = g2d.getTransform();
 
+		// okret koordinatnog sustava udesno za 90 stupnjeva
 		AffineTransform at = new AffineTransform();
 		at.rotate(-Math.PI / 2);
 		g2d.setTransform(at);
 
-		drawCenteredString(g, chart.getyName(), new Rectangle(-(size.height + XOFFSET) / 2, 2, 100, 20));
+		drawAllignedString(g, chart.getyName(), new Rectangle(-(size.height + XOFFSET) / 2, 2, 100, 20), "center");
 
 		at.rotate(Math.PI / 2);
 		g2d.setTransform(at);
@@ -108,24 +173,27 @@ public class BarChartComponent extends JComponent {
 		int yMin = chart.getMinY();
 		int diff = chart.getDiff();
 
+		// os y
 		int x1 = YOFFSET;
-		int y1 = 10;
+		int y1 = 0;
 		int x2 = YOFFSET;
 		int y2 = size.height - XOFFSET;
-
 		g.drawLine(x1, y1, x2, y2);
 		
-		int lineHeightNormalized = (size.height - XOFFSET) / yMax;
-
-		for (int i = 0; i <= yMax; i += diff) {
+		// vrijednosti osi y
+		int lineHeightNormalized = (size.height - XOFFSET) / (yMax - yMin);
+		for (int i = yMin; i <= yMax; i += diff) {
 			int x = 25;
-			int y = size.height - XOFFSET - lineHeightNormalized / 2;
+			int y = size.height - XOFFSET - lineHeightNormalized / 2 + yMin * lineHeightNormalized + TOPOFFSET;
 			int width = 20;
 			int height = lineHeightNormalized;
 			
-			drawCenteredString(g, String.valueOf(i), new Rectangle(x, y - lineHeightNormalized * i, width, height));
-			
+			drawAllignedString(g, String.valueOf(i), new Rectangle(x, y - lineHeightNormalized * i, width, height), "right");
 		}
+		
+		// strelica
+		g.drawLine(YOFFSET, 0, YOFFSET + 5, 5);
+		g.drawLine(YOFFSET, 0, YOFFSET - 5, 5);
 	}
 
 	/**
@@ -140,15 +208,16 @@ public class BarChartComponent extends JComponent {
 		List<XYValue> values = chart.getValues();
 
 		int yMax = chart.getMaxY();
+		int yMin = chart.getMinY();
 
 		// veličina trenutnog prozora
 		Dimension size = getSize();
 
 		// širina pojedine linije, oduzeto s lijeve strane 50 za naziv y osi
-		// i vrijednosti y osi i 10 s desne strane za strelicu x osi
-		int lineWidthNormalized = (size.width - 50 - 10) / values.size();
+		// i vrijednosti y osi i 20 s desne strane za strelicu x osi
+		int lineWidthNormalized = (size.width - 50 - 20) / values.size();
 		// iznos jedinične vrijednosti
-		int lineHeightNormalized = (size.height - XOFFSET) / yMax;
+		int lineHeightNormalized = (size.height - XOFFSET) / (yMax - yMin);
 
 		Color oldColor = g.getColor();
 		g.setColor(color);
@@ -158,25 +227,15 @@ public class BarChartComponent extends JComponent {
 		for (int i = 0; i < values.size(); i++) {
 
 			int lineHeight = lineHeightNormalized * values.get(i).getY();
-			int y = size.height - XOFFSET - lineHeight;
-			int width = lineWidthNormalized - lineSpacing;
+			int y = size.height - XOFFSET - lineHeight + TOPOFFSET;
+			int width = lineWidthNormalized - lineSpacing / 2;
 
-			g.fillRect(x + lineWidthNormalized * i, y, width, lineHeight);
+			g.fillRect(x + lineWidthNormalized * i, 
+					y + yMin * lineHeightNormalized, 
+					width, 
+					lineHeight - yMin * lineHeightNormalized);
 		}
 
-		g.setColor(oldColor);
-	}
-
-	private void drawText(Graphics g, String text, int x, int y, Color color) {
-
-		Font oldFont = g.getFont();
-		Color oldColor = g.getColor();
-
-		Font font = new Font("Serif", Font.PLAIN, 18);
-		g.setFont(font);
-		g.setColor(color);
-		g.drawString(text, x, y);
-		g.setFont(oldFont);
 		g.setColor(oldColor);
 	}
 
