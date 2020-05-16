@@ -138,6 +138,9 @@ public class CalcLayout implements LayoutManager2 {
 		if(RCPosition.invalidPositions.contains(pos))
 			throw new CalcLayoutException("Nije moguće dodati ćeliju na indeks: " + pos.getRow() + ", " + pos.getColumn());
 		
+		if(compTable.containsValue(pos))
+			throw new CalcLayoutException("Navedena pozicija već zauzeta.");
+		
 		setPosition(comp, pos);		
 	}
 
