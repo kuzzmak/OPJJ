@@ -2,6 +2,7 @@ package hr.fer.zemris.java.gui.calc.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.DoubleBinaryOperator;
 
 /**
@@ -28,6 +29,8 @@ public class CalcModelIMpl implements CalcModel {
 	public static List<CalcValueListener> listeners;
 	// operator koji čeka na drugi operand
 	private DoubleBinaryOperator pendingOperator = null;
+	// stog za stavljanje i vađenje brojeva/rezultata kalkulatora
+	private static Stack<Double> stack;
 
 	/**
 	 * Konstruktor.
@@ -35,15 +38,18 @@ public class CalcModelIMpl implements CalcModel {
 	 */
 	public CalcModelIMpl() {
 		listeners = new ArrayList<>();
+		stack = new Stack<>();
 	}
 
 	@Override
 	public void addCalcValueListener(CalcValueListener l) {
+		listeners = new ArrayList<>(listeners);
 		listeners.add(l);
 	}
 
 	@Override
 	public void removeCalcValueListener(CalcValueListener l) {
+		listeners = new ArrayList<>(listeners);
 		listeners.remove(l);
 	}
 
@@ -75,9 +81,10 @@ public class CalcModelIMpl implements CalcModel {
 
 	@Override
 	public void clear() {
-		this.currentValue = 0;
-		this.negativeValue = false;
-		this.currentValueString = "";
+		currentValue = 0;
+		negativeValue = false;
+		currentValueString = "";
+		isEditable = true;
 	}
 
 	@Override
@@ -85,7 +92,6 @@ public class CalcModelIMpl implements CalcModel {
 		clear();
 		clearActiveOperand();
 		freezeValue(null);
-		isEditable = true;
 		notifyListeners();
 	}
 
@@ -132,9 +138,9 @@ public class CalcModelIMpl implements CalcModel {
 			throw new CalculatorInputException("Prevelik broj.");
 		
 		String oldNumber = currentValueString;
-
+		
 		if (isEditable()) {
-			if (digit == 0 && oldNumber.length() == 1) {
+			if (digit == 0 && oldNumber.equals("0")) {
 				
 			} else {
 				
@@ -206,11 +212,38 @@ public class CalcModelIMpl implements CalcModel {
 		return "0";
 	}
 	
-	public void notifyListeners() {
+	/**
+	 * Funkcija za obavještavanje pretplaćenih slušaća modela.
+	 * 
+	 */
+	private void notifyListeners() {
 		
 		for(CalcValueListener l: listeners) {
 			l.valueChanged(this);		
 		}
+	}
+	
+	/**
+	 * Metoda za stavljanje vrijednosti na stog.
+	 * 
+	 * @param item vrijednost koja se stavlja na stog
+	 */
+	public static void push(double item) {
+		stack.push(item);
+	}
+	
+	/**
+	 * Metoda za dohvat vrijednosti s vrha stoga.
+	 * 
+	 * @return vrijednost na vrhu stoga ako postoji
+	 * @throws CalculatorInputException ako je stog prazan
+	 */
+	public static Double pop() {
+		
+		if(!stack.isEmpty()) {
+			return stack.pop();
+		}
+		throw new CalculatorInputException("Stog prazan.");
 	}
 
 }

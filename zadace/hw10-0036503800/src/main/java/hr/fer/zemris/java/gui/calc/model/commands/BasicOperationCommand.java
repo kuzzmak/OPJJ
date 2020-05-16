@@ -37,11 +37,8 @@ public class BasicOperationCommand implements ICalcCommand {
 
 			double result = op.applyAsDouble(operand, currentValue);
 			model.setValue(result);
-			model.setActiveOperand(result);
 		}
 		
-		// ako dosad nije postavljena nikakva operacija ili izvršenje druge
-		// operacije ukoliko je postojala prethodna
 		model.setActiveOperand(model.getValue());
 		model.setPendingBinaryOperation(operator);
 		model.clear();
