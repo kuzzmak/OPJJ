@@ -8,17 +8,32 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+/**
+ * Razred za prikaz funkcionalnosti layout managera {@code CalcLayout}.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class DemoFrame1 extends JFrame{
 	
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Konstruktor.
+	 * 
+	 */
 	public DemoFrame1() {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		//setSize(500, 500);
 		initGUI();
 		pack();
 	}
 
+	/**
+	 * Funkcija za stvaranje labele s određenim tekstom.
+	 * 
+	 * @param text tekst ispisan u labeli
+	 * @return objekt tipa {@code JLabel}
+	 */
 	private JLabel l(String text) {
 		JLabel l = new JLabel(text);
 		l.setBackground(Color.YELLOW);
@@ -26,6 +41,10 @@ public class DemoFrame1 extends JFrame{
 		return l;
 	}
 	
+	/**
+	 * Funkcija za inicijalizaciju grafičkog sučelja.
+	 * 
+	 */
 	private void initGUI() {
 		Container cp = getContentPane();
 		cp.setLayout(new CalcLayout(3));
@@ -38,17 +57,13 @@ public class DemoFrame1 extends JFrame{
 		cp.add(l("tekstom"), new RCPosition(5, 7));
 	}
 	
+	/**
+	 * Metoda iz koje kreće izvođenje glavnog programa.
+	 *  
+	 * @param args argumenti glavnog programa
+	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new DemoFrame1().setVisible(true));
-		
-//		JPanel p = new JPanel(new CalcLayout(2));
-//		JLabel l1 = new JLabel(""); 
-//		l1.setPreferredSize(new Dimension(108, 15));
-//		JLabel l2 = new JLabel(""); l2.setPreferredSize(new Dimension(16, 30));
-//		p.add(l1, new RCPosition(1,  1));
-//		p.add(l2, new RCPosition(3, 3));
-//		Dimension dim = p.getPreferredSize();
-//		System.out.println(dim.width + ", " + dim.height);
 	}
 	
 }
