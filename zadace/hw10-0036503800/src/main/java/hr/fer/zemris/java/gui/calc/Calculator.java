@@ -2,6 +2,7 @@ package hr.fer.zemris.java.gui.calc;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.function.DoubleUnaryOperator;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -31,6 +33,8 @@ import hr.fer.zemris.java.gui.calc.model.commands.InsertDecimalPointCommand;
 import hr.fer.zemris.java.gui.calc.model.commands.InvertableBinaryCommand;
 import hr.fer.zemris.java.gui.calc.model.commands.InvertableUnaryCommand;
 import hr.fer.zemris.java.gui.calc.model.commands.NumpadCommand;
+import hr.fer.zemris.java.gui.calc.model.commands.PopCommand;
+import hr.fer.zemris.java.gui.calc.model.commands.PushCommand;
 import hr.fer.zemris.java.gui.calc.model.commands.SwapSignCommand;
 import hr.fer.zemris.java.gui.layouts.CalcLayout;
 import hr.fer.zemris.java.gui.layouts.RCPosition;
@@ -73,6 +77,8 @@ public class Calculator extends JFrame {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		model = new CalcModelIMpl();
 		initGUI();
+		setPreferredSize(new Dimension(600, 300));
+		setTitle("Java Calculator v1.0");
 		pack();
 	}
 
@@ -156,6 +162,7 @@ public class Calculator extends JFrame {
 
 				number++;
 				JButton button = new JButton(String.valueOf(number));
+				changeFontSize(button, 35f);
 				addListener(button, new NumpadCommand(number), model);
 				cp.add(button, new RCPosition(4 - row, column + 3));
 			}
@@ -163,6 +170,7 @@ public class Calculator extends JFrame {
 
 		// broj 0------------------------------------------------------
 		JButton b0 = new JButton("0");
+		changeFontSize(b0, 35f);
 		addListener(b0, new NumpadCommand(0), model);
 		cp.add(b0, new RCPosition(5, 3));
 
@@ -173,6 +181,7 @@ public class Calculator extends JFrame {
 
 		for (int row = 0; row < 4; row++) {
 			JButton button = new JButton(basicOperators.get(row));
+			changeFontSize(button, 20f);
 			addListener(button, new BasicOperationCommand(basicOperations.get(row)), model);
 			cp.add(button, new RCPosition(row + 2, 6));
 		}
@@ -187,37 +196,28 @@ public class Calculator extends JFrame {
 		cp.add(buttonReset, new RCPosition(2, 7));
 
 		JButton buttonPush = new JButton("push");
-		buttonPush.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
+		addListener(buttonPush, new PushCommand(), model);
 		cp.add(buttonPush, new RCPosition(3, 7));
 
 		JButton buttonPop = new JButton("pop");
-		buttonPop.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-			}
-		});
+		addListener(buttonPop, new PopCommand(), model);
 		cp.add(buttonPop, new RCPosition(4, 7));
 
 		// gumb za promjenu predznaka-----------------------------------
 		JButton plusMinus = new JButton("+/-");
+		changeFontSize(plusMinus, 20f);
 		addListener(plusMinus, new SwapSignCommand(), model);
 		cp.add(plusMinus, new RCPosition(5, 4));
 
 		// gumb za dodavanje decimalne točke----------------------------
 		JButton dotButton = new JButton(".");
+		changeFontSize(dotButton, 20f);
 		addListener(dotButton, new InsertDecimalPointCommand(), model);
 		cp.add(dotButton, new RCPosition(5, 5));
 
 		// gumb jednako-------------------------------------------------
 		JButton equalsButton = new JButton("=");
+		changeFontSize(equalsButton, 20f);
 		addListener(equalsButton, new EqualsCommand(), model);
 		cp.add(equalsButton, new RCPosition(1, 6));
 
@@ -240,6 +240,16 @@ public class Calculator extends JFrame {
 				command.execute(model);
 			}
 		});
+	}
+	
+	/**
+	 * Funkcija za promjenu veličina fonta komponente.
+	 * 
+	 * @param component komponenta čiji font se mijenja
+	 * @param fontSize nova veličina fonta
+	 */
+	private void changeFontSize(JComponent component, float fontSize) {
+		component.setFont(component.getFont().deriveFont(fontSize));
 	}
 
 	/**
