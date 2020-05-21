@@ -26,12 +26,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -40,8 +41,10 @@ public class JNotepadPP extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTextArea editor;
 	private Path openedFilePath;
-	
+
 	private DefaultMultipleDocumentModel model;
+	
+	private Path currentDocumentPath = null;
 
 	public JNotepadPP() {
 
@@ -60,9 +63,24 @@ public class JNotepadPP extends JFrame {
 		model = new DefaultMultipleDocumentModel();
 		this.getContentPane().add(model, BorderLayout.CENTER);
 
+		model.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				int selectedIndex = model.getSelectedIndex();
+				currentDocumentPath = model.getDocument(selectedIndex).getFilePath();
+				if(currentDocumentPath != null) {
+					setTitle(currentDocumentPath.toString() + " - JNotepad++");
+				}else {
+					setTitle("(unnamed)" + " - JNotepad++");
+				}
+			}
+		});
+
 		createActions();
 		createMenus();
 		createToolbars();
+		setTitle("(unnamed)" + " - JNotepad++");
 	}
 
 	private Action openDocumentAction = new AbstractAction() {
@@ -71,7 +89,7 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			JFileChooser fc = new JFileChooser();
 			fc.setDialogTitle("Open file");
 			if (fc.showOpenDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
@@ -79,26 +97,24 @@ public class JNotepadPP extends JFrame {
 			}
 			File fileName = fc.getSelectedFile();
 			Path filePath = fileName.toPath();
-			if (!Files.isReadable(filePath)) {
-				JOptionPane.showMessageDialog(JNotepadPP.this,
-						"Datoteka " + fileName.getAbsolutePath() + " ne postoji!", "Pogreška",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			byte[] okteti;
-			try {
-				okteti = Files.readAllBytes(filePath);
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(JNotepadPP.this,
-						"Pogreška prilikom čitanja datoteke " + fileName.getAbsolutePath() + ".", "Pogreška",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			String tekst = new String(okteti, StandardCharsets.UTF_8);
-			
-			model.getCurrentDocument().getTextComponent().setText(tekst);
-//			editor.setText(tekst);
-			openedFilePath = filePath;
+
+			SingleDocumentModel newDocument = model.loadDocument(filePath);
+
+			newDocument.addSingleDocumentListener(new SingleDocumentListener() {
+
+				@Override
+				public void documentModifyStatusUpdated(SingleDocumentModel model) {
+
+				}
+
+				@Override
+				public void documentFilePathUpdated(SingleDocumentModel model) {
+					// TODO Auto-generated method stub
+
+				}
+			});
+
+//			openedFilePath = filePath;
 		}
 	};
 
@@ -108,6 +124,7 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+
 			if (openedFilePath == null) {
 				JFileChooser jfc = new JFileChooser();
 				jfc.setDialogTitle("Save document");
@@ -189,17 +206,31 @@ public class JNotepadPP extends JFrame {
 			return new String(znakovi);
 		}
 	};
-	
+
 	private Action newDocumentAction = new AbstractAction() {
-		
+
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
-			DefaultSingleDocumentModel model = new DefaultSingleDocumentModel(null, "");
-			
-			
+
+			SingleDocumentModel newDocument = model.createNewDocument();
+			model.newTab(null, null, new JScrollPane(newDocument.getTextComponent()));
+
+			newDocument.addSingleDocumentListener(new SingleDocumentListener() {
+
+				@Override
+				public void documentModifyStatusUpdated(SingleDocumentModel model) {
+					// TODO Auto-generated method stub
+
+				}
+
+				@Override
+				public void documentFilePathUpdated(SingleDocumentModel model) {
+
+				}
+			});
+
 		}
 	};
 
@@ -214,11 +245,15 @@ public class JNotepadPP extends JFrame {
 	};
 
 	private void createActions() {
-		
+
 		openDocumentAction.putValue(Action.NAME, "Open");
 		openDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control O"));
 		openDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O);
 		openDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to open existing file from disk.");
+
+		newDocumentAction.putValue(Action.NAME, "New");
+		newDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control N"));
+		newDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to create new file.");
 
 		saveDocumentAction.putValue(Action.NAME, "Save");
 		saveDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control S"));
@@ -243,13 +278,14 @@ public class JNotepadPP extends JFrame {
 	}
 
 	private void createMenus() {
-		
+
 		JMenuBar menuBar = new JMenuBar();
 
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
 
 		fileMenu.add(new JMenuItem(openDocumentAction));
+		fileMenu.add(new JMenuItem(newDocumentAction));
 		fileMenu.add(new JMenuItem(saveDocumentAction));
 		fileMenu.addSeparator();
 		fileMenu.add(new JMenuItem(exitAction));
@@ -264,67 +300,57 @@ public class JNotepadPP extends JFrame {
 	}
 
 	private void createToolbars() {
-		
+
 		JToolBar toolBar = new JToolBar("Alati");
 		toolBar.setFloatable(true);
 
-		JButton open = new JButton(openDocumentAction);
-		open.setIcon(createImageIcon("icons/open.png", 20));
-		toolBar.add(open);
+		JButton openButton = new JButton(openDocumentAction);
+		openButton.setIcon(createImageIcon("icons/open.png", 20));
+		toolBar.add(openButton);
 
-		toolBar.add(new JButton(saveDocumentAction));
+		JButton newDocumentButton = new JButton(newDocumentAction);
+		newDocumentButton.setIcon(createImageIcon("icons/new.png", 20));
+		toolBar.add(newDocumentButton);
+
+		JButton saveDocumentButton = new JButton(saveDocumentAction);
+		saveDocumentButton.setIcon(createImageIcon("icons/save.png", 20));
+		toolBar.add(saveDocumentButton);
 		toolBar.addSeparator();
 		toolBar.add(new JButton(deleteSelectedPartAction));
 		toolBar.add(new JButton(toggleCaseAction));
 
 		this.getContentPane().add(toolBar, BorderLayout.PAGE_START);
 	}
-	
-	protected JComponent makeTextPanel(String text) {
-		
-        JPanel panel = new JPanel(false);
-        JLabel filler = new JLabel(text);
-        filler.setHorizontalAlignment(JLabel.CENTER);
-        panel.setLayout(new GridLayout(1, 1));
-        panel.add(filler);
-        return panel;
-    }
 
-	private void createTabs() {
-		
-		JTabbedPane tabbedPane = new JTabbedPane();
-		ImageIcon icon = createImageIcon("icons/unmodified.png", 15);
-		
-		JComponent panel = makeTextPanel("Panel #1");
-		tabbedPane.addTab("(unnamed)", icon, panel,
-		                  "Does nothing");
-		tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-		
-		tabbedPane.addTab("tab 2", icon, new JScrollPane(editor), "NIke");
-		
-		this.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+	protected JComponent makeTextPanel(String text) {
+
+		JPanel panel = new JPanel(false);
+		JLabel filler = new JLabel(text);
+		filler.setHorizontalAlignment(JLabel.CENTER);
+		panel.setLayout(new GridLayout(1, 1));
+		panel.add(filler);
+		return panel;
 	}
 
 	/**
-	 * Funkcija za učitavanje i stvaranje objekta {@code ImageIcon} iz 
-	 * predane staze do željene sličice {@code path} uz željeno 
-	 * skaliranje {@code scalePercent}.
+	 * Funkcija za učitavanje i stvaranje objekta {@code ImageIcon} iz predane staze
+	 * do željene sličice {@code path} uz željeno skaliranje {@code scalePercent}.
 	 * 
-	 * @param path staza do slike koja se učitava
+	 * @param path         staza do slike koja se učitava
 	 * @param scalePercent postotak na koj se skalira izvorna slika
 	 * @return objekt tipa {@code ImageIcon}
 	 */
-	private ImageIcon createImageIcon(String path, int scalePercent) {
-		
+	public ImageIcon createImageIcon(String path, int scalePercent) {
+
 		try (InputStream is = this.getClass().getResourceAsStream(path)) {
-			
+
 			ImageIcon im = new ImageIcon(is.readAllBytes());
 			return new ImageIcon(im.getImage().getScaledInstance(scalePercent, scalePercent, Image.SCALE_DEFAULT));
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return null;
 	}
 

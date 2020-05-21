@@ -1,6 +1,8 @@
 package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JTextArea;
 
@@ -8,9 +10,18 @@ public class DefaultSingleDocumentModel implements SingleDocumentModel {
 	
 	private Path filePath;
 	private JTextArea textArea;
+	
+	private List<SingleDocumentListener> listeners;
 
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param filePath staza do datoteke koja je učitana
+	 * @param text sadržaj datoteke
+	 */
 	public DefaultSingleDocumentModel(Path filePath, String text) {
 		
+		listeners = new ArrayList<>();
 		setFilePath(filePath);
 		this.textArea = new JTextArea(text);
 	}
@@ -43,15 +54,15 @@ public class DefaultSingleDocumentModel implements SingleDocumentModel {
 	}
 
 	@Override
-	public void addSingleDocumentListener(SingleDocumentListener listener) {
-		// TODO Auto-generated method stub
-
+	public void addSingleDocumentListener(SingleDocumentListener l) {
+		listeners = new ArrayList<>(listeners);
+		listeners.add(l);
 	}
 
 	@Override
-	public void removeSingleDocumentListener(SingleDocumentListener listener) {
-		// TODO Auto-generated method stub
-
+	public void removeSingleDocumentListener(SingleDocumentListener l) {
+		listeners = new ArrayList<>(listeners);
+		listeners.remove(l);
 	}
 
 }

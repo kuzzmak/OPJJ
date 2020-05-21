@@ -11,6 +11,6 @@ public interface SingleDocumentModel {
 	void setFilePath(Path path);
 	boolean isModified();
 	void setModified(boolean modified);
-	void addSingleDocumentListener(SingleDocumentListener listener);
-	void removeSingleDocumentListener(SingleDocumentListener listener);
+	void addSingleDocumentListener(SingleDocumentListener l);
+	void removeSingleDocumentListener(SingleDocumentListener l);
 }
