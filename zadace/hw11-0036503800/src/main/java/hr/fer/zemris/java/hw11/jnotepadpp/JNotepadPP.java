@@ -40,10 +40,9 @@ public class JNotepadPP extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JTextArea editor;
-	private Path openedFilePath;
 
 	private DefaultMultipleDocumentModel model;
-	
+
 	private Path currentDocumentPath = null;
 
 	public JNotepadPP() {
@@ -55,34 +54,38 @@ public class JNotepadPP extends JFrame {
 		initGUI();
 	}
 
+	
+
 	private void initGUI() {
 
 		editor = new JTextArea();
 
-		this.getContentPane().setLayout(new BorderLayout());
+		getContentPane().setLayout(new BorderLayout());
 		model = new DefaultMultipleDocumentModel();
-		this.getContentPane().add(model, BorderLayout.CENTER);
+		getContentPane().add(model, BorderLayout.CENTER);
 
 		model.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
+
 				int selectedIndex = model.getSelectedIndex();
 				currentDocumentPath = model.getDocument(selectedIndex).getFilePath();
-				if(currentDocumentPath != null) {
+
+				if (currentDocumentPath != null) {
 					setTitle(currentDocumentPath.toString() + " - JNotepad++");
-				}else {
+				} else {
 					setTitle("(unnamed)" + " - JNotepad++");
 				}
 			}
 		});
-
+		
 		createActions();
 		createMenus();
 		createToolbars();
 		setTitle("(unnamed)" + " - JNotepad++");
 	}
-
+	
 	private Action openDocumentAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -95,26 +98,32 @@ public class JNotepadPP extends JFrame {
 			if (fc.showOpenDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
 				return;
 			}
+			
 			File fileName = fc.getSelectedFile();
 			Path filePath = fileName.toPath();
 
+			if (!Files.isReadable(filePath)) {
+				JOptionPane.showMessageDialog(JNotepadPP.this,
+						"Datoteka " + filePath + " ne postoji!", "Pogreška",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+
 			SingleDocumentModel newDocument = model.loadDocument(filePath);
+			newDocument.addSingleDocumentListener(sl);
+		}
+	};
+	
+	SingleDocumentListener sl = new SingleDocumentListener() {
 
-			newDocument.addSingleDocumentListener(new SingleDocumentListener() {
+		@Override
+		public void documentModifyStatusUpdated(SingleDocumentModel model) {
 
-				@Override
-				public void documentModifyStatusUpdated(SingleDocumentModel model) {
+		}
 
-				}
-
-				@Override
-				public void documentFilePathUpdated(SingleDocumentModel model) {
-					// TODO Auto-generated method stub
-
-				}
-			});
-
-//			openedFilePath = filePath;
+		@Override
+		public void documentFilePathUpdated(SingleDocumentModel model) {
+			setTitle(model);
 		}
 	};
 
@@ -124,29 +133,37 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
+			
+			boolean writeOK = true;
+			
+			if (currentDocumentPath == null) {
 
-			if (openedFilePath == null) {
 				JFileChooser jfc = new JFileChooser();
 				jfc.setDialogTitle("Save document");
 				if (jfc.showSaveDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
-					JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje",
-							JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
-				openedFilePath = jfc.getSelectedFile().toPath();
+
+				currentDocumentPath = jfc.getSelectedFile().toPath();
+				
+				File file = currentDocumentPath.toFile();
+				
+				if (file.exists()) {
+					
+					// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati stara datoteka
+					if (JOptionPane.showConfirmDialog(JNotepadPP.this, "Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?",
+							"Upozorenje", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						
+					} else { // stara datoteka se ne smije prepisati
+						writeOK = false;
+					}
+				}
 			}
-			byte[] podatci = editor.getText().getBytes(StandardCharsets.UTF_8);
-			try {
-				Files.write(openedFilePath, podatci);
-			} catch (IOException e1) {
-				JOptionPane.showMessageDialog(JNotepadPP.this,
-						"Pogreška prilikom zapisivanja datoteke " + openedFilePath.toFile().getAbsolutePath()
-								+ ".\nPažnja: nije jasno u kojem je stanju datoteka na disku!",
-						"Pogreška", JOptionPane.ERROR_MESSAGE);
-				return;
+			
+			if(writeOK) {
+				model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
 			}
-			JOptionPane.showMessageDialog(JNotepadPP.this, "Datoteka je snimljena.", "Informacija",
-					JOptionPane.INFORMATION_MESSAGE);
 		}
 	};
 
@@ -215,22 +232,8 @@ public class JNotepadPP extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 
 			SingleDocumentModel newDocument = model.createNewDocument();
+			newDocument.addSingleDocumentListener(sl);
 			model.newTab(null, null, new JScrollPane(newDocument.getTextComponent()));
-
-			newDocument.addSingleDocumentListener(new SingleDocumentListener() {
-
-				@Override
-				public void documentModifyStatusUpdated(SingleDocumentModel model) {
-					// TODO Auto-generated method stub
-
-				}
-
-				@Override
-				public void documentFilePathUpdated(SingleDocumentModel model) {
-
-				}
-			});
-
 		}
 	};
 
@@ -352,6 +355,22 @@ public class JNotepadPP extends JFrame {
 		}
 
 		return null;
+	}
+	
+	/**
+	 * Funkcija za postavljanje staze otvorene datoteke u naslovnu traku.
+	 * 
+	 * @param model referenca do trenutno aktivnog modela
+	 */
+	public void setTitle(SingleDocumentModel model) {
+		
+		Path modelPath = model.getFilePath();
+		
+		if (modelPath != null) {
+			setTitle(modelPath.toString() + " - JNotepad++");
+		} else {
+			setTitle("(unnamed)" + " - JNotepad++");
+		}
 	}
 
 	/**
