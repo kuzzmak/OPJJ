@@ -127,6 +127,17 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
+	private Action saveAsDocumentAction = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			if(saveFileWithNoPath()) model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
+		}
+	};
+	
 	private Action saveDocumentAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -136,36 +147,45 @@ public class JNotepadPP extends JFrame {
 			
 			boolean writeOK = true;
 			
-			if (currentDocumentPath == null) {
-
-				JFileChooser jfc = new JFileChooser();
-				jfc.setDialogTitle("Save document");
-				if (jfc.showSaveDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
-					JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje", JOptionPane.WARNING_MESSAGE);
-					return;
-				}
-
-				currentDocumentPath = jfc.getSelectedFile().toPath();
-				
-				File file = currentDocumentPath.toFile();
-				
-				if (file.exists()) {
-					
-					// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati stara datoteka
-					if (JOptionPane.showConfirmDialog(JNotepadPP.this, "Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?",
-							"Upozorenje", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-						
-					} else { // stara datoteka se ne smije prepisati
-						writeOK = false;
-					}
-				}
-			}
+			if (currentDocumentPath == null) writeOK = saveFileWithNoPath();
 			
-			if(writeOK) {
-				model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
-			}
+			if(writeOK) model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
 		}
 	};
+	
+	/**
+	 * Metoda za spremanje trenutno aktivne datoteke na način
+	 * da se ponudi prozor za odabir imena i mjesta spremanje
+	 * datoteke.
+	 * 
+	 * @return je li uspješno odabrano ime i mjesto spremanja dototeke
+	 */
+	private boolean saveFileWithNoPath() {
+		
+		JFileChooser jfc = new JFileChooser();
+		jfc.setDialogTitle("Save document");
+		if (jfc.showSaveDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
+			JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+			return false;
+		}
+
+		currentDocumentPath = jfc.getSelectedFile().toPath();
+		
+		File file = currentDocumentPath.toFile();
+		
+		if (file.exists()) {
+			
+			// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati stara datoteka
+			if (JOptionPane.showConfirmDialog(JNotepadPP.this, "Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?",
+					"Upozorenje", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+				
+			} else { // stara datoteka se ne smije prepisati
+				return false;
+			}
+		}
+		
+		return true;
+	}
 
 	private Action deleteSelectedPartAction = new AbstractAction() {
 
@@ -255,7 +275,8 @@ public class JNotepadPP extends JFrame {
 		openDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to open existing file from disk.");
 
 		newDocumentAction.putValue(Action.NAME, "New");
-		newDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control N"));
+		newDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift N"));
+		newDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
 		newDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to create new file.");
 
 		saveDocumentAction.putValue(Action.NAME, "Save");
@@ -263,6 +284,11 @@ public class JNotepadPP extends JFrame {
 		saveDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
 		saveDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");
 
+		saveAsDocumentAction.putValue(Action.NAME, "SaveAs");
+		saveAsDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift S"));
+		saveAsDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
+		saveAsDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");		
+		
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
 		deleteSelectedPartAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
@@ -290,6 +316,7 @@ public class JNotepadPP extends JFrame {
 		fileMenu.add(new JMenuItem(openDocumentAction));
 		fileMenu.add(new JMenuItem(newDocumentAction));
 		fileMenu.add(new JMenuItem(saveDocumentAction));
+		fileMenu.add(new JMenuItem(saveAsDocumentAction));
 		fileMenu.addSeparator();
 		fileMenu.add(new JMenuItem(exitAction));
 
@@ -318,21 +345,16 @@ public class JNotepadPP extends JFrame {
 		JButton saveDocumentButton = new JButton(saveDocumentAction);
 		saveDocumentButton.setIcon(createImageIcon("icons/save.png", 20));
 		toolBar.add(saveDocumentButton);
+		
+		JButton saveAsDocumentButton = new JButton(saveAsDocumentAction);
+		saveAsDocumentButton.setIcon(createImageIcon("icons/saveas.png", 20));
+		toolBar.add(saveAsDocumentButton);
+		
 		toolBar.addSeparator();
 		toolBar.add(new JButton(deleteSelectedPartAction));
 		toolBar.add(new JButton(toggleCaseAction));
 
 		this.getContentPane().add(toolBar, BorderLayout.PAGE_START);
-	}
-
-	protected JComponent makeTextPanel(String text) {
-
-		JPanel panel = new JPanel(false);
-		JLabel filler = new JLabel(text);
-		filler.setHorizontalAlignment(JLabel.CENTER);
-		panel.setLayout(new GridLayout(1, 1));
-		panel.add(filler);
-		return panel;
 	}
 
 	/**
