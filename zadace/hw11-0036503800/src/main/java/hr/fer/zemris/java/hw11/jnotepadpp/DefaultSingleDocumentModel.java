@@ -38,7 +38,9 @@ public class DefaultSingleDocumentModel implements SingleDocumentModel {
 
 	@Override
 	public void setFilePath(Path path) {
+		
 		filePath = path;
+		notifyListeners();
 	}
 
 	@Override
@@ -63,6 +65,12 @@ public class DefaultSingleDocumentModel implements SingleDocumentModel {
 	public void removeSingleDocumentListener(SingleDocumentListener l) {
 		listeners = new ArrayList<>(listeners);
 		listeners.remove(l);
+	}
+	
+	public void notifyListeners() {
+		for(SingleDocumentListener l: listeners) {
+			l.documentFilePathUpdated(this);
+		}
 	}
 
 }
