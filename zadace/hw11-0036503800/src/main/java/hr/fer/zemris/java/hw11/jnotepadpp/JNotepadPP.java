@@ -1,6 +1,9 @@
 package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -8,29 +11,38 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -104,7 +116,22 @@ public class JNotepadPP extends JFrame {
 		createActions();
 		createMenus();
 		createToolbars();
+		createStatusBar();
 		setTitle("JNotepad++");
+		
+		addWindowListener(new WindowAdapter() {
+
+			@Override
+			public void windowClosing(WindowEvent e) {
+				exitProcedure();
+			}
+		});
+		
+		
+	}
+	
+	public void exitProcedure() {
+		
 	}
 
 	/**
@@ -528,6 +555,10 @@ public class JNotepadPP extends JFrame {
 		exitAction.putValue(Action.SHORT_DESCRIPTION, "Exit application.");
 	}
 
+	/**
+	 * Funkcija za stvaranje izbornika.
+	 * 
+	 */
 	private void createMenus() {
 
 		JMenuBar menuBar = new JMenuBar();
@@ -560,6 +591,10 @@ public class JNotepadPP extends JFrame {
 		this.setJMenuBar(menuBar);
 	}
 
+	/**
+	 * Funkcija za stvaranje gumba alatne trake.
+	 * 
+	 */
 	private void createToolbars() {
 
 		JToolBar toolBar = new JToolBar("Alati");
@@ -610,6 +645,45 @@ public class JNotepadPP extends JFrame {
 		this.getContentPane().add(toolBar, BorderLayout.PAGE_START);
 	}
 
+	
+	private void createStatusBar() {
+		
+		JPanel statusBar = new JPanel();
+		statusBar.setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.black));
+		
+		JPanel leftSide = new JPanel();
+		leftSide.setLayout(new FlowLayout(FlowLayout.LEFT));
+		leftSide.setBackground(Color.green);
+		
+		JLabel length = new JLabel("length: 0");
+		length.setPreferredSize(new Dimension(200, 16));
+		leftSide.add(length);
+		
+		JLabel info = new JLabel("Ln: 18 Col: 27 Sel: 11");
+		info.setPreferredSize(new Dimension(200, 16));
+		leftSide.add(info);
+//		
+		statusBar.add(leftSide, BorderLayout.LINE_START);
+//		
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+		LocalDateTime now = LocalDateTime.now();  
+		JLabel dateAndTime = new JLabel(now.format(dtf));
+		statusBar.add(dateAndTime, BorderLayout.LINE_END);
+		
+		getContentPane().add(statusBar, BorderLayout.SOUTH);
+		
+		// ažuriranje trenutnog vremena
+		new Timer(1000, new ActionListener() {
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	        	LocalDateTime now = LocalDateTime.now();  
+	        	dateAndTime.setText(now.format(dtf));
+	        }
+	    }).start();
+		
+	}
+	
+	
 	/**
 	 * Funkcija za učitavanje i stvaranje objekta {@code ImageIcon} iz predane staze
 	 * do željene sličice {@code path} uz željeno skaliranje {@code scalePercent}.
