@@ -2,6 +2,11 @@ package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -44,6 +49,8 @@ public class JNotepadPP extends JFrame {
 
 	// staza dokumenta trenutno aktivne kratice
 	private Path currentDocumentPath = null;
+	
+	private JButton copy;
 
 	/**
 	 * Konstruktor.
@@ -101,9 +108,9 @@ public class JNotepadPP extends JFrame {
 	}
 
 	/**
-	 * Akcija koja predstavlja otvaranje datoteke s računala. Ukoliko
-	 * je odabrana datoteka već otvorena u nekoj kratici, ne stvara
-	 * se nova kratica već se prelazi na već otvorenu kraticu.
+	 * Akcija koja predstavlja otvaranje datoteke s računala. Ukoliko je odabrana
+	 * datoteka već otvorena u nekoj kratici, ne stvara se nova kratica već se
+	 * prelazi na već otvorenu kraticu.
 	 * 
 	 */
 	private Action openDocumentAction = new AbstractAction() {
@@ -133,9 +140,9 @@ public class JNotepadPP extends JFrame {
 			int i = 0;
 			Iterator<SingleDocumentModel> iter = dmdm.iterator();
 			while (iter.hasNext()) {
-				
+
 				SingleDocumentModel model = iter.next();
-				
+
 				if (model.getFilePath() != null) {
 					if (model.getFilePath().equals(filePath)) {
 						indexOfAlredyOpened = i;
@@ -317,6 +324,8 @@ public class JNotepadPP extends JFrame {
 			SingleDocumentModel newDocument = dmdm.createNewDocument();
 			newDocument.addSingleDocumentListener(sl);
 			dmdm.addTab("(unmodified)", unmodified, new JScrollPane(newDocument.getTextComponent()));
+			
+//			if(!copy.isEnabled()) copy.setEnabled(true);
 		}
 	};
 
@@ -328,6 +337,7 @@ public class JNotepadPP extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 
 			dmdm.closeDocument(dmdm.getCurrentDocument());
+//			if(dmdm.getTabCount() == 0) copy.setEnabled(false);
 		}
 	};
 
@@ -338,6 +348,67 @@ public class JNotepadPP extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			System.exit(0);
+		}
+	};
+
+	private Action copyAction = new AbstractAction() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
+			Document doc = textArea.getDocument();
+			int len = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
+			
+			if(len > 0) {
+				
+				int offset = Math.min(textArea.getCaret().getDot(), textArea.getCaret().getMark());
+				try {
+					
+					StringSelection stringSelection = new StringSelection(doc.getText(offset, len));
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					clipboard.setContents(stringSelection, null);
+
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	};
+	
+	private Action pasteAction = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
+			Document doc = textArea.getDocument();
+			
+			int carretPosition = textArea.getCaret().getDot();
+
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			
+			
+			Object dataFromClipboard;
+			try {
+				dataFromClipboard = clipboard.getData(DataFlavor.stringFlavor);
+				
+				if(dataFromClipboard instanceof String) {
+					
+					String textFromClipboard = (String) dataFromClipboard;
+					try {
+						doc.insertString(carretPosition, textFromClipboard, null);
+					} catch (BadLocationException e1) {
+						e1.printStackTrace();
+					}
+				}
+			} catch (UnsupportedFlavorException | IOException e1) {
+				e1.printStackTrace();
+			}
 		}
 	};
 
@@ -367,6 +438,16 @@ public class JNotepadPP extends JFrame {
 		closeTabAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control W"));
 		closeTabAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
 		closeTabAction.putValue(Action.SHORT_DESCRIPTION, "Closes current tab.");
+
+		copyAction.putValue(Action.NAME, "Copy");
+		copyAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control C"));
+		copyAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
+		copyAction.putValue(Action.SHORT_DESCRIPTION, "Copies selected text in clipboard.");
+		
+		pasteAction.putValue(Action.NAME, "Paste");
+		pasteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control V"));
+		pasteAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_V);
+		pasteAction.putValue(Action.SHORT_DESCRIPTION, "Pastes text from clipboard.");
 
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
@@ -403,6 +484,8 @@ public class JNotepadPP extends JFrame {
 		JMenu editMenu = new JMenu("Edit");
 		menuBar.add(editMenu);
 
+		editMenu.add(new JMenuItem(copyAction));
+		editMenu.add(new JMenuItem(pasteAction));
 		editMenu.add(new JMenuItem(deleteSelectedPartAction));
 		editMenu.add(new JMenuItem(toggleCaseAction));
 
@@ -435,6 +518,16 @@ public class JNotepadPP extends JFrame {
 		toolBar.add(closeTabButton);
 
 		toolBar.addSeparator();
+
+		copy = new JButton(copyAction);
+//		copy.setEnabled(false);
+		copy.setIcon(createImageIcon("icons/copy.png", 20));
+		toolBar.add(copy);
+
+		JButton paste = new JButton(pasteAction);
+		paste.setIcon(createImageIcon("icons/paste.png", 20));
+		toolBar.add(paste);
+		
 		toolBar.add(new JButton(deleteSelectedPartAction));
 		toolBar.add(new JButton(toggleCaseAction));
 
