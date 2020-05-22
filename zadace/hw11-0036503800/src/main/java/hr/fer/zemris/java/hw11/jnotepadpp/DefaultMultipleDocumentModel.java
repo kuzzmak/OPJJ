@@ -39,6 +39,9 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 		SingleDocumentModel newDocument = new DefaultSingleDocumentModel(null, "");
 		documents.add(newDocument);
+		
+		listeners.forEach(l -> l.documentAdded(newDocument));
+		
 		return newDocument;
 	}
 
@@ -49,7 +52,7 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 	@Override
 	public SingleDocumentModel loadDocument(Path path) {
-
+			
 		byte[] bytes;
 		try {
 			bytes = Files.readAllBytes(path);
@@ -58,19 +61,13 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 					JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
-
-		try {
-			bytes = Files.readAllBytes(path);
-		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(this, "Pogreška prilikom čitanja datoteke " + path + ".", "Pogreška",
-					JOptionPane.ERROR_MESSAGE);
-			return null;
-		}
-
+		
 		String text = new String(bytes, StandardCharsets.UTF_8);
 		SingleDocumentModel newDocument = new DefaultSingleDocumentModel(path, text);
 		documents.add(newDocument);
-
+			
+		listeners.forEach(l -> l.documentAdded(newDocument));
+		
 		return newDocument;
 	}
 
@@ -95,6 +92,7 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 		JOptionPane.showMessageDialog(this, "Datoteka je snimljena.", "Informacija", JOptionPane.INFORMATION_MESSAGE);
 
 		model.setFilePath(newPath);
+		model.setModified(false);
 	}
 
 	@Override
@@ -108,10 +106,10 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 				SingleDocumentModel doc = documentIterator.next();
 				if (doc.equals(model)) {
+					
 					documentIterator.remove();
-					int i = getSelectedIndex();
-					if (i != -1)
-						this.removeTabAt(i);
+					
+					listeners.forEach(l -> l.documentRemoved(doc));
 				}
 			}
 		}
