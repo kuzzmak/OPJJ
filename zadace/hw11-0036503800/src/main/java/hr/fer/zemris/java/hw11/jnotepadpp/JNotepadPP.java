@@ -66,7 +66,7 @@ public class JNotepadPP extends JFrame {
 	private Path currentDocumentPath = null;
 
 	private JButton copy;
-	
+
 	private JLabel line;
 	private JLabel column;
 	private JLabel selected;
@@ -97,6 +97,7 @@ public class JNotepadPP extends JFrame {
 
 		getContentPane().setLayout(new BorderLayout());
 		dmdm = new DefaultMultipleDocumentModel();
+		dmdm.addMultipleDocumentListener(ml);
 		getContentPane().add(dmdm, BorderLayout.CENTER);
 
 		dmdm.addChangeListener(new ChangeListener() {
@@ -117,7 +118,7 @@ public class JNotepadPP extends JFrame {
 				} else {
 					setTitle("(unnamed)" + " - JNotepad++");
 				}
-				
+
 				updateStatusBar(document.getTextComponent());
 			}
 		});
@@ -139,10 +140,10 @@ public class JNotepadPP extends JFrame {
 	}
 
 	/**
-	 * Funkcija koja se poziva pritiskom na gumb za izlazak
-	 * iz programa. Prvo se provjeri ima li nekog nespremljenog
-	 * dokumenta te ako ima, pita se korisnika treba li ga spremiti.
-	 * Nakon potencijalnog spremanja dokumenata, prozor se uništava.
+	 * Funkcija koja se poziva pritiskom na gumb za izlazak iz programa. Prvo se
+	 * provjeri ima li nekog nespremljenog dokumenta te ako ima, pita se korisnika
+	 * treba li ga spremiti. Nakon potencijalnog spremanja dokumenata, prozor se
+	 * uništava.
 	 * 
 	 */
 	public void exitProcedure() {
@@ -152,7 +153,7 @@ public class JNotepadPP extends JFrame {
 		while (docIter.hasNext()) {
 
 			SingleDocumentModel doc = docIter.next();
-			
+
 			if (doc.isModified()) {
 
 				if (doc.getFilePath() == null) {
@@ -165,7 +166,7 @@ public class JNotepadPP extends JFrame {
 								.get(Paths.get("").toAbsolutePath().toString() + File.separator + "unnamed.txt");
 						dmdm.saveDocument(doc, path);
 					}
-					
+
 				} else {
 
 					if (JOptionPane.showConfirmDialog(JNotepadPP.this,
@@ -209,7 +210,6 @@ public class JNotepadPP extends JFrame {
 				return;
 			}
 
-			// pronalazak već otvorenog dokumenta ako postoji
 			int indexOfAlredyOpened = -1;
 			int i = 0;
 			Iterator<SingleDocumentModel> iter = dmdm.iterator();
@@ -225,29 +225,13 @@ public class JNotepadPP extends JFrame {
 				i++;
 			}
 
-			// odabrana datoteka nije već otvorena u JNotepadd++
+			// izabrana datoteka koja nije otvorena u nekoj kratici
 			if (indexOfAlredyOpened == -1) {
 
-				SingleDocumentModel newDocument = dmdm.loadDocument(filePath);
-				
-				JTextArea textArea = newDocument.getTextComponent();
-				textArea.addCaretListener(new CaretListener() {
-					
-					@Override
-					public void caretUpdate(CaretEvent e) {
-						updateStatusBar(textArea);
-					}
-				});
-				
-				newDocument.addSingleDocumentListener(sl);
-				// stvaranje nove kratice
-				dmdm.addTab(filePath.getFileName().toString(), unmodified,
-						new JScrollPane(newDocument.getTextComponent()));
-				// odabir te kratice, uvijek se dodaje na kraj
-				dmdm.setSelectedIndex(dmdm.getTabCount() - 1);
+				dmdm.loadDocument(filePath);
 
 			} else {
-				// odabrana datoteka postoji, odabire se
+
 				dmdm.setSelectedIndex(indexOfAlredyOpened);
 			}
 		}
@@ -257,7 +241,7 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void documentModifyStatusUpdated(SingleDocumentModel model) {
-			
+
 			if (model.isModified()) {
 				dmdm.setIconAt(dmdm.getSelectedIndex(), modified);
 			} else {
@@ -270,25 +254,54 @@ public class JNotepadPP extends JFrame {
 			setTitle(model);
 		}
 	};
-	
+
 	MultipleDocumentListener ml = new MultipleDocumentListener() {
-		
+
 		@Override
 		public void documentRemoved(SingleDocumentModel model) {
-			// TODO Auto-generated method stub
 			
+			int index = dmdm.getSelectedIndex();
+			if(index != -1) dmdm.remove(index);
 		}
-		
+
 		@Override
 		public void documentAdded(SingleDocumentModel model) {
-			// TODO Auto-generated method stub
-			
+
+			JTextArea textArea = model.getTextComponent();
+			textArea.addCaretListener(new CaretListener() {
+
+				@Override
+				public void caretUpdate(CaretEvent e) {
+					updateStatusBar(textArea);
+				}
+			});
+
+			textArea.addCaretListener(new CaretListener() {
+
+				@Override
+				public void caretUpdate(CaretEvent e) {
+					updateStatusBar(textArea);
+				}
+			});
+
+			model.addSingleDocumentListener(sl);
+
+			// stvaranje nove kratice
+			if (model.getFilePath() == null) {
+				dmdm.addTab("(unnamed)", unmodified, new JScrollPane(textArea));
+			} else {
+				dmdm.addTab(model.getFilePath().getFileName().toString(), unmodified, new JScrollPane(textArea));
+			}
+
+			// odabir te kratice, uvijek se dodaje na kraj
+			dmdm.setSelectedIndex(dmdm.getTabCount() - 1);
 		}
-		
+
 		@Override
 		public void currentDocumentChanged(SingleDocumentModel previousModel, SingleDocumentModel currentModel) {
-			// TODO Auto-generated method stub
 			
+			
+
 		}
 	};
 
@@ -303,11 +316,17 @@ public class JNotepadPP extends JFrame {
 				dmdm.saveDocument(dmdm.getCurrentDocument(), currentDocumentPath);
 				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
 				dmdm.setTitleAt(dmdm.getSelectedIndex(),
-						dmdm.getCurrentDocument().getFilePath().getFileName().toString());
+				dmdm.getCurrentDocument().getFilePath().getFileName().toString());
 			}
 		}
 	};
 
+	/**
+	 * Akcija za spremanje dokumenta trenutno aktivne kratice. Ukoliko je trek
+	 * stvorena kratica, korisnika se pita za mjesto spremanja, inače se ažurira
+	 * stara datoteka.
+	 * 
+	 */
 	private Action saveDocumentAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -427,47 +446,32 @@ public class JNotepadPP extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			SingleDocumentModel newDocument = dmdm.createNewDocument();
-			
-			JTextArea textArea = newDocument.getTextComponent();
-			
-			textArea.addCaretListener(new CaretListener() {
-				
-				@Override
-				public void caretUpdate(CaretEvent e) {
-					updateStatusBar(textArea);
-				}
-			});
-			
-			newDocument.addSingleDocumentListener(sl);
-			dmdm.addTab("(unmodified)", unmodified, new JScrollPane(newDocument.getTextComponent()));
-			dmdm.setSelectedIndex(dmdm.getTabCount() - 1);;
-//			if(!copy.isEnabled()) copy.setEnabled(true);
+			dmdm.createNewDocument();
 		}
 	};
-	
+
 	/**
 	 * Funkcija za ažuriranje vrijdnosti na statusnoj traci.
 	 * 
 	 * @param textArea referenca na {@code JTextArea} aktivnog dokumenta
 	 */
 	private void updateStatusBar(JTextArea textArea) {
-		
+
 		try {
-        	int caretPos = textArea.getCaretPosition();
-        	int lineNum = textArea.getLineOfOffset(caretPos);
+			int caretPos = textArea.getCaretPosition();
+			int lineNum = textArea.getLineOfOffset(caretPos);
 			int columnNum = caretPos - textArea.getLineStartOffset(lineNum);
 			lineNum += 1;
 			columnNum += 1;
 			int selectedNum = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
-			
+
 			line.setText("Ln: " + lineNum);
 			column.setText("Col: " + columnNum);
 			selected.setText("Sel: " + selectedNum);
-			
+
 		} catch (BadLocationException ex) {
 		}
-		
+
 	}
 
 	private Action closeTabAction = new AbstractAction() {
@@ -478,7 +482,6 @@ public class JNotepadPP extends JFrame {
 		public void actionPerformed(ActionEvent e) {
 
 			dmdm.closeDocument(dmdm.getCurrentDocument());
-//			if(dmdm.getTabCount() == 0) copy.setEnabled(false);
 		}
 	};
 
@@ -601,6 +604,39 @@ public class JNotepadPP extends JFrame {
 			JOptionPane.showMessageDialog(JNotepadPP.this, infoString, "Informacije", JOptionPane.INFORMATION_MESSAGE);
 		}
 	};
+	
+	private Action english = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	
+	private Action croatian = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	
+	private Action german = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
 
 	private void createActions() {
 
@@ -664,6 +700,10 @@ public class JNotepadPP extends JFrame {
 		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
 		exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
 		exitAction.putValue(Action.SHORT_DESCRIPTION, "Exit application.");
+		
+		english.putValue(Action.NAME, "English");
+		croatian.putValue(Action.NAME, "Croatian");
+		german.putValue(Action.NAME, "German");
 	}
 
 	/**
@@ -695,9 +735,16 @@ public class JNotepadPP extends JFrame {
 		editMenu.add(new JMenuItem(toggleCaseAction));
 
 		JMenu infoMenu = new JMenu("Info");
-		menuBar.add(infoMenu);
-
 		infoMenu.add(new JMenuItem(statisticalInfoAction));
+		
+		menuBar.add(infoMenu);
+		
+		JMenu languagesMenu = new JMenu("Languages");
+		languagesMenu.add(new JMenuItem(english));
+		languagesMenu.add(new JMenuItem(croatian));
+		languagesMenu.add(new JMenuItem(german));
+		
+		menuBar.add(languagesMenu);
 
 		this.setJMenuBar(menuBar);
 	}
@@ -757,9 +804,8 @@ public class JNotepadPP extends JFrame {
 	}
 
 	/**
-	 * Funkcija za stvaranje statusne trake koja se nalazi
-	 * na donjoj strani prozora i sadrži informacije o 
-	 * trenutnoj poziciji kursora, ukupnom broju linija,
+	 * Funkcija za stvaranje statusne trake koja se nalazi na donjoj strani prozora
+	 * i sadrži informacije o trenutnoj poziciji kursora, ukupnom broju linija,
 	 * trenutnom vremenu.
 	 * 
 	 */
@@ -771,16 +817,16 @@ public class JNotepadPP extends JFrame {
 		JPanel leftSide = new JPanel();
 		leftSide.setLayout(new FlowLayout(FlowLayout.LEFT));
 		leftSide.setBackground(Color.green);
-		
+
 		int width = 50;
 		int height = 16;
-		
+
 		line = new JLabel("Ln: 0", JLabel.LEFT);
 		line.setPreferredSize(new Dimension(width, height));
-		
+
 		column = new JLabel("Col: 0", JLabel.LEFT);
 		column.setPreferredSize(new Dimension(width, height));
-		
+
 		selected = new JLabel("Sel: 0", JLabel.LEFT);
 		selected.setPreferredSize(new Dimension(width, height));
 
@@ -791,7 +837,7 @@ public class JNotepadPP extends JFrame {
 		statusBar.add(leftSide, BorderLayout.LINE_START);
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-		
+
 		JLabel dateAndTime = new JLabel();
 		statusBar.add(dateAndTime, BorderLayout.LINE_END);
 
