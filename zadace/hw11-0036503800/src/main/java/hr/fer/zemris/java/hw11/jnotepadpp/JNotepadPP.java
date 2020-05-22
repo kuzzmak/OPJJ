@@ -1,30 +1,26 @@
 package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
@@ -41,36 +37,54 @@ public class JNotepadPP extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JTextArea editor;
 
-	private DefaultMultipleDocumentModel model;
+	private DefaultMultipleDocumentModel dmdm;
 
+	private ImageIcon modified;
+	private ImageIcon unmodified;
+
+	// staza dokumenta trenutno aktivne kratice
 	private Path currentDocumentPath = null;
 
+	/**
+	 * Konstruktor.
+	 * 
+	 */
 	public JNotepadPP() {
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setLocation(0, 0);
-		setSize(600, 600);
+		setSize(800, 600);
+
+		modified = createImageIcon("icons/modified.png", 20);
+		unmodified = createImageIcon("icons/unmodified.png", 20);
 
 		initGUI();
 	}
 
-	
-
+	/**
+	 * Funkcija za incijalizaciju grafičkog sučelja {@code JNotepad++}
+	 * 
+	 */
 	private void initGUI() {
 
 		editor = new JTextArea();
 
 		getContentPane().setLayout(new BorderLayout());
-		model = new DefaultMultipleDocumentModel();
-		getContentPane().add(model, BorderLayout.CENTER);
+		dmdm = new DefaultMultipleDocumentModel();
+		getContentPane().add(dmdm, BorderLayout.CENTER);
 
-		model.addChangeListener(new ChangeListener() {
+		dmdm.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 
-				int selectedIndex = model.getSelectedIndex();
-				currentDocumentPath = model.getDocument(selectedIndex).getFilePath();
+				int selectedIndex = dmdm.getSelectedIndex();
+				SingleDocumentModel document = dmdm.getDocument(selectedIndex);
+				if (document == null)
+					return;
+				else {
+					currentDocumentPath = document.getFilePath();
+				}
 
 				if (currentDocumentPath != null) {
 					setTitle(currentDocumentPath.toString() + " - JNotepad++");
@@ -79,13 +93,19 @@ public class JNotepadPP extends JFrame {
 				}
 			}
 		});
-		
+
 		createActions();
 		createMenus();
 		createToolbars();
-		setTitle("(unnamed)" + " - JNotepad++");
+		setTitle("JNotepad++");
 	}
-	
+
+	/**
+	 * Akcija koja predstavlja otvaranje datoteke s računala. Ukoliko
+	 * je odabrana datoteka već otvorena u nekoj kratici, ne stvara
+	 * se nova kratica već se prelazi na već otvorenu kraticu.
+	 * 
+	 */
 	private Action openDocumentAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -98,27 +118,59 @@ public class JNotepadPP extends JFrame {
 			if (fc.showOpenDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
 				return;
 			}
-			
+
 			File fileName = fc.getSelectedFile();
 			Path filePath = fileName.toPath();
 
 			if (!Files.isReadable(filePath)) {
-				JOptionPane.showMessageDialog(JNotepadPP.this,
-						"Datoteka " + filePath + " ne postoji!", "Pogreška",
+				JOptionPane.showMessageDialog(JNotepadPP.this, "Datoteka " + filePath + " ne postoji!", "Pogreška",
 						JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 
-			SingleDocumentModel newDocument = model.loadDocument(filePath);
-			newDocument.addSingleDocumentListener(sl);
+			// pronalazak već otvorenog dokumenta ako postoji
+			int indexOfAlredyOpened = -1;
+			int i = 0;
+			Iterator<SingleDocumentModel> iter = dmdm.iterator();
+			while (iter.hasNext()) {
+				
+				SingleDocumentModel model = iter.next();
+				
+				if (model.getFilePath() != null) {
+					if (model.getFilePath().equals(filePath)) {
+						indexOfAlredyOpened = i;
+					}
+				}
+				i++;
+			}
+
+			// odabrana datoteka nije već otvorena u JNotepadd++
+			if (indexOfAlredyOpened == -1) {
+
+				SingleDocumentModel newDocument = dmdm.loadDocument(filePath);
+				newDocument.addSingleDocumentListener(sl);
+				// stvaranje nove kratice
+				dmdm.addTab(filePath.getFileName().toString(), unmodified,
+						new JScrollPane(newDocument.getTextComponent()));
+				// odabir te kratice, uvijek se dodaje na kraj
+				dmdm.setSelectedIndex(dmdm.getTabCount() - 1);
+
+			} else {
+				// odabrana datoteka postoji, odabire se
+				dmdm.setSelectedIndex(indexOfAlredyOpened);
+			}
 		}
 	};
-	
+
 	SingleDocumentListener sl = new SingleDocumentListener() {
 
 		@Override
 		public void documentModifyStatusUpdated(SingleDocumentModel model) {
-
+			if (model.isModified()) {
+				dmdm.setIconAt(dmdm.getSelectedIndex(), modified);
+			} else {
+				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
+			}
 		}
 
 		@Override
@@ -128,62 +180,73 @@ public class JNotepadPP extends JFrame {
 	};
 
 	private Action saveAsDocumentAction = new AbstractAction() {
-		
+
 		private static final long serialVersionUID = 1L;
-		
+
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
-			if(saveFileWithNoPath()) model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
+
+			if (saveFileWithNoPath()) {
+				dmdm.saveDocument(dmdm.getCurrentDocument(), currentDocumentPath);
+				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
+				dmdm.setTitleAt(dmdm.getSelectedIndex(),
+						dmdm.getCurrentDocument().getFilePath().getFileName().toString());
+			}
 		}
 	};
-	
+
 	private Action saveDocumentAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			
+
 			boolean writeOK = true;
-			
-			if (currentDocumentPath == null) writeOK = saveFileWithNoPath();
-			
-			if(writeOK) model.saveDocument(model.getCurrentDocument(), currentDocumentPath);
+
+			if (currentDocumentPath == null)
+				writeOK = saveFileWithNoPath();
+
+			if (writeOK) {
+				dmdm.saveDocument(dmdm.getCurrentDocument(), currentDocumentPath);
+				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
+			}
 		}
 	};
-	
+
 	/**
-	 * Metoda za spremanje trenutno aktivne datoteke na način
-	 * da se ponudi prozor za odabir imena i mjesta spremanje
-	 * datoteke.
+	 * Metoda za spremanje trenutno aktivne datoteke na način da se ponudi prozor za
+	 * odabir imena i mjesta spremanje datoteke.
 	 * 
 	 * @return je li uspješno odabrano ime i mjesto spremanja dototeke
 	 */
 	private boolean saveFileWithNoPath() {
-		
+
 		JFileChooser jfc = new JFileChooser();
 		jfc.setDialogTitle("Save document");
 		if (jfc.showSaveDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
-			JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje",
+					JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
 
 		currentDocumentPath = jfc.getSelectedFile().toPath();
-		
+
 		File file = currentDocumentPath.toFile();
-		
+
 		if (file.exists()) {
-			
-			// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati stara datoteka
-			if (JOptionPane.showConfirmDialog(JNotepadPP.this, "Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?",
-					"Upozorenje", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-				
+
+			// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati
+			// stara datoteka
+			if (JOptionPane.showConfirmDialog(JNotepadPP.this,
+					"Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?", "Upozorenje",
+					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+
 			} else { // stara datoteka se ne smije prepisati
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -251,9 +314,20 @@ public class JNotepadPP extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			SingleDocumentModel newDocument = model.createNewDocument();
+			SingleDocumentModel newDocument = dmdm.createNewDocument();
 			newDocument.addSingleDocumentListener(sl);
-			model.newTab(null, null, new JScrollPane(newDocument.getTextComponent()));
+			dmdm.addTab("(unmodified)", unmodified, new JScrollPane(newDocument.getTextComponent()));
+		}
+	};
+
+	private Action closeTabAction = new AbstractAction() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+
+			dmdm.closeDocument(dmdm.getCurrentDocument());
 		}
 	};
 
@@ -287,8 +361,13 @@ public class JNotepadPP extends JFrame {
 		saveAsDocumentAction.putValue(Action.NAME, "SaveAs");
 		saveAsDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift S"));
 		saveAsDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
-		saveAsDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");		
-		
+		saveAsDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");
+
+		closeTabAction.putValue(Action.NAME, "Close tab");
+		closeTabAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control W"));
+		closeTabAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
+		closeTabAction.putValue(Action.SHORT_DESCRIPTION, "Closes current tab.");
+
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
 		deleteSelectedPartAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
@@ -318,6 +397,7 @@ public class JNotepadPP extends JFrame {
 		fileMenu.add(new JMenuItem(saveDocumentAction));
 		fileMenu.add(new JMenuItem(saveAsDocumentAction));
 		fileMenu.addSeparator();
+		fileMenu.add(new JMenuItem(closeTabAction));
 		fileMenu.add(new JMenuItem(exitAction));
 
 		JMenu editMenu = new JMenu("Edit");
@@ -345,11 +425,15 @@ public class JNotepadPP extends JFrame {
 		JButton saveDocumentButton = new JButton(saveDocumentAction);
 		saveDocumentButton.setIcon(createImageIcon("icons/save.png", 20));
 		toolBar.add(saveDocumentButton);
-		
+
 		JButton saveAsDocumentButton = new JButton(saveAsDocumentAction);
 		saveAsDocumentButton.setIcon(createImageIcon("icons/saveas.png", 20));
 		toolBar.add(saveAsDocumentButton);
-		
+
+		JButton closeTabButton = new JButton(closeTabAction);
+		closeTabButton.setIcon(createImageIcon("icons/closetab.png", 20));
+		toolBar.add(closeTabButton);
+
 		toolBar.addSeparator();
 		toolBar.add(new JButton(deleteSelectedPartAction));
 		toolBar.add(new JButton(toggleCaseAction));
@@ -378,16 +462,16 @@ public class JNotepadPP extends JFrame {
 
 		return null;
 	}
-	
+
 	/**
 	 * Funkcija za postavljanje staze otvorene datoteke u naslovnu traku.
 	 * 
 	 * @param model referenca do trenutno aktivnog modela
 	 */
 	public void setTitle(SingleDocumentModel model) {
-		
+
 		Path modelPath = model.getFilePath();
-		
+
 		if (modelPath != null) {
 			setTitle(modelPath.toString() + " - JNotepad++");
 		} else {
@@ -396,7 +480,9 @@ public class JNotepadPP extends JFrame {
 	}
 
 	/**
-	 * @param args
+	 * Funkcija iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args argumenti glavnog programa
 	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(new Runnable() {
