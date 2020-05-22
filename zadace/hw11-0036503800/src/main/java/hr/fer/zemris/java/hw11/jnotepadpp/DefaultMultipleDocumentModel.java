@@ -120,8 +120,11 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 	@Override
 	public void saveDocument(SingleDocumentModel model, Path newPath) {
 
+		if (newPath == null)
+			return;
+
 		byte[] podatci = model.getTextComponent().getText().getBytes(StandardCharsets.UTF_8);
-		
+
 		try {
 			Files.write(newPath, podatci);
 		} catch (IOException e1) {
@@ -131,9 +134,8 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 					"Pogreška", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		
-		JOptionPane.showMessageDialog(this, "Datoteka je snimljena.", "Informacija",
-				JOptionPane.INFORMATION_MESSAGE);
+
+		JOptionPane.showMessageDialog(this, "Datoteka je snimljena.", "Informacija", JOptionPane.INFORMATION_MESSAGE);
 
 		model.setFilePath(newPath);
 		setTitleAt(getSelectedIndex(), model.getFilePath().getFileName().toString());
@@ -141,8 +143,21 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 	@Override
 	public void closeDocument(SingleDocumentModel model) {
-		// TODO Auto-generated method stub
 
+		if (model != null) {
+			
+			Iterator<SingleDocumentModel> documentIterator = iterator();
+			
+			while(documentIterator.hasNext()) {
+				
+				SingleDocumentModel doc = documentIterator.next();
+				if(doc.equals(model)) {
+					documentIterator.remove();
+					int i = getSelectedIndex();
+				    if (i != -1) this.removeTabAt(i);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -166,10 +181,9 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 	public SingleDocumentModel getDocument(int index) {
 
 		int size = getNumberOfDocuments();
-
-		if (index < 0 || index >= size)
-			throw new IndexOutOfBoundsException("Index izvan granica.");
-
+		
+		if (index < 0 || index >= size) return null;
+			
 		return documents.get(index);
 	}
 
@@ -216,11 +230,5 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 		setSelectedIndex(getTabCount() - 1);
 	}
-
-//	protected void addTab(String name, SingleDocumentModel newDocument) {
-//		
-//		JScrollPane scp = new JScrollPane(newDocument.getTextComponent());
-//		addTab(name, scp);
-//	}
 
 }
