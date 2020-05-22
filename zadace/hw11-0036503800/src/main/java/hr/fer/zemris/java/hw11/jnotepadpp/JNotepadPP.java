@@ -412,6 +412,58 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
+	private Action cutAction = new AbstractAction() {
+		
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
+			Document doc = textArea.getDocument();
+			int len = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
+			
+			if(len > 0) {
+				
+				int offset = Math.min(textArea.getCaret().getDot(), textArea.getCaret().getMark());
+				
+				try {
+					
+					StringSelection stringSelection = new StringSelection(doc.getText(offset, len));
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					clipboard.setContents(stringSelection, null);
+					
+					doc.remove(offset, len);
+					
+				} catch (BadLocationException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
+	};
+	
+	private Action statisticalInfoAction = new AbstractAction() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			String infoString = "Statističke informacije o trenutno otvorenom dokumentu.\n\n";
+			
+			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
+			
+			infoString += "Ukupan broj znakova: " + String.valueOf(textArea.getText().length()) + "\n";
+			infoString += "Broj nepraznih znakova: " + String.valueOf(textArea.getText().replaceAll("\\s+", "").length()) + "\n";
+			infoString += "Broj linija: " + String.valueOf(textArea.getLineCount());
+			
+			JOptionPane.showMessageDialog(JNotepadPP.this, 
+					infoString, 
+					"Informacije",
+					JOptionPane.INFORMATION_MESSAGE);
+		}
+	};
+	
 	private void createActions() {
 
 		openDocumentAction.putValue(Action.NAME, "Open");
@@ -448,6 +500,11 @@ public class JNotepadPP extends JFrame {
 		pasteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control V"));
 		pasteAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_V);
 		pasteAction.putValue(Action.SHORT_DESCRIPTION, "Pastes text from clipboard.");
+		
+		cutAction.putValue(Action.NAME, "Cut");
+		cutAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
+		cutAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
+		cutAction.putValue(Action.SHORT_DESCRIPTION, "Cuts selected text.");
 
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
@@ -459,6 +516,11 @@ public class JNotepadPP extends JFrame {
 		toggleCaseAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
 		toggleCaseAction.putValue(Action.SHORT_DESCRIPTION,
 				"Used to toggle character case in selected part of text or in entire document.");
+		
+		statisticalInfoAction.putValue(Action.NAME, "Info");
+		statisticalInfoAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F5"));
+		statisticalInfoAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_I);
+		statisticalInfoAction.putValue(Action.SHORT_DESCRIPTION, "Statistical info of opened document.");
 
 		exitAction.putValue(Action.NAME, "Exit");
 		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
@@ -486,9 +548,15 @@ public class JNotepadPP extends JFrame {
 
 		editMenu.add(new JMenuItem(copyAction));
 		editMenu.add(new JMenuItem(pasteAction));
+		editMenu.add(new JMenuItem(cutAction));
 		editMenu.add(new JMenuItem(deleteSelectedPartAction));
 		editMenu.add(new JMenuItem(toggleCaseAction));
 
+		JMenu infoMenu = new JMenu("Info");
+		menuBar.add(infoMenu);
+		
+		infoMenu.add(new JMenuItem(statisticalInfoAction));
+		
 		this.setJMenuBar(menuBar);
 	}
 
@@ -527,6 +595,14 @@ public class JNotepadPP extends JFrame {
 		JButton paste = new JButton(pasteAction);
 		paste.setIcon(createImageIcon("icons/paste.png", 20));
 		toolBar.add(paste);
+		
+		JButton cut = new JButton(cutAction);
+		cut.setIcon(createImageIcon("icons/cut.png", 20));
+		toolBar.add(cut);
+		
+		JButton info = new JButton(statisticalInfoAction);
+		info.setIcon(createImageIcon("icons/info.png", 20));
+		toolBar.add(info);
 		
 		toolBar.add(new JButton(deleteSelectedPartAction));
 		toolBar.add(new JButton(toggleCaseAction));
