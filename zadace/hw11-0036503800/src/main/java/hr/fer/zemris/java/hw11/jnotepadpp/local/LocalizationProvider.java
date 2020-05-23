@@ -50,7 +50,7 @@ public class LocalizationProvider extends AbstractLocalizationProider {
 	public void setLanguage(String language) {
 		this.language = language;
 		Locale locale = Locale.forLanguageTag(this.language);
-		bundle = ResourceBundle.getBundle("hr.fer.zemris.java.hw08.vjezba.prijevodi", locale);
+		bundle = ResourceBundle.getBundle("hr.fer.zemris.java.hw11.jnotepadpp.local.prijevodi", locale);
 		fire();
 	}
 	
