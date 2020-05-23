@@ -97,23 +97,23 @@ public class SaveDocumentAction extends LocalizableAction {
 						"Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?", "Upozorenje",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 
-					dmdm.saveDocument(document, selectedFile.toPath());
-					dmdm.setIconAt(dmdm.getSelectedIndex(), JNotepadPP.unmodified);
-					dmdm.setTitleAt(dmdm.getSelectedIndex(),
-							dmdm.getCurrentDocument().getFilePath().getFileName().toString());
-
 				} else { // stara datoteka se ne smije prepisati
 					return;
 				}
 			}
 			
-		} else { 
+			// ukoliko je izabrano ime koje još ne postoji, sprema se
+			dmdm.saveDocument(document, selectedFile.toPath());
+			dmdm.setTitleAt(dmdm.getSelectedIndex(),
+					dmdm.getCurrentDocument().getFilePath().getFileName().toString());
 			
-			// dio koji se izvodi kada je otvoren postojeći dokument i sprema ga se
-			// pritiskom na gumb save
+		} else {
+			// slučaj kad je otvoren postojeć dokument i napravljena je neka
+			// preinaka pa se sprema pritiskom na save
 			dmdm.saveDocument(document, document.getFilePath());
-			dmdm.setIconAt(dmdm.getSelectedIndex(), JNotepadPP.unmodified);
 		}
+			
+		dmdm.setIconAt(dmdm.getSelectedIndex(), JNotepadPP.unmodified);
 	}
 
 }
