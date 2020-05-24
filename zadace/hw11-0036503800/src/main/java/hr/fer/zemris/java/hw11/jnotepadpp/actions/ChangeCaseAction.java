@@ -48,13 +48,13 @@ public class ChangeCaseAction extends LocalizableAction {
 			putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
 		}
 
-		putValue(Action.SHORT_DESCRIPTION, flp.getString(key));
+		putValue(Action.SHORT_DESCRIPTION, flp.getString(key + "desc"));
 		
 		flp.addLocalizationListener(new ILocalizationListener() {
 			
 			@Override
 			public void localizationChanged() {
-				putValue(Action.SHORT_DESCRIPTION, flp.getString(key));
+				putValue(Action.SHORT_DESCRIPTION, flp.getString(key + "desc"));
 			}
 		});
 		
