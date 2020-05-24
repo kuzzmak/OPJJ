@@ -16,6 +16,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.SingleDocumentModel;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.ILocalizationListener;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.ILocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJFileChooser;
 
 /**
  * Akcija koja predstavlja otvaranje postojeće datoteke.
@@ -28,6 +29,7 @@ public class OpenDocumentAction extends LocalizableAction {
 	private static final long serialVersionUID = 1L;
 	
 	private IDataGetter data;
+	private ILocalizationProvider flp;
 	
 	/**
 	 * Konstruktor.
@@ -53,13 +55,14 @@ public class OpenDocumentAction extends LocalizableAction {
 		});
 		
 		this.data = data;
+		this.flp = flp;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		JFileChooser fc = new JFileChooser();
-		fc.setDialogTitle("Open file");
+		JFileChooser fc = new LJFileChooser("fileDialogSaveDocument", flp);
+		
 		if (fc.showOpenDialog(data.getFrame()) != JFileChooser.APPROVE_OPTION) {
 			return;
 		}
@@ -68,11 +71,15 @@ public class OpenDocumentAction extends LocalizableAction {
 		Path filePath = fileName.toPath();
 
 		if (!Files.isReadable(filePath)) {
-			JOptionPane.showMessageDialog(data.getFrame(), "Datoteka " + filePath + " ne postoji!", "Pogreška",
+			JOptionPane.showMessageDialog(
+					data.getFrame(), 
+					flp.getString("optionPaneFileNotExistMessage") + ": " + filePath,
+					flp.getString("optionPaneFileNotExistTitle"),
 					JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 
+		// pretraga nije li odabrana datoteka već otvorena u nekoj kratici
 		int indexOfAlredyOpened = -1;
 		int i = 0;
 		Iterator<SingleDocumentModel> iter = data.getDmdm().iterator();
@@ -91,10 +98,17 @@ public class OpenDocumentAction extends LocalizableAction {
 		// izabrana datoteka koja nije otvorena u nekoj kratici
 		if (indexOfAlredyOpened == -1) {
 
-			data.getDmdm().loadDocument(filePath);
+			SingleDocumentModel document = data.getDmdm().loadDocument(filePath);
+			
+			if(document == null) {
+				JOptionPane.showMessageDialog(
+						data.getFrame(), 
+						flp.getString("optionPaneErrorWhileReadingMessage") + filePath + ".", 
+						flp.getString("optionPaneErrorWhileReadingTitle"),
+						JOptionPane.ERROR_MESSAGE);
+			}
 
 		} else {
-
 			data.getDmdm().setSelectedIndex(indexOfAlredyOpened);
 		}
 	}
