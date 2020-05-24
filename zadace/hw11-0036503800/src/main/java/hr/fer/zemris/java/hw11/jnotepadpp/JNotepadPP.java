@@ -531,8 +531,6 @@ public class JNotepadPP extends JFrame {
 		uniqueLinesButton = new JButton(uniqueLinesAction);
 		toolBar.add(uniqueLinesButton);
 
-//		toolBar.add(new JButton(deleteSelectedPartAction));
-
 		getContentPane().add(toolBar, BorderLayout.PAGE_START);
 	}
 
