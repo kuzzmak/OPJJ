@@ -121,10 +121,17 @@ public class SortAction extends LocalizableAction {
 							.stream()
 							.sorted(comparator)
 							.collect(Collectors.toList());
-				}else {
+					
+				}else if(key.equals("descending")){
 					singleWords = singleWords
 							.stream()
 							.sorted(comparator.reversed())
+							.collect(Collectors.toList());
+					
+				}else {
+					singleWords = singleWords
+							.stream()
+							.distinct()
 							.collect(Collectors.toList());
 				}
 				
