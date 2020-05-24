@@ -1,11 +1,9 @@
 package hr.fer.zemris.java.hw11.jnotepadpp;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,8 +57,6 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 		try {
 			bytes = Files.readAllBytes(path);
 		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(this, "Pogreška prilikom čitanja datoteke " + path + ".", "Pogreška",
-					JOptionPane.ERROR_MESSAGE);
 			return null;
 		}
 		
@@ -80,15 +76,13 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 		try {
 			Files.write(newPath, podatci);
-		} catch (IOException e1) {
+		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this,
 					"Pogreška prilikom zapisivanja datoteke " + newPath.toFile().getAbsolutePath()
 							+ ".\nPažnja: nije jasno u kojem je stanju datoteka na disku!",
 					"Pogreška", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-
-		JOptionPane.showMessageDialog(this, "Datoteka je snimljena.", "Informacija", JOptionPane.INFORMATION_MESSAGE);
 
 		model.setFilePath(newPath);
 		model.setModified(false);
