@@ -52,11 +52,13 @@ import javax.swing.text.Document;
 
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.CutAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.IDataGetter;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.OpenDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.PasteAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.SaveDocumentAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.StatisticalnfoAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizationProvider;
@@ -88,6 +90,8 @@ public class JNotepadPP extends JFrame {
 	private LocalizableAction closeTabAction;
 	private LocalizableAction copyAction;
 	private LocalizableAction pasteAction;
+	private LocalizableAction cutAction;
+	private LocalizableAction statisticalInfoAction;
 
 	/**
 	 * Konstruktor.
@@ -358,56 +362,6 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
-	private Action cutAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
-			Document doc = textArea.getDocument();
-			int len = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
-
-			if (len > 0) {
-
-				int offset = Math.min(textArea.getCaret().getDot(), textArea.getCaret().getMark());
-
-				try {
-
-					StringSelection stringSelection = new StringSelection(doc.getText(offset, len));
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					clipboard.setContents(stringSelection, null);
-
-					doc.remove(offset, len);
-
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}
-			}
-		}
-	};
-
-	private Action statisticalInfoAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			String infoString = "Statističke informacije o trenutno otvorenom dokumentu.\n\n";
-
-			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
-
-			infoString += "Ukupan broj znakova: " + String.valueOf(textArea.getText().length()) + "\n";
-			infoString += "Broj nepraznih znakova: "
-					+ String.valueOf(textArea.getText().replaceAll("\\s+", "").length()) + "\n";
-			infoString += "Broj linija: " + String.valueOf(textArea.getLineCount());
-
-			JOptionPane.showMessageDialog(JNotepadPP.this, infoString, "Informacije", JOptionPane.INFORMATION_MESSAGE);
-		}
-	};
-
 	private Action english = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -461,11 +415,7 @@ public class JNotepadPP extends JFrame {
 		closeTabAction = new CloseTabAction("close", flp, data);
 		copyAction = new CopyAction("copy", flp, data);
 		pasteAction = new PasteAction("paste", flp, data);
-		
-		cutAction.putValue(Action.NAME, "Cut");
-		cutAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
-		cutAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
-		cutAction.putValue(Action.SHORT_DESCRIPTION, "Cuts selected text.");
+		cutAction = new CutAction("cut", flp, data);
 
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
@@ -478,10 +428,7 @@ public class JNotepadPP extends JFrame {
 		toggleCaseAction.putValue(Action.SHORT_DESCRIPTION,
 				"Used to toggle character case in selected part of text or in entire document.");
 
-		statisticalInfoAction.putValue(Action.NAME, "Info");
-		statisticalInfoAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F5"));
-		statisticalInfoAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_I);
-		statisticalInfoAction.putValue(Action.SHORT_DESCRIPTION, "Statistical info of opened document.");
+		statisticalInfoAction = new StatisticalnfoAction("info", flp, data);
 
 		exitAction.putValue(Action.NAME, "Exit");
 		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
