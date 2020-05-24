@@ -5,11 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -48,12 +43,12 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CutAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.IDataGetter;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.LanguageAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.OpenDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.PasteAction;
@@ -83,6 +78,7 @@ public class JNotepadPP extends JFrame {
 
 	private FormLocalizationProvider flp;
 	
+	// akcije
 	private LocalizableAction openDocumentAction;
 	private LocalizableAction newDocumentAction;
 	private LocalizableAction saveDocumentAction;
@@ -92,6 +88,9 @@ public class JNotepadPP extends JFrame {
 	private LocalizableAction pasteAction;
 	private LocalizableAction cutAction;
 	private LocalizableAction statisticalInfoAction;
+	private LocalizableAction english;
+	private LocalizableAction german;
+	private LocalizableAction croatian;
 
 	/**
 	 * Konstruktor.
@@ -362,37 +361,10 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
-	private Action english = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			LocalizationProvider.getInstance().setLanguage("en");
-		}
-	};
-
-	private Action german = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			LocalizationProvider.getInstance().setLanguage("de");
-		}
-	};
-
-	private Action croatian = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			LocalizationProvider.getInstance().setLanguage("hr");
-		}
-	};
-	
-
+	/**
+	 * Funkcija za stvaranje akcija.
+	 * 
+	 */
 	private void createActions() {
 		
 		IDataGetter data = new IDataGetter() {
@@ -416,6 +388,10 @@ public class JNotepadPP extends JFrame {
 		copyAction = new CopyAction("copy", flp, data);
 		pasteAction = new PasteAction("paste", flp, data);
 		cutAction = new CutAction("cut", flp, data);
+		
+		english = new LanguageAction("en", flp);
+		german = new LanguageAction("de", flp);
+		croatian = new LanguageAction("hr", flp);
 
 		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
