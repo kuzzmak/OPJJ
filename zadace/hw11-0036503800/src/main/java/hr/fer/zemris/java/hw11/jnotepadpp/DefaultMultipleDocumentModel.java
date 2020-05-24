@@ -1,9 +1,11 @@
 package hr.fer.zemris.java.hw11.jnotepadpp;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,9 +75,6 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 
 	@Override
 	public void saveDocument(SingleDocumentModel model, Path newPath) {
-
-		if (newPath == null)
-			return;
 
 		byte[] podatci = model.getTextComponent().getText().getBytes(StandardCharsets.UTF_8);
 
