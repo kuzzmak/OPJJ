@@ -57,6 +57,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.StatisticalnfoAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizationProvider;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJMenu;
 
 public class JNotepadPP extends JFrame {
 
@@ -424,7 +425,7 @@ public class JNotepadPP extends JFrame {
 
 		JMenuBar menuBar = new JMenuBar();
 
-		JMenu fileMenu = new JMenu("File");
+		JMenu fileMenu = new LJMenu("file", flp);
 		menuBar.add(fileMenu);
 
 		fileMenu.add(new JMenuItem(openDocumentAction));
@@ -435,7 +436,7 @@ public class JNotepadPP extends JFrame {
 		fileMenu.add(new JMenuItem(closeTabAction));
 		fileMenu.add(new JMenuItem(exitAction));
 
-		JMenu editMenu = new JMenu("Edit");
+		JMenu editMenu = new LJMenu("edit", flp);
 		menuBar.add(editMenu);
 
 		editMenu.add(new JMenuItem(copyAction));
@@ -444,12 +445,12 @@ public class JNotepadPP extends JFrame {
 		editMenu.add(new JMenuItem(deleteSelectedPartAction));
 		editMenu.add(new JMenuItem(toggleCaseAction));
 
-		JMenu infoMenu = new JMenu("Info");
+		JMenu infoMenu = new LJMenu("info", flp);
 		infoMenu.add(new JMenuItem(statisticalInfoAction));
 
 		menuBar.add(infoMenu);
 
-		JMenu languagesMenu = new JMenu("Languages");
+		JMenu languagesMenu = new LJMenu("languages", flp);
 		languagesMenu.add(new JMenuItem(english));
 		languagesMenu.add(new JMenuItem(croatian));
 		languagesMenu.add(new JMenuItem(german));
