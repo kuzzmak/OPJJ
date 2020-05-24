@@ -17,7 +17,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -44,6 +47,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.ChangeCaseAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CutAction;
@@ -68,11 +72,11 @@ public class JNotepadPP extends JFrame {
 	// staza dokumenta trenutno aktivne kratice
 	private Path currentDocumentPath = null;
 	
+	// ikone koje ukazuju na modifikaciju dokumenta
 	public static ImageIcon modified;
 	public static ImageIcon unmodified;
 
-	private JButton copy;
-
+	// trenutni pokazatelji kursora
 	private JLabel line;
 	private JLabel column;
 	private JLabel selected;
@@ -89,10 +93,27 @@ public class JNotepadPP extends JFrame {
 	private LocalizableAction pasteAction;
 	private LocalizableAction cutAction;
 	private LocalizableAction statisticalInfoAction;
+	private LocalizableAction upperCaseAction;
+	private LocalizableAction lowerCaseAction;
+	private LocalizableAction invertCaseAction;
 	private LocalizableAction english;
 	private LocalizableAction german;
 	private LocalizableAction croatian;
-
+	
+	private JButton openButton;
+	private JButton newDocumentButton;
+	private JButton saveDocumentButton;
+	private JButton saveAsDocumentButton;
+	private JButton closeTabButton;
+	private JButton copy;
+	private JButton paste;
+	private JButton cut;
+	private JButton info;
+	private JButton lowerCaseButton;
+	private JButton upperCaseButton;
+	private JButton invertCaseButton;
+	
+	private List<Action> textActions;
 	/**
 	 * Konstruktor.
 	 * 
@@ -101,10 +122,12 @@ public class JNotepadPP extends JFrame {
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setLocation(0, 0);
-		setSize(800, 600);
+		setSize(1000, 600);
 
 		flp = new FormLocalizationProvider(LocalizationProvider.getInstance(), this);
 
+		
+		
 		initGUI();
 	}
 
@@ -118,6 +141,7 @@ public class JNotepadPP extends JFrame {
 		unmodified = createImageIcon("icons/unmodified.png", 20);
 		
 		getContentPane().setLayout(new BorderLayout());
+		
 		dmdm = new DefaultMultipleDocumentModel();
 		dmdm.addMultipleDocumentListener(ml);
 		getContentPane().add(dmdm, BorderLayout.CENTER);
@@ -150,7 +174,18 @@ public class JNotepadPP extends JFrame {
 		createToolbars();
 		createStatusBar();
 		setTitle("JNotepad++");
+		
+		textActions = new ArrayList<>(Arrays.asList(
+				copyAction, 
+				cutAction, 
+				lowerCaseAction, 
+				upperCaseAction, 
+				invertCaseAction));
+		
+		statisticalInfoAction.setEnabled(false);
 
+		changeTextActionsState(false);
+		
 		addWindowListener(new WindowAdapter() {
 
 			@Override
@@ -161,6 +196,18 @@ public class JNotepadPP extends JFrame {
 
 	}
 
+	/**
+	 * Funkcija za omogućavanje akcija čije djelovanje ovisi
+	 * o odabranom tekstu, kad ima odabranog teksta, omoguće se,
+	 * a inače su onemmogućene.
+	 * 
+	 * @param enable jesu li akcije omogućene ili nisu
+	 */
+	private void changeTextActionsState(boolean enable) {
+		
+		textActions.forEach(a -> a.setEnabled(enable));
+	}
+	
 	/**
 	 * Funkcija koja se poziva pritiskom na gumb za izlazak iz programa. Prvo se
 	 * provjeri ima li nekog nespremljenog dokumenta te ako ima, pita se korisnika
@@ -230,20 +277,15 @@ public class JNotepadPP extends JFrame {
 			int index = dmdm.getSelectedIndex();
 			if (index != -1)
 				dmdm.remove(index);
+			
+			// onemogućavanje gumba za dohvat informacija o trenutnom dokumentu
+			if(dmdm.getTabCount() == 0) statisticalInfoAction.setEnabled(false);
 		}
 
 		@Override
 		public void documentAdded(SingleDocumentModel model) {
 
 			JTextArea textArea = model.getTextComponent();
-			textArea.addCaretListener(new CaretListener() {
-
-				@Override
-				public void caretUpdate(CaretEvent e) {
-					updateStatusBar(textArea);
-				}
-			});
-
 			textArea.addCaretListener(new CaretListener() {
 
 				@Override
@@ -261,8 +303,11 @@ public class JNotepadPP extends JFrame {
 				dmdm.addTab(model.getFilePath().getFileName().toString(), unmodified, new JScrollPane(textArea));
 			}
 
-			// odabir te kratice, uvijek se dodaje na kraj
+			// odabir tog dokumenta, uvijek se dodaje na kraj
 			dmdm.setSelectedIndex(dmdm.getTabCount() - 1);
+			
+			// gumb za prikaz informacija o trenutnom dokumentu
+			statisticalInfoAction.setEnabled(true);
 		}
 
 		@Override
@@ -290,44 +335,6 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
-	private Action toggleCaseAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-//			Document doc = editor.getDocument();
-//			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
-//			int offset = 0;
-//			if (len != 0) {
-//				offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
-//			} else {
-//				len = doc.getLength();
-//			}
-//			try {
-//				String text = doc.getText(offset, len);
-//				text = changeCase(text);
-//				doc.remove(offset, len);
-//				doc.insertString(offset, text, null);
-//			} catch (BadLocationException ex) {
-//				ex.printStackTrace();
-//			}
-		}
-
-		private String changeCase(String text) {
-			char[] znakovi = text.toCharArray();
-			for (int i = 0; i < znakovi.length; i++) {
-				char c = znakovi[i];
-				if (Character.isLowerCase(c)) {
-					znakovi[i] = Character.toUpperCase(c);
-				} else if (Character.isUpperCase(c)) {
-					znakovi[i] = Character.toLowerCase(c);
-				}
-			}
-			return new String(znakovi);
-		}
-	};
-
 	/**
 	 * Funkcija za ažuriranje vrijdnosti na statusnoj traci.
 	 * 
@@ -346,6 +353,12 @@ public class JNotepadPP extends JFrame {
 			line.setText("Ln: " + lineNum);
 			column.setText("Col: " + columnNum);
 			selected.setText("Sel: " + selectedNum);
+			
+			if(selectedNum == 0) {
+				changeTextActionsState(false);
+			}else {
+				changeTextActionsState(true);
+			}
 
 		} catch (BadLocationException ex) {
 		}
@@ -390,6 +403,10 @@ public class JNotepadPP extends JFrame {
 		pasteAction = new PasteAction("paste", flp, data);
 		cutAction = new CutAction("cut", flp, data);
 		
+		upperCaseAction = new ChangeCaseAction("uppercase", flp, data);
+		lowerCaseAction = new ChangeCaseAction("lowercase", flp, data);
+		invertCaseAction = new ChangeCaseAction("invertcase", flp, data);
+		
 		english = new LanguageAction("en", flp);
 		german = new LanguageAction("de", flp);
 		croatian = new LanguageAction("hr", flp);
@@ -398,12 +415,6 @@ public class JNotepadPP extends JFrame {
 		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
 		deleteSelectedPartAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
 		deleteSelectedPartAction.putValue(Action.SHORT_DESCRIPTION, "Used to delete the selected part of text.");
-
-		toggleCaseAction.putValue(Action.NAME, "Toggle case");
-		toggleCaseAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F3"));
-		toggleCaseAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-		toggleCaseAction.putValue(Action.SHORT_DESCRIPTION,
-				"Used to toggle character case in selected part of text or in entire document.");
 
 		statisticalInfoAction = new StatisticalnfoAction("info", flp, data);
 
@@ -443,7 +454,6 @@ public class JNotepadPP extends JFrame {
 		editMenu.add(new JMenuItem(pasteAction));
 		editMenu.add(new JMenuItem(cutAction));
 		editMenu.add(new JMenuItem(deleteSelectedPartAction));
-		editMenu.add(new JMenuItem(toggleCaseAction));
 
 		JMenu infoMenu = new LJMenu("info", flp);
 		infoMenu.add(new JMenuItem(statisticalInfoAction));
@@ -456,8 +466,15 @@ public class JNotepadPP extends JFrame {
 		languagesMenu.add(new JMenuItem(german));
 
 		menuBar.add(languagesMenu);
-
-		this.setJMenuBar(menuBar);
+		
+		JMenu toolsMenu = new LJMenu("tools", flp);
+		toolsMenu.add(new JMenuItem(upperCaseAction));
+		toolsMenu.add(new JMenuItem(lowerCaseAction));
+		toolsMenu.add(new JMenuItem(invertCaseAction));
+		
+		menuBar.add(toolsMenu);
+		
+		setJMenuBar(menuBar);
 	}
 
 	/**
@@ -469,49 +486,58 @@ public class JNotepadPP extends JFrame {
 		JToolBar toolBar = new JToolBar("Alati");
 		toolBar.setFloatable(true);
 
-		JButton openButton = new JButton(openDocumentAction);
+		openButton = new JButton(openDocumentAction);
 		openButton.setIcon(createImageIcon("icons/open.png", 20));
 		toolBar.add(openButton);
 
-		JButton newDocumentButton = new JButton(newDocumentAction);
+		newDocumentButton = new JButton(newDocumentAction);
 		newDocumentButton.setIcon(createImageIcon("icons/new.png", 20));
 		toolBar.add(newDocumentButton);
 
-		JButton saveDocumentButton = new JButton(saveDocumentAction);
+		saveDocumentButton = new JButton(saveDocumentAction);
 		saveDocumentButton.setIcon(createImageIcon("icons/save.png", 20));
 		toolBar.add(saveDocumentButton);
 
-		JButton saveAsDocumentButton = new JButton(saveAsDocumentAction);
+		saveAsDocumentButton = new JButton(saveAsDocumentAction);
 		saveAsDocumentButton.setIcon(createImageIcon("icons/saveas.png", 20));
 		toolBar.add(saveAsDocumentButton);
 
-		JButton closeTabButton = new JButton(closeTabAction);
+		closeTabButton = new JButton(closeTabAction);
 		closeTabButton.setIcon(createImageIcon("icons/closetab.png", 20));
 		toolBar.add(closeTabButton);
 
 		toolBar.addSeparator();
 
 		copy = new JButton(copyAction);
-//		copy.setEnabled(false);
 		copy.setIcon(createImageIcon("icons/copy.png", 20));
 		toolBar.add(copy);
 
-		JButton paste = new JButton(pasteAction);
+		paste = new JButton(pasteAction);
 		paste.setIcon(createImageIcon("icons/paste.png", 20));
 		toolBar.add(paste);
 
-		JButton cut = new JButton(cutAction);
+		cut = new JButton(cutAction);
 		cut.setIcon(createImageIcon("icons/cut.png", 20));
 		toolBar.add(cut);
 
-		JButton info = new JButton(statisticalInfoAction);
+		info = new JButton(statisticalInfoAction);
 		info.setIcon(createImageIcon("icons/info.png", 20));
 		toolBar.add(info);
+		
+		toolBar.addSeparator();
+		
+		lowerCaseButton = new JButton(lowerCaseAction);
+		toolBar.add(lowerCaseButton);
+		
+		upperCaseButton = new JButton(upperCaseAction);
+		toolBar.add(upperCaseButton);
+		
+		invertCaseButton = new JButton(invertCaseAction);
+		toolBar.add(invertCaseButton);
 
-		toolBar.add(new JButton(deleteSelectedPartAction));
-		toolBar.add(new JButton(toggleCaseAction));
+//		toolBar.add(new JButton(deleteSelectedPartAction));
 
-		this.getContentPane().add(toolBar, BorderLayout.PAGE_START);
+		getContentPane().add(toolBar, BorderLayout.PAGE_START);
 	}
 
 	/**
