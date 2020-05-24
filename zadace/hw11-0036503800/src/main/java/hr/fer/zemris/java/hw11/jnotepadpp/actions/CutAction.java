@@ -32,7 +32,7 @@ public class CutAction extends LocalizableAction {
 	 * Konstruktor.
 	 * 
 	 * @param key ključ prijevoda za ime akcije
-	 * @param lp referenca pružatelja prijevoda
+	 * @param flp referenca pružatelja prijevoda
 	 * @param data referenca za dohvat prozora glavnog programa i modela dokumenta
 	 */
 	public CutAction(String key, ILocalizationProvider flp, IDataGetter data) {
