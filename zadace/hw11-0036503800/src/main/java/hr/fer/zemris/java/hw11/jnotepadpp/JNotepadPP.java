@@ -57,6 +57,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.OpenDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.PasteAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.SaveDocumentAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.SortAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.StatisticalnfoAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
@@ -96,6 +97,9 @@ public class JNotepadPP extends JFrame {
 	private LocalizableAction upperCaseAction;
 	private LocalizableAction lowerCaseAction;
 	private LocalizableAction invertCaseAction;
+	private LocalizableAction descendingSortAction;
+	private LocalizableAction ascendingSortAction;
+	private LocalizableAction uniqueLinesAction;
 	private LocalizableAction english;
 	private LocalizableAction german;
 	private LocalizableAction croatian;
@@ -112,6 +116,9 @@ public class JNotepadPP extends JFrame {
 	private JButton lowerCaseButton;
 	private JButton upperCaseButton;
 	private JButton invertCaseButton;
+	private JButton descendingSortButton;
+	private JButton ascendingSortButton;
+	private JButton uniqueLinesButton;
 	
 	private List<Action> textActions;
 	/**
@@ -316,25 +323,6 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
-	private Action deleteSelectedPartAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-//			Document doc = editor.getDocument();
-//			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
-//			if (len == 0)
-//				return;
-//			int offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
-//			try {
-//				doc.remove(offset, len);
-//			} catch (BadLocationException e1) {
-//				e1.printStackTrace();
-//			}
-		}
-	};
-
 	/**
 	 * Funkcija za ažuriranje vrijdnosti na statusnoj traci.
 	 * 
@@ -402,19 +390,16 @@ public class JNotepadPP extends JFrame {
 		copyAction = new CopyAction("copy", flp, data);
 		pasteAction = new PasteAction("paste", flp, data);
 		cutAction = new CutAction("cut", flp, data);
-		
 		upperCaseAction = new ChangeCaseAction("uppercase", flp, data);
 		lowerCaseAction = new ChangeCaseAction("lowercase", flp, data);
 		invertCaseAction = new ChangeCaseAction("invertcase", flp, data);
+		descendingSortAction = new SortAction("descending", flp, data);
+		ascendingSortAction = new SortAction("ascending", flp, data);
+		uniqueLinesAction = new SortAction("unique", flp, data);
 		
 		english = new LanguageAction("en", flp);
 		german = new LanguageAction("de", flp);
 		croatian = new LanguageAction("hr", flp);
-
-		deleteSelectedPartAction.putValue(Action.NAME, "Delete selected text");
-		deleteSelectedPartAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F2"));
-		deleteSelectedPartAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
-		deleteSelectedPartAction.putValue(Action.SHORT_DESCRIPTION, "Used to delete the selected part of text.");
 
 		statisticalInfoAction = new StatisticalnfoAction("info", flp, data);
 
@@ -422,10 +407,6 @@ public class JNotepadPP extends JFrame {
 		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
 		exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
 		exitAction.putValue(Action.SHORT_DESCRIPTION, "Exit application.");
-
-		english.putValue(Action.NAME, "English");
-		croatian.putValue(Action.NAME, "Croatian");
-		german.putValue(Action.NAME, "German");
 	}
 
 	/**
@@ -453,7 +434,6 @@ public class JNotepadPP extends JFrame {
 		editMenu.add(new JMenuItem(copyAction));
 		editMenu.add(new JMenuItem(pasteAction));
 		editMenu.add(new JMenuItem(cutAction));
-		editMenu.add(new JMenuItem(deleteSelectedPartAction));
 
 		JMenu infoMenu = new LJMenu("info", flp);
 		infoMenu.add(new JMenuItem(statisticalInfoAction));
@@ -473,6 +453,13 @@ public class JNotepadPP extends JFrame {
 		toolsMenu.add(new JMenuItem(invertCaseAction));
 		
 		menuBar.add(toolsMenu);
+
+		JMenu sortMenu = new LJMenu("sort", flp);
+		toolsMenu.add(new JMenuItem(descendingSortAction));
+		toolsMenu.add(new JMenuItem(ascendingSortAction));
+		toolsMenu.add(new JMenuItem(uniqueLinesAction));
+		
+		menuBar.add(sortMenu);
 		
 		setJMenuBar(menuBar);
 	}
@@ -534,6 +521,15 @@ public class JNotepadPP extends JFrame {
 		
 		invertCaseButton = new JButton(invertCaseAction);
 		toolBar.add(invertCaseButton);
+		
+		descendingSortButton = new JButton(descendingSortAction);
+		toolBar.add(descendingSortButton);
+		
+		ascendingSortButton = new JButton(ascendingSortAction);
+		toolBar.add(ascendingSortButton);
+		
+		uniqueLinesButton = new JButton(uniqueLinesAction);
+		toolBar.add(uniqueLinesButton);
 
 //		toolBar.add(new JButton(deleteSelectedPartAction));
 
