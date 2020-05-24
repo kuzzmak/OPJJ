@@ -18,7 +18,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -30,7 +29,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -52,24 +50,44 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.IDataGetter;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.OpenDocumentAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.PasteAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.SaveDocumentAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizationProvider;
+
 public class JNotepadPP extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JTextArea editor;
 
 	private DefaultMultipleDocumentModel dmdm;
 
-	private ImageIcon modified;
-	private ImageIcon unmodified;
-
 	// staza dokumenta trenutno aktivne kratice
 	private Path currentDocumentPath = null;
+	
+	public static ImageIcon modified;
+	public static ImageIcon unmodified;
 
 	private JButton copy;
 
 	private JLabel line;
 	private JLabel column;
 	private JLabel selected;
+
+	private FormLocalizationProvider flp;
+	
+	private LocalizableAction openDocumentAction;
+	private LocalizableAction newDocumentAction;
+	private LocalizableAction saveDocumentAction;
+	private LocalizableAction saveAsDocumentAction;
+	private LocalizableAction closeTabAction;
+	private LocalizableAction copyAction;
+	private LocalizableAction pasteAction;
 
 	/**
 	 * Konstruktor.
@@ -81,8 +99,7 @@ public class JNotepadPP extends JFrame {
 		setLocation(0, 0);
 		setSize(800, 600);
 
-		modified = createImageIcon("icons/modified.png", 20);
-		unmodified = createImageIcon("icons/unmodified.png", 20);
+		flp = new FormLocalizationProvider(LocalizationProvider.getInstance(), this);
 
 		initGUI();
 	}
@@ -92,9 +109,10 @@ public class JNotepadPP extends JFrame {
 	 * 
 	 */
 	private void initGUI() {
-
-		editor = new JTextArea();
-
+		
+		modified = createImageIcon("icons/modified.png", 20);
+		unmodified = createImageIcon("icons/unmodified.png", 20);
+		
 		getContentPane().setLayout(new BorderLayout());
 		dmdm = new DefaultMultipleDocumentModel();
 		dmdm.addMultipleDocumentListener(ml);
@@ -182,61 +200,6 @@ public class JNotepadPP extends JFrame {
 		dispose();
 	}
 
-	/**
-	 * Akcija koja predstavlja otvaranje datoteke s računala. Ukoliko je odabrana
-	 * datoteka već otvorena u nekoj kratici, ne stvara se nova kratica već se
-	 * prelazi na već otvorenu kraticu.
-	 * 
-	 */
-	private Action openDocumentAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			JFileChooser fc = new JFileChooser();
-			fc.setDialogTitle("Open file");
-			if (fc.showOpenDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
-				return;
-			}
-
-			File fileName = fc.getSelectedFile();
-			Path filePath = fileName.toPath();
-
-			if (!Files.isReadable(filePath)) {
-				JOptionPane.showMessageDialog(JNotepadPP.this, "Datoteka " + filePath + " ne postoji!", "Pogreška",
-						JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-
-			int indexOfAlredyOpened = -1;
-			int i = 0;
-			Iterator<SingleDocumentModel> iter = dmdm.iterator();
-			while (iter.hasNext()) {
-
-				SingleDocumentModel model = iter.next();
-
-				if (model.getFilePath() != null) {
-					if (model.getFilePath().equals(filePath)) {
-						indexOfAlredyOpened = i;
-					}
-				}
-				i++;
-			}
-
-			// izabrana datoteka koja nije otvorena u nekoj kratici
-			if (indexOfAlredyOpened == -1) {
-
-				dmdm.loadDocument(filePath);
-
-			} else {
-
-				dmdm.setSelectedIndex(indexOfAlredyOpened);
-			}
-		}
-	};
-
 	SingleDocumentListener sl = new SingleDocumentListener() {
 
 		@Override
@@ -259,9 +222,10 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void documentRemoved(SingleDocumentModel model) {
-			
+
 			int index = dmdm.getSelectedIndex();
-			if(index != -1) dmdm.remove(index);
+			if (index != -1)
+				dmdm.remove(index);
 		}
 
 		@Override
@@ -299,88 +263,9 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void currentDocumentChanged(SingleDocumentModel previousModel, SingleDocumentModel currentModel) {
-			
-			
 
 		}
 	};
-
-	private Action saveAsDocumentAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			if (saveFileWithNoPath()) {
-				dmdm.saveDocument(dmdm.getCurrentDocument(), currentDocumentPath);
-				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
-				dmdm.setTitleAt(dmdm.getSelectedIndex(),
-				dmdm.getCurrentDocument().getFilePath().getFileName().toString());
-			}
-		}
-	};
-
-	/**
-	 * Akcija za spremanje dokumenta trenutno aktivne kratice. Ukoliko je trek
-	 * stvorena kratica, korisnika se pita za mjesto spremanja, inače se ažurira
-	 * stara datoteka.
-	 * 
-	 */
-	private Action saveDocumentAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			boolean writeOK = true;
-
-			if (currentDocumentPath == null)
-				writeOK = saveFileWithNoPath();
-
-			if (writeOK) {
-				dmdm.saveDocument(dmdm.getCurrentDocument(), currentDocumentPath);
-				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
-			}
-		}
-	};
-
-	/**
-	 * Metoda za spremanje trenutno aktivne datoteke na način da se ponudi prozor za
-	 * odabir imena i mjesta spremanje datoteke.
-	 * 
-	 * @return je li uspješno odabrano ime i mjesto spremanja dototeke
-	 */
-	private boolean saveFileWithNoPath() {
-
-		JFileChooser jfc = new JFileChooser();
-		jfc.setDialogTitle("Save document");
-		if (jfc.showSaveDialog(JNotepadPP.this) != JFileChooser.APPROVE_OPTION) {
-			JOptionPane.showMessageDialog(JNotepadPP.this, "Ništa nije snimljeno.", "Upozorenje",
-					JOptionPane.WARNING_MESSAGE);
-			return false;
-		}
-
-		currentDocumentPath = jfc.getSelectedFile().toPath();
-
-		File file = currentDocumentPath.toFile();
-
-		if (file.exists()) {
-
-			// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati
-			// stara datoteka
-			if (JOptionPane.showConfirmDialog(JNotepadPP.this,
-					"Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?", "Upozorenje",
-					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-
-			} else { // stara datoteka se ne smije prepisati
-				return false;
-			}
-		}
-
-		return true;
-	}
 
 	private Action deleteSelectedPartAction = new AbstractAction() {
 
@@ -388,16 +273,16 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Document doc = editor.getDocument();
-			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
-			if (len == 0)
-				return;
-			int offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
-			try {
-				doc.remove(offset, len);
-			} catch (BadLocationException e1) {
-				e1.printStackTrace();
-			}
+//			Document doc = editor.getDocument();
+//			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
+//			if (len == 0)
+//				return;
+//			int offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
+//			try {
+//				doc.remove(offset, len);
+//			} catch (BadLocationException e1) {
+//				e1.printStackTrace();
+//			}
 		}
 	};
 
@@ -407,22 +292,22 @@ public class JNotepadPP extends JFrame {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			Document doc = editor.getDocument();
-			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
-			int offset = 0;
-			if (len != 0) {
-				offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
-			} else {
-				len = doc.getLength();
-			}
-			try {
-				String text = doc.getText(offset, len);
-				text = changeCase(text);
-				doc.remove(offset, len);
-				doc.insertString(offset, text, null);
-			} catch (BadLocationException ex) {
-				ex.printStackTrace();
-			}
+//			Document doc = editor.getDocument();
+//			int len = Math.abs(editor.getCaret().getDot() - editor.getCaret().getMark());
+//			int offset = 0;
+//			if (len != 0) {
+//				offset = Math.min(editor.getCaret().getDot(), editor.getCaret().getMark());
+//			} else {
+//				len = doc.getLength();
+//			}
+//			try {
+//				String text = doc.getText(offset, len);
+//				text = changeCase(text);
+//				doc.remove(offset, len);
+//				doc.insertString(offset, text, null);
+//			} catch (BadLocationException ex) {
+//				ex.printStackTrace();
+//			}
 		}
 
 		private String changeCase(String text) {
@@ -436,17 +321,6 @@ public class JNotepadPP extends JFrame {
 				}
 			}
 			return new String(znakovi);
-		}
-	};
-
-	private Action newDocumentAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			dmdm.createNewDocument();
 		}
 	};
 
@@ -474,17 +348,6 @@ public class JNotepadPP extends JFrame {
 
 	}
 
-	private Action closeTabAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			dmdm.closeDocument(dmdm.getCurrentDocument());
-		}
-	};
-
 	private Action exitAction = new AbstractAction() {
 
 		private static final long serialVersionUID = 1L;
@@ -492,66 +355,6 @@ public class JNotepadPP extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			exitProcedure();
-		}
-	};
-
-	private Action copyAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
-			Document doc = textArea.getDocument();
-			int len = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
-
-			if (len > 0) {
-
-				int offset = Math.min(textArea.getCaret().getDot(), textArea.getCaret().getMark());
-				try {
-
-					StringSelection stringSelection = new StringSelection(doc.getText(offset, len));
-					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					clipboard.setContents(stringSelection, null);
-
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}
-			}
-		}
-	};
-
-	private Action pasteAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			JTextArea textArea = dmdm.getCurrentDocument().getTextComponent();
-			Document doc = textArea.getDocument();
-
-			int carretPosition = textArea.getCaret().getDot();
-
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-			Object dataFromClipboard;
-			try {
-				dataFromClipboard = clipboard.getData(DataFlavor.stringFlavor);
-
-				if (dataFromClipboard instanceof String) {
-
-					String textFromClipboard = (String) dataFromClipboard;
-					try {
-						doc.insertString(carretPosition, textFromClipboard, null);
-					} catch (BadLocationException e1) {
-						e1.printStackTrace();
-					}
-				}
-			} catch (UnsupportedFlavorException | IOException e1) {
-				e1.printStackTrace();
-			}
 		}
 	};
 
@@ -604,77 +407,61 @@ public class JNotepadPP extends JFrame {
 			JOptionPane.showMessageDialog(JNotepadPP.this, infoString, "Informacije", JOptionPane.INFORMATION_MESSAGE);
 		}
 	};
-	
+
 	private Action english = new AbstractAction() {
-		
+
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+			LocalizationProvider.getInstance().setLanguage("en");
 		}
 	};
-	
-	private Action croatian = new AbstractAction() {
-		
-		private static final long serialVersionUID = 1L;
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-	};
-	
 	private Action german = new AbstractAction() {
-		
+
 		private static final long serialVersionUID = 1L;
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+			LocalizationProvider.getInstance().setLanguage("de");
 		}
 	};
+
+	private Action croatian = new AbstractAction() {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			LocalizationProvider.getInstance().setLanguage("hr");
+		}
+	};
+	
 
 	private void createActions() {
-
-		openDocumentAction.putValue(Action.NAME, "Open");
-		openDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control O"));
-		openDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O);
-		openDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to open existing file from disk.");
-
-		newDocumentAction.putValue(Action.NAME, "New");
-		newDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift N"));
-		newDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
-		newDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to create new file.");
-
-		saveDocumentAction.putValue(Action.NAME, "Save");
-		saveDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control S"));
-		saveDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
-		saveDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");
-
-		saveAsDocumentAction.putValue(Action.NAME, "SaveAs");
-		saveAsDocumentAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control shift S"));
-		saveAsDocumentAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
-		saveAsDocumentAction.putValue(Action.SHORT_DESCRIPTION, "Used to save current file to disk.");
-
-		closeTabAction.putValue(Action.NAME, "Close tab");
-		closeTabAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control W"));
-		closeTabAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
-		closeTabAction.putValue(Action.SHORT_DESCRIPTION, "Closes current tab.");
-
-		copyAction.putValue(Action.NAME, "Copy");
-		copyAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control C"));
-		copyAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
-		copyAction.putValue(Action.SHORT_DESCRIPTION, "Copies selected text in clipboard.");
-
-		pasteAction.putValue(Action.NAME, "Paste");
-		pasteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control V"));
-		pasteAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_V);
-		pasteAction.putValue(Action.SHORT_DESCRIPTION, "Pastes text from clipboard.");
-
+		
+		IDataGetter data = new IDataGetter() {
+			
+			@Override
+			public JFrame getFrame() {
+				return JNotepadPP.this;
+			}
+			
+			@Override
+			public DefaultMultipleDocumentModel getDmdm() {
+				return dmdm;
+			}
+		};
+		
+		openDocumentAction = new OpenDocumentAction("open", flp, data);
+		newDocumentAction = new NewDocumentAction("new", flp, data);
+		saveDocumentAction = new SaveDocumentAction("save", flp, data, false);
+		saveAsDocumentAction = new SaveDocumentAction("saveas", flp, data, true);
+		closeTabAction = new CloseTabAction("close", flp, data);
+		copyAction = new CopyAction("copy", flp, data);
+		pasteAction = new PasteAction("paste", flp, data);
+		
 		cutAction.putValue(Action.NAME, "Cut");
 		cutAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
 		cutAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
@@ -700,7 +487,7 @@ public class JNotepadPP extends JFrame {
 		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
 		exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
 		exitAction.putValue(Action.SHORT_DESCRIPTION, "Exit application.");
-		
+
 		english.putValue(Action.NAME, "English");
 		croatian.putValue(Action.NAME, "Croatian");
 		german.putValue(Action.NAME, "German");
@@ -736,14 +523,14 @@ public class JNotepadPP extends JFrame {
 
 		JMenu infoMenu = new JMenu("Info");
 		infoMenu.add(new JMenuItem(statisticalInfoAction));
-		
+
 		menuBar.add(infoMenu);
-		
+
 		JMenu languagesMenu = new JMenu("Languages");
 		languagesMenu.add(new JMenuItem(english));
 		languagesMenu.add(new JMenuItem(croatian));
 		languagesMenu.add(new JMenuItem(german));
-		
+
 		menuBar.add(languagesMenu);
 
 		this.setJMenuBar(menuBar);
@@ -901,6 +688,7 @@ public class JNotepadPP extends JFrame {
 
 			@Override
 			public void run() {
+				LocalizationProvider.getInstance().setLanguage("en");
 				new JNotepadPP().setVisible(true);
 			}
 		});
