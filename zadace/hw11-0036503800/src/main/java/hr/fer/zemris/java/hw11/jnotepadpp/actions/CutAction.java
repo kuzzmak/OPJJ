@@ -41,13 +41,13 @@ public class CutAction extends LocalizableAction {
 		
 		putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
 		putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
-		putValue(Action.SHORT_DESCRIPTION, flp.getString(key));
+		putValue(Action.SHORT_DESCRIPTION, flp.getString("cutdesc"));
 
 		flp.addLocalizationListener(new ILocalizationListener() {
 			
 			@Override
 			public void localizationChanged() {
-				putValue(Action.SHORT_DESCRIPTION, flp.getString(key));
+				putValue(Action.SHORT_DESCRIPTION, flp.getString("cutdesc"));
 			}
 		});
 		
