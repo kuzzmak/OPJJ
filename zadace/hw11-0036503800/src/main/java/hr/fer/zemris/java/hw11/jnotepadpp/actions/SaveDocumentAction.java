@@ -8,6 +8,7 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
 import hr.fer.zemris.java.hw11.jnotepadpp.DefaultMultipleDocumentModel;
 import hr.fer.zemris.java.hw11.jnotepadpp.JNotepadPP;
@@ -15,6 +16,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.SingleDocumentModel;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.ILocalizationListener;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.ILocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJFileChooser;
 
 /**
  * Razred koji predstavlja akciju za spremanje dokumenta.
@@ -27,6 +29,7 @@ public class SaveDocumentAction extends LocalizableAction {
 	private static final long serialVersionUID = 1L;
 
 	private IDataGetter data;
+	private ILocalizationProvider flp;
 	private boolean saveas;
 
 	/**
@@ -63,6 +66,7 @@ public class SaveDocumentAction extends LocalizableAction {
 			}
 		});
 
+		this.flp = flp;
 		this.data = data;
 		this.saveas = saveas;
 	}
@@ -79,22 +83,26 @@ public class SaveDocumentAction extends LocalizableAction {
 		// mora se otvoriti prozor s odabirom naziva nove datoteke
 		if (document.getFilePath() == null || saveas) {
 
-			JFileChooser jfc = new JFileChooser();
-			jfc.setDialogTitle("Save document");
+			JFileChooser jfc = new LJFileChooser("fileDialogSaveDocument", flp);
 			if (jfc.showSaveDialog(data.getFrame()) != JFileChooser.APPROVE_OPTION) {
-				JOptionPane.showMessageDialog(data.getFrame(), "Ništa nije snimljeno.", "Upozorenje",
+				JOptionPane.showMessageDialog(
+						data.getFrame(), 
+						flp.getString("optionPaneNotSavedMessage"), 
+						flp.getString("optionPaneNotSavedTitle"),
 						JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-
+			
 			selectedFile = jfc.getSelectedFile();
 
 			if (selectedFile.exists()) {
 
 				// ako odabrano ime datoteke postoji, pita se korisnika hoće li se prepisati
 				// stara datoteka
-				if (JOptionPane.showConfirmDialog(data.getFrame(),
-						"Odabrano ime datoteke već posjeduje druga datoteka. Prepisati?", "Upozorenje",
+				if (JOptionPane.showConfirmDialog(
+						data.getFrame(),
+						flp.getString("optionPaneFileExistMessage"), 
+						flp.getString("optionPaneFileExistTitle"),
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 
 				} else { // stara datoteka se ne smije prepisati
