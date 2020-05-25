@@ -70,9 +70,6 @@ public class JNotepadPP extends JFrame {
 
 	private DefaultMultipleDocumentModel dmdm;
 
-	// staza dokumenta trenutno aktivne kratice
-	private Path currentDocumentPath = null;
-	
 	// ikone koje ukazuju na modifikaciju dokumenta
 	public static ImageIcon modified;
 	public static ImageIcon unmodified;
@@ -120,7 +117,10 @@ public class JNotepadPP extends JFrame {
 	private JButton ascendingSortButton;
 	private JButton uniqueLinesButton;
 	
+	// lista akcija koje se onemoguće ukoliko nikakav tekst nije označen
 	private List<Action> textActions;
+	private List<Action> tabActions;
+	
 	/**
 	 * Konstruktor.
 	 * 
@@ -128,18 +128,15 @@ public class JNotepadPP extends JFrame {
 	public JNotepadPP() {
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-		setLocation(0, 0);
-		setSize(1000, 600);
 
 		flp = new FormLocalizationProvider(LocalizationProvider.getInstance(), this);
 
-		
-		
 		initGUI();
+		this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	}
 
 	/**
-	 * Funkcija za incijalizaciju grafičkog sučelja {@code JNotepad++}
+	 * Funkcija za incijalizaciju grafičkog sučelja {@code JNotepadPP}
 	 * 
 	 */
 	private void initGUI() {
@@ -159,20 +156,14 @@ public class JNotepadPP extends JFrame {
 			public void stateChanged(ChangeEvent e) {
 
 				int selectedIndex = dmdm.getSelectedIndex();
-				SingleDocumentModel document = dmdm.getDocument(selectedIndex);
-				if (document == null)
-					return;
-				else {
-					currentDocumentPath = document.getFilePath();
+				
+				if(selectedIndex != -1) {
+					SingleDocumentModel document = dmdm.getDocument(selectedIndex);
+					setTitle(document);
+					updateStatusBar(document.getTextComponent());
+				}else {
+					updateStatusBar(null);
 				}
-
-				if (currentDocumentPath != null) {
-					setTitle(currentDocumentPath.toString() + " - JNotepad++");
-				} else {
-					setTitle("(unnamed)" + " - JNotepad++");
-				}
-
-				updateStatusBar(document.getTextComponent());
 			}
 		});
 
@@ -187,11 +178,20 @@ public class JNotepadPP extends JFrame {
 				cutAction, 
 				lowerCaseAction, 
 				upperCaseAction, 
-				invertCaseAction));
+				invertCaseAction,
+				descendingSortAction,
+				ascendingSortAction,
+				uniqueLinesAction));
 		
-		statisticalInfoAction.setEnabled(false);
-
+		tabActions = new ArrayList<>(Arrays.asList(
+				closeTabAction, 
+				saveDocumentAction, 
+				saveAsDocumentAction, 
+				statisticalInfoAction,
+				pasteAction));
+		
 		changeTextActionsState(false);
+		changeTabActionsState(false);
 		
 		addWindowListener(new WindowAdapter() {
 
@@ -213,6 +213,18 @@ public class JNotepadPP extends JFrame {
 	private void changeTextActionsState(boolean enable) {
 		
 		textActions.forEach(a -> a.setEnabled(enable));
+	}
+	
+	/**
+	 * Funkcija za promjenu stanja akcija koje trebaju imati
+	 * barem jednu kraticu otvorenu. Ukoliko nema niti jedne
+	 * kratice, onemogućene su, inače su omogučene.
+	 * 
+	 * @param enable jesu li akcije omogućene ili nisu
+	 */
+	private void changeTabActionsState(boolean enable) {
+		
+		tabActions.forEach(a -> a.setEnabled(enable));
 	}
 	
 	/**
@@ -265,8 +277,13 @@ public class JNotepadPP extends JFrame {
 
 			if (model.isModified()) {
 				dmdm.setIconAt(dmdm.getSelectedIndex(), modified);
+				
 			} else {
 				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
+				JOptionPane.showMessageDialog(JNotepadPP.this, 
+						flp.getString("optionPaneFileSavedMessage"), 
+						flp.getString("optionPaneFileSavedTitle"), 
+						JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 
@@ -286,7 +303,10 @@ public class JNotepadPP extends JFrame {
 				dmdm.remove(index);
 			
 			// onemogućavanje gumba za dohvat informacija o trenutnom dokumentu
-			if(dmdm.getTabCount() == 0) statisticalInfoAction.setEnabled(false);
+			if(dmdm.getTabCount() == 0) {
+				changeTabActionsState(false);
+				setTitle("JNotepad++");
+			}
 		}
 
 		@Override
@@ -313,8 +333,7 @@ public class JNotepadPP extends JFrame {
 			// odabir tog dokumenta, uvijek se dodaje na kraj
 			dmdm.setSelectedIndex(dmdm.getTabCount() - 1);
 			
-			// gumb za prikaz informacija o trenutnom dokumentu
-			statisticalInfoAction.setEnabled(true);
+			changeTabActionsState(true);
 		}
 
 		@Override
@@ -329,28 +348,36 @@ public class JNotepadPP extends JFrame {
 	 * @param textArea referenca na {@code JTextArea} aktivnog dokumenta
 	 */
 	private void updateStatusBar(JTextArea textArea) {
-
-		try {
-			int caretPos = textArea.getCaretPosition();
-			int lineNum = textArea.getLineOfOffset(caretPos);
-			int columnNum = caretPos - textArea.getLineStartOffset(lineNum);
-			lineNum += 1;
-			columnNum += 1;
-			int selectedNum = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
-
-			line.setText("Ln: " + lineNum);
-			column.setText("Col: " + columnNum);
-			selected.setText("Sel: " + selectedNum);
+		
+		if(textArea != null) {
 			
-			if(selectedNum == 0) {
-				changeTextActionsState(false);
-			}else {
-				changeTextActionsState(true);
+			try {
+				int caretPos = textArea.getCaretPosition();
+				int lineNum = textArea.getLineOfOffset(caretPos);
+				int columnNum = caretPos - textArea.getLineStartOffset(lineNum);
+				int selectedNum = Math.abs(textArea.getCaret().getDot() - textArea.getCaret().getMark());
+				lineNum += 1;
+				columnNum += 1;
+	
+				line.setText("Ln: " + lineNum);
+				column.setText("Col: " + columnNum);
+				selected.setText("Sel: " + selectedNum);
+				
+				if(selectedNum == 0) {
+					changeTextActionsState(false);
+				}else {
+					changeTextActionsState(true);
+				}
+	
+			} catch (BadLocationException ex) {
 			}
-
-		} catch (BadLocationException ex) {
+			
+		}else {
+			line.setText("Ln: " + 0);
+			column.setText("Col: " + 0);
+			selected.setText("Sel: " + 0);
+			changeTextActionsState(false);
 		}
-
 	}
 
 	private Action exitAction = new AbstractAction() {
@@ -514,18 +541,23 @@ public class JNotepadPP extends JFrame {
 		toolBar.addSeparator();
 		
 		lowerCaseButton = new JButton(lowerCaseAction);
+		lowerCaseButton.setIcon(createImageIcon("icons/lowercase.png", 20));
 		toolBar.add(lowerCaseButton);
 		
 		upperCaseButton = new JButton(upperCaseAction);
+		upperCaseButton.setIcon(createImageIcon("icons/uppercase.png", 20));
 		toolBar.add(upperCaseButton);
 		
 		invertCaseButton = new JButton(invertCaseAction);
+		invertCaseButton.setIcon(createImageIcon("icons/invertcase.png", 20));
 		toolBar.add(invertCaseButton);
 		
 		descendingSortButton = new JButton(descendingSortAction);
+		descendingSortButton.setIcon(createImageIcon("icons/descending.png", 20));
 		toolBar.add(descendingSortButton);
 		
 		ascendingSortButton = new JButton(ascendingSortAction);
+		ascendingSortButton.setIcon(createImageIcon("icons/ascending.png", 20));
 		toolBar.add(ascendingSortButton);
 		
 		uniqueLinesButton = new JButton(uniqueLinesAction);
@@ -613,12 +645,14 @@ public class JNotepadPP extends JFrame {
 	 */
 	public void setTitle(SingleDocumentModel model) {
 
-		Path modelPath = model.getFilePath();
-
-		if (modelPath != null) {
-			setTitle(modelPath.toString() + " - JNotepad++");
-		} else {
-			setTitle("(unnamed)" + " - JNotepad++");
+		if(model != null) {
+			Path modelPath = model.getFilePath();
+		
+			if (modelPath != null) {
+				setTitle(modelPath.toString() + " - JNotepad++");
+			} else {
+				setTitle("(unnamed)" + " - JNotepad++");
+			}
 		}
 	}
 
