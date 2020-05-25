@@ -65,14 +65,14 @@ public class PasteAction extends LocalizableAction {
 		int carretPosition = textArea.getCaret().getDot();
 
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-
 		Object dataFromClipboard;
 		try {
 			dataFromClipboard = clipboard.getData(DataFlavor.stringFlavor);
-
+			
 			if (dataFromClipboard instanceof String) {
 
 				String textFromClipboard = (String) dataFromClipboard;
+				
 				try {
 					doc.insertString(carretPosition, textFromClipboard, null);
 				} catch (BadLocationException e1) {
