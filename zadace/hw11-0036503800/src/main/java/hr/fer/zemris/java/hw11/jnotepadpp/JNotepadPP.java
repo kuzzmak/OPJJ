@@ -2,7 +2,6 @@ package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -22,7 +21,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -51,7 +49,6 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.ChangeCaseAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CutAction;
-import hr.fer.zemris.java.hw11.jnotepadpp.actions.ExitAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.IDataGetter;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.LanguageAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
@@ -61,11 +58,18 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.SaveDocumentAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.SortAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.StatisticalnfoAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.ILocalizationListener;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJLabel;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJMenu;
 
+/**
+ * Razred jednostavnog uređivača teksta.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class JNotepadPP extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -144,7 +148,7 @@ public class JNotepadPP extends JFrame {
 	}
 
 	/**
-	 * Funkcija za incijalizaciju grafičkog sučelja {@code JNotepadPP}
+	 * Funkcija za incijalizaciju grafičkog sučelja {@code JNotepad++}.
 	 * 
 	 */
 	private void initGUI() {
@@ -277,6 +281,15 @@ public class JNotepadPP extends JFrame {
 						dmdm.saveDocument(doc, doc.getFilePath());
 					}
 				}
+				
+				// ukoliko je nakon akcije spremanja dokument još uvijek modified, došlo je do greške
+				if(doc.isModified()) {
+					
+					JOptionPane.showMessageDialog(this,
+							flp.getString("optionPaneErrorWhileSavingMessage"),
+							flp.getString("optionPaneErrorWhileSavingTitle"), 
+							JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 
@@ -306,6 +319,7 @@ public class JNotepadPP extends JFrame {
 		}
 	};
 
+	
 	MultipleDocumentListener ml = new MultipleDocumentListener() {
 
 		@Override
@@ -436,7 +450,26 @@ public class JNotepadPP extends JFrame {
 		german = new LanguageAction("de", flp);
 		croatian = new LanguageAction("hr", flp);
 		
-		exitAction = new ExitAction("exit", flp, data);
+		exitAction = new LocalizableAction("exit", flp) {
+			
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				exitProcedure();
+			}
+		};
+		
+		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
+		exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
+		
+		flp.addLocalizationListener(new ILocalizationListener() {
+			
+			@Override
+			public void localizationChanged() {
+				exitAction.putValue(Action.SHORT_DESCRIPTION, flp.getString("exit" + "desc"));
+			}
+		});
 	}
 
 	/**
