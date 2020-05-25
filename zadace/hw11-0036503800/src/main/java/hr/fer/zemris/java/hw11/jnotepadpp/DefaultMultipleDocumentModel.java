@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 /**
@@ -84,10 +83,6 @@ public class DefaultMultipleDocumentModel extends JTabbedPane implements Multipl
 		try {
 			Files.write(newPath, podatci);
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this,
-					"Pogreška prilikom zapisivanja datoteke " + newPath.toFile().getAbsolutePath()
-							+ ".\nPažnja: nije jasno u kojem je stanju datoteka na disku!",
-					"Pogreška", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
 

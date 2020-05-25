@@ -286,7 +286,7 @@ public class JNotepadPP extends JFrame {
 				if(doc.isModified()) {
 					
 					JOptionPane.showMessageDialog(this,
-							flp.getString("optionPaneErrorWhileSavingMessage"),
+							flp.getString("optionPaneErrorWhileSavingMessage") + ".",
 							flp.getString("optionPaneErrorWhileSavingTitle"), 
 							JOptionPane.ERROR_MESSAGE);
 				}
