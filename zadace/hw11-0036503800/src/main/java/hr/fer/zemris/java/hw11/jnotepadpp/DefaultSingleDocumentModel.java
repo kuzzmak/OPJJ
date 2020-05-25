@@ -8,6 +8,12 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+/**
+ * Razred koji je konkretna implementacija {@code SingleDocumentModel}.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class DefaultSingleDocumentModel implements SingleDocumentModel {
 	
 	private Path filePath;
