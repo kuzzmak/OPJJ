@@ -51,6 +51,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.ChangeCaseAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CloseTabAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CopyAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.CutAction;
+import hr.fer.zemris.java.hw11.jnotepadpp.actions.ExitAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.IDataGetter;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.LanguageAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.actions.NewDocumentAction;
@@ -62,6 +63,7 @@ import hr.fer.zemris.java.hw11.jnotepadpp.actions.StatisticalnfoAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.FormLocalizationProvider;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizableAction;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.LocalizationProvider;
+import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJLabel;
 import hr.fer.zemris.java.hw11.jnotepadpp.local.components.LJMenu;
 
 public class JNotepadPP extends JFrame {
@@ -75,9 +77,14 @@ public class JNotepadPP extends JFrame {
 	public static ImageIcon unmodified;
 
 	// trenutni pokazatelji kursora
+	private JLabel length;
 	private JLabel line;
 	private JLabel column;
 	private JLabel selected;
+	private JLabel lengthNum;
+	private JLabel lineNum;
+	private JLabel columnNum;
+	private JLabel selectedNum;
 
 	private FormLocalizationProvider flp;
 	
@@ -100,6 +107,7 @@ public class JNotepadPP extends JFrame {
 	private LocalizableAction english;
 	private LocalizableAction german;
 	private LocalizableAction croatian;
+	private LocalizableAction exitAction;
 	
 	private JButton openButton;
 	private JButton newDocumentButton;
@@ -161,6 +169,7 @@ public class JNotepadPP extends JFrame {
 					SingleDocumentModel document = dmdm.getDocument(selectedIndex);
 					setTitle(document);
 					updateStatusBar(document.getTextComponent());
+					
 				}else {
 					updateStatusBar(null);
 				}
@@ -246,8 +255,10 @@ public class JNotepadPP extends JFrame {
 
 				if (doc.getFilePath() == null) {
 
-					if (JOptionPane.showConfirmDialog(JNotepadPP.this,
-							"Dokument: " + "(unnamed)" + " nije spremljen. Spremiti?", "Upozorenje",
+					if (JOptionPane.showConfirmDialog(
+							JNotepadPP.this,
+							flp.getString("document") + ": (unnamed) " + flp.getString("notSavedSave"), 
+							flp.getString("optionPaneNotSavedTitle"),
 							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 
 						Path path = Paths
@@ -257,8 +268,10 @@ public class JNotepadPP extends JFrame {
 
 				} else {
 
-					if (JOptionPane.showConfirmDialog(JNotepadPP.this,
-							"Dokument: " + doc.getFilePath().toString() + " nije spremljen. Spremiti?", "Upozorenje",
+					if (JOptionPane.showConfirmDialog(
+							JNotepadPP.this,
+							flp.getString("document") + doc.getFilePath().toString() + flp.getString("notSavedSave"),  
+							flp.getString("optionPaneNotSavedTitle"),
 							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 
 						dmdm.saveDocument(doc, doc.getFilePath());
@@ -359,9 +372,10 @@ public class JNotepadPP extends JFrame {
 				lineNum += 1;
 				columnNum += 1;
 	
-				line.setText("Ln: " + lineNum);
-				column.setText("Col: " + columnNum);
-				selected.setText("Sel: " + selectedNum);
+				this.lengthNum.setText(": " + textArea.getText().length());
+				this.lineNum.setText(": " + lineNum);
+				this.columnNum.setText(": " + columnNum);
+				this.selectedNum.setText(": " + selectedNum);
 				
 				if(selectedNum == 0) {
 					changeTextActionsState(false);
@@ -373,22 +387,13 @@ public class JNotepadPP extends JFrame {
 			}
 			
 		}else {
-			line.setText("Ln: " + 0);
-			column.setText("Col: " + 0);
-			selected.setText("Sel: " + 0);
+			this.lengthNum.setText(": " + 0);
+			this.lineNum.setText(": " + 0);
+			this.columnNum.setText(": " + 0);
+			this.selectedNum.setText(": " + 0);
 			changeTextActionsState(false);
 		}
 	}
-
-	private Action exitAction = new AbstractAction() {
-
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			exitProcedure();
-		}
-	};
 
 	/**
 	 * Funkcija za stvaranje akcija.
@@ -414,12 +419,15 @@ public class JNotepadPP extends JFrame {
 		saveDocumentAction = new SaveDocumentAction("save", flp, data, false);
 		saveAsDocumentAction = new SaveDocumentAction("saveas", flp, data, true);
 		closeTabAction = new CloseTabAction("close", flp, data);
+		
 		copyAction = new CopyAction("copy", flp, data);
 		pasteAction = new PasteAction("paste", flp, data);
 		cutAction = new CutAction("cut", flp, data);
 		upperCaseAction = new ChangeCaseAction("uppercase", flp, data);
 		lowerCaseAction = new ChangeCaseAction("lowercase", flp, data);
 		invertCaseAction = new ChangeCaseAction("invertcase", flp, data);
+		statisticalInfoAction = new StatisticalnfoAction("info", flp, data);
+		
 		descendingSortAction = new SortAction("descending", flp, data);
 		ascendingSortAction = new SortAction("ascending", flp, data);
 		uniqueLinesAction = new SortAction("unique", flp, data);
@@ -427,13 +435,8 @@ public class JNotepadPP extends JFrame {
 		english = new LanguageAction("en", flp);
 		german = new LanguageAction("de", flp);
 		croatian = new LanguageAction("hr", flp);
-
-		statisticalInfoAction = new StatisticalnfoAction("info", flp, data);
-
-		exitAction.putValue(Action.NAME, "Exit");
-		exitAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
-		exitAction.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
-		exitAction.putValue(Action.SHORT_DESCRIPTION, "Exit application.");
+		
+		exitAction = new ExitAction("exit", flp, data);
 	}
 
 	/**
@@ -496,71 +499,74 @@ public class JNotepadPP extends JFrame {
 	 * 
 	 */
 	private void createToolbars() {
+		
+		int iconPercent = 15;
 
 		JToolBar toolBar = new JToolBar("Alati");
 		toolBar.setFloatable(true);
 
 		openButton = new JButton(openDocumentAction);
-		openButton.setIcon(createImageIcon("icons/open.png", 20));
+		openButton.setIcon(createImageIcon("icons/open.png", iconPercent));
 		toolBar.add(openButton);
 
 		newDocumentButton = new JButton(newDocumentAction);
-		newDocumentButton.setIcon(createImageIcon("icons/new.png", 20));
+		newDocumentButton.setIcon(createImageIcon("icons/new.png", iconPercent));
 		toolBar.add(newDocumentButton);
 
 		saveDocumentButton = new JButton(saveDocumentAction);
-		saveDocumentButton.setIcon(createImageIcon("icons/save.png", 20));
+		saveDocumentButton.setIcon(createImageIcon("icons/save.png", iconPercent));
 		toolBar.add(saveDocumentButton);
 
 		saveAsDocumentButton = new JButton(saveAsDocumentAction);
-		saveAsDocumentButton.setIcon(createImageIcon("icons/saveas.png", 20));
+		saveAsDocumentButton.setIcon(createImageIcon("icons/saveas.png", iconPercent));
 		toolBar.add(saveAsDocumentButton);
 
 		closeTabButton = new JButton(closeTabAction);
-		closeTabButton.setIcon(createImageIcon("icons/closetab.png", 20));
+		closeTabButton.setIcon(createImageIcon("icons/closetab.png", iconPercent));
 		toolBar.add(closeTabButton);
 
 		toolBar.addSeparator();
 
 		copy = new JButton(copyAction);
-		copy.setIcon(createImageIcon("icons/copy.png", 20));
+		copy.setIcon(createImageIcon("icons/copy.png", iconPercent));
 		toolBar.add(copy);
 
 		paste = new JButton(pasteAction);
-		paste.setIcon(createImageIcon("icons/paste.png", 20));
+		paste.setIcon(createImageIcon("icons/paste.png", iconPercent));
 		toolBar.add(paste);
 
 		cut = new JButton(cutAction);
-		cut.setIcon(createImageIcon("icons/cut.png", 20));
+		cut.setIcon(createImageIcon("icons/cut.png", iconPercent));
 		toolBar.add(cut);
 
 		info = new JButton(statisticalInfoAction);
-		info.setIcon(createImageIcon("icons/info.png", 20));
+		info.setIcon(createImageIcon("icons/info.png", iconPercent));
 		toolBar.add(info);
 		
 		toolBar.addSeparator();
 		
 		lowerCaseButton = new JButton(lowerCaseAction);
-		lowerCaseButton.setIcon(createImageIcon("icons/lowercase.png", 20));
+		lowerCaseButton.setIcon(createImageIcon("icons/lowercase.png", iconPercent));
 		toolBar.add(lowerCaseButton);
 		
 		upperCaseButton = new JButton(upperCaseAction);
-		upperCaseButton.setIcon(createImageIcon("icons/uppercase.png", 20));
+		upperCaseButton.setIcon(createImageIcon("icons/uppercase.png", iconPercent));
 		toolBar.add(upperCaseButton);
 		
 		invertCaseButton = new JButton(invertCaseAction);
-		invertCaseButton.setIcon(createImageIcon("icons/invertcase.png", 20));
+		invertCaseButton.setIcon(createImageIcon("icons/invertcase.png", iconPercent));
 		toolBar.add(invertCaseButton);
 		
 		descendingSortButton = new JButton(descendingSortAction);
-		descendingSortButton.setIcon(createImageIcon("icons/descending.png", 20));
+		descendingSortButton.setIcon(createImageIcon("icons/descending.png", iconPercent));
 		toolBar.add(descendingSortButton);
 		
 		ascendingSortButton = new JButton(ascendingSortAction);
-		ascendingSortButton.setIcon(createImageIcon("icons/ascending.png", 20));
+		ascendingSortButton.setIcon(createImageIcon("icons/ascending.png", iconPercent));
 		toolBar.add(ascendingSortButton);
 		
 		uniqueLinesButton = new JButton(uniqueLinesAction);
+		uniqueLinesButton.setIcon(createImageIcon("icons/one.png", iconPercent));
 		toolBar.add(uniqueLinesButton);
 
 		getContentPane().add(toolBar, BorderLayout.PAGE_START);
@@ -574,35 +580,54 @@ public class JNotepadPP extends JFrame {
 	 */
 	private void createStatusBar() {
 
-		JPanel statusBar = new JPanel();
+		JPanel statusBar = new JPanel(new BorderLayout());
 		statusBar.setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.black));
 
 		JPanel leftSide = new JPanel();
 		leftSide.setLayout(new FlowLayout(FlowLayout.LEFT));
-		leftSide.setBackground(Color.green);
 
-		int width = 50;
-		int height = 16;
+		length = new LJLabel("length", flp);
+		lengthNum = new JLabel(":0");
+		
+		line = new LJLabel("ln", flp);
+		lineNum = new JLabel(":0");
+		column = new LJLabel("col", flp);
+		columnNum  = new JLabel(":0");
+		selected = new LJLabel("sel", flp);
+		selectedNum  = new JLabel(":0");
+		
+		JPanel lengthPanel = new JPanel();
+		lengthPanel.add(length);
+		lengthPanel.add(lengthNum);
 
-		line = new JLabel("Ln: 0", JLabel.LEFT);
-		line.setPreferredSize(new Dimension(width, height));
+		JPanel linePanel = new JPanel();
+		linePanel.add(line);
+		linePanel.add(lineNum);
+		
+		JPanel columnPanel = new JPanel();
+		columnPanel.add(column);
+		columnPanel.add(columnNum);
+		
+		JPanel selectedPanel = new JPanel();
+		selectedPanel.add(selected);
+		selectedPanel.add(selectedNum);
+		
+		leftSide.add(lengthPanel);
+		leftSide.add(linePanel);
+		leftSide.add(columnPanel);
+		leftSide.add(selectedPanel);
 
-		column = new JLabel("Col: 0", JLabel.LEFT);
-		column.setPreferredSize(new Dimension(width, height));
-
-		selected = new JLabel("Sel: 0", JLabel.LEFT);
-		selected.setPreferredSize(new Dimension(width, height));
-
-		leftSide.add(line);
-		leftSide.add(column);
-		leftSide.add(selected);
-
-		statusBar.add(leftSide, BorderLayout.LINE_START);
+		statusBar.add(leftSide, BorderLayout.WEST);
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
+		JPanel dateAndTimePanel = new JPanel();
+		
 		JLabel dateAndTime = new JLabel();
-		statusBar.add(dateAndTime, BorderLayout.LINE_END);
+		dateAndTime.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
+		dateAndTimePanel.add(dateAndTime);
+		
+		statusBar.add(dateAndTimePanel, BorderLayout.EAST);
 
 		getContentPane().add(statusBar, BorderLayout.SOUTH);
 
