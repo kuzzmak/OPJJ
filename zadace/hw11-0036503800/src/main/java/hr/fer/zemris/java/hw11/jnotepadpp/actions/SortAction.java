@@ -102,49 +102,30 @@ public class SortAction extends LocalizableAction {
 			int lineNumCaret = textArea.getLineOfOffset(caretPos);
 			int lineNumMark = textArea.getLineOfOffset(textArea.getCaret().getMark());
 
-			// indeksi retka (od, do) koji su označeni za sortiranje
+			// indeksi redaka (od, do) koji su označeni za sortiranje
 			int fromIndex = Math.min(lineNumCaret, lineNumMark);
 			int toIndex = Math.max(lineNumCaret, lineNumMark) + 1;
 
-			for(int i = fromIndex; i < toIndex; i++) {
-				
-				// uklanjanje retka koji se sortira iz dokumenta
-				doc.remove(textArea.getLineStartOffset(i), lines.get(i).length());
-				
-				String line = lines.get(i);
-				// svaka riječ retka
-				List<String> singleWords = new ArrayList<>(Arrays.asList(line.split("\\s+")));
-				
-				// sortiranje riječi prema 
-				if(key.equals("ascending")) {
-					singleWords = singleWords
-							.stream()
-							.sorted(comparator)
-							.collect(Collectors.toList());
-					
-				}else if(key.equals("descending")){
-					singleWords = singleWords
-							.stream()
-							.sorted(comparator.reversed())
-							.collect(Collectors.toList());
-					
-				}else {
-					singleWords = singleWords
-							.stream()
-							.distinct()
-							.collect(Collectors.toList());
-				}
-				
-				StringBuilder sb = new StringBuilder();
-				
-				// stvaranje string od sortiranih riječi s razmakom između svake pojedine
-				singleWords.forEach(w -> sb.append(w).append(" "));
-				sb.replace(sb.length() - 1, sb.length(), "");
-				
-				// umetanje stringa na mjestu gdje je izbrisan
-				doc.insertString(textArea.getLineStartOffset(i), sb.toString(), null);
+			lines = lines.subList(fromIndex, toIndex);
+			
+			if(key.equals("ascending")) {
+				lines = lines.stream().sorted(comparator).collect(Collectors.toList());
+			}else if(key.equals("descending")){
+				lines = lines.stream().sorted(comparator.reversed()).collect(Collectors.toList());
+			}else {
+				lines = lines.stream().distinct().collect(Collectors.toList());
 			}
+			
+			StringBuilder sb = new StringBuilder();
+			lines.forEach(l -> sb.append(l).append("\n"));
+			
+			int startOffset = textArea.getLineStartOffset(fromIndex);
+			
+			doc.remove(startOffset, sb.length()); 
+			doc.insertString(startOffset, sb.toString(), null);
+			
 		} catch (BadLocationException e1) {
+			e1.printStackTrace();
 		}
 	}
 
