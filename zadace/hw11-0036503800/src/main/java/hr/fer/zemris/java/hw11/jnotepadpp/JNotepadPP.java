@@ -2,6 +2,7 @@ package hr.fer.zemris.java.hw11.jnotepadpp;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -144,7 +145,8 @@ public class JNotepadPP extends JFrame {
 		flp = new FormLocalizationProvider(LocalizationProvider.getInstance(), this);
 
 		initGUI();
-		this.setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+		setExtendedState(this.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+		setMinimumSize(new Dimension(1300, 500));
 	}
 
 	/**
@@ -281,15 +283,6 @@ public class JNotepadPP extends JFrame {
 						dmdm.saveDocument(doc, doc.getFilePath());
 					}
 				}
-				
-				// ukoliko je nakon akcije spremanja dokument još uvijek modified, došlo je do greške
-				if(doc.isModified()) {
-					
-					JOptionPane.showMessageDialog(this,
-							flp.getString("optionPaneErrorWhileSavingMessage") + ".",
-							flp.getString("optionPaneErrorWhileSavingTitle"), 
-							JOptionPane.ERROR_MESSAGE);
-				}
 			}
 		}
 
@@ -306,6 +299,7 @@ public class JNotepadPP extends JFrame {
 				
 			} else {
 				dmdm.setIconAt(dmdm.getSelectedIndex(), unmodified);
+				
 				JOptionPane.showMessageDialog(JNotepadPP.this, 
 						flp.getString("optionPaneFileSavedMessage"), 
 						flp.getString("optionPaneFileSavedTitle"), 

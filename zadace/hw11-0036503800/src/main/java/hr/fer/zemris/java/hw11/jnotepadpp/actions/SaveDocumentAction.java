@@ -8,7 +8,6 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 
 import hr.fer.zemris.java.hw11.jnotepadpp.DefaultMultipleDocumentModel;
 import hr.fer.zemris.java.hw11.jnotepadpp.JNotepadPP;
@@ -116,7 +115,7 @@ public class SaveDocumentAction extends LocalizableAction {
 					dmdm.getCurrentDocument().getFilePath().getFileName().toString());
 			
 		} else {
-			// slučaj kad je otvoren postojeć dokument i napravljena je neka
+			// slučaj kad je otvoren postojeći dokument i napravljena je neka
 			// preinaka pa se sprema pritiskom na save
 			dmdm.saveDocument(document, document.getFilePath());
 		}
