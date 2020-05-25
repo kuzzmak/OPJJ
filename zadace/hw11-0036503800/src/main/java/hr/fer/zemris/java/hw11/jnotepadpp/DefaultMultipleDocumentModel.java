@@ -11,6 +11,13 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
+/**
+ * Razred koji predstavlja središnji dio prozora {@code JNotepadPP}.
+ * Sastoji se od kratica koje predstavljaju pojedini otvoreni dokument.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class DefaultMultipleDocumentModel extends JTabbedPane implements MultipleDocumentModel {
 
 	private static final long serialVersionUID = 1L;
