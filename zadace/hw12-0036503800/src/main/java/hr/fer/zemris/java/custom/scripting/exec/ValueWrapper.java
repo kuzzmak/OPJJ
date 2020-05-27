@@ -82,6 +82,15 @@ public class ValueWrapper {
 	public Object getValue() {
 		return value;
 	}
+	
+	/**
+	 * Metoda za postavljanje trenutne vrijednosti.
+	 * 
+	 * @param value
+	 */
+	public void setValue(Object value) {
+		this.value = value;
+	}
 
 	/**
 	 * Metoda za provjeru tipa predanog argumenta. Ukoliko je predana kriva vrsta
