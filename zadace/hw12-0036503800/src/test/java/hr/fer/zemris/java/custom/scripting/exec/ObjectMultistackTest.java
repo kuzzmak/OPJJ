@@ -58,4 +58,5 @@ public class ObjectMultistackTest {
 		multistack.push("year", year); 
 		assertFalse(multistack.isEmpty("year"));
 	}
+	
 }
