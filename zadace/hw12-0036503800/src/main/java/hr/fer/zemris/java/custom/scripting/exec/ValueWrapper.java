@@ -71,7 +71,21 @@ public class ValueWrapper {
 	 *         veća, a 0 ako su jednake
 	 */
 	public int numCompare(Object withValue) {
-		return 0;
+		
+		checkArgument(withValue);
+		
+		Object o1 = value;
+		Object o2 = getArgument(withValue);
+		
+		if (o1 instanceof Integer && o2 instanceof Integer) {
+			return Integer.compare((int) o1, (int) o2);
+		} else if (o1 instanceof Double && o2 instanceof Integer) {
+			return Double.compare((double) o1, (int) o2);
+		} else if (o1 instanceof Integer && o2 instanceof Double) {
+			return Double.compare((int) o1, (double) o2);
+		} else {
+			return Double.compare((double) o1, (double) o2);
+		}
 	}
 
 	/**
