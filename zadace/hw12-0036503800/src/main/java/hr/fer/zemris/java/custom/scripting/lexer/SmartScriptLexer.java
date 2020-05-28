@@ -194,14 +194,26 @@ public class SmartScriptLexer {
 
 			// početak taga "="
 			if (data[currentIndex] == '=') {
-
+					
 				if (token.getType() == TokenType.TAG_START) {
 
 					token = new Token(TokenType.TAG_NAME, "=");
 					currentIndex++;
 					return token;
-				} else
+					
+				} else if(state == SmartScriptLexerState.TAG) {
+					token = new Token(TokenType.WORD, "=");
+					currentIndex++;
+					return token;
+					
+				}else
 					throw new SmartScriptingLexerException("\"=\" može jedino stajati na početku taga.");
+			}
+			
+			if(data[currentIndex] == ',' || data[currentIndex] == '.') {
+				token = new Token(TokenType.WORD, data[currentIndex]);
+				currentIndex++;
+				return token;
 			}
 		}
 
