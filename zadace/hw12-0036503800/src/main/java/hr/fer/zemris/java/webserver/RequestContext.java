@@ -69,7 +69,7 @@ public class RequestContext {
 	 * @param ouputCookies kolačići
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
-			Map<String, String> persistentParameters, List<RCCookie> ouputCookies) {
+			Map<String, String> persistentParameters, List<RCCookie> outputCookies) {
 
 		Objects.requireNonNull(outputStream);
 
