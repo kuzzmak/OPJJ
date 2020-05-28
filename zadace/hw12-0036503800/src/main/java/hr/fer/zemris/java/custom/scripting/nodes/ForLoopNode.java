@@ -4,6 +4,14 @@ import hr.fer.zemris.java.custom.collections.ElementsGetter;
 import hr.fer.zemris.java.custom.scripting.elems.Element;
 import hr.fer.zemris.java.custom.scripting.elems.ElementVariable;
 
+/**
+ * Razred koji predstavlja naredbu for. Sastoji se od
+ * početnog, uvjetnog, završnog izraza i varijable 
+ * po kojoj se iterira. 
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class ForLoopNode extends Node {
 
 	ElementVariable variable;
@@ -11,6 +19,14 @@ public class ForLoopNode extends Node {
 	Element endExpression;
 	Element stepExpression; // može biti null
 
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param variable varijabla po kojoj se iterira
+	 * @param startExpression početni izraz od kojeg kreće iteracija
+	 * @param endExpression završni izraz
+	 * @param stepExpression veličina koraka
+	 */
 	public ForLoopNode(ElementVariable variable, Element startExpression, Element endExpression,
 			Element stepExpression) {
 
@@ -18,6 +34,42 @@ public class ForLoopNode extends Node {
 		this.startExpression = startExpression;
 		this.endExpression = endExpression;
 		this.stepExpression = stepExpression;
+	}
+	
+	/**
+	 * Metoda za dohvat varijable po kojoj se iterira.
+	 * 
+	 * @return varijabla po kojoj se iterira
+	 */
+	public ElementVariable getVariable() {
+		return variable;
+	}
+
+	/**
+	 * Metoda za dohvat početnog izraza.
+	 * 
+	 * @return početni izraz
+	 */
+	public Element getStartExpression() {
+		return startExpression;
+	}
+
+	/**
+	 * Metoda za dohvar završnog izraza.
+	 * 
+	 * @return završni izraz
+	 */
+	public Element getEndExpression() {
+		return endExpression;
+	}
+
+	/**
+	 * Metoda za dohvat veličine koraka.
+	 * 
+	 * @return veličina koraka
+	 */
+	public Element getStepExpression() {
+		return stepExpression;
 	}
 
 	@Override
@@ -48,7 +100,7 @@ public class ForLoopNode extends Node {
 
 		if (children != null) {
 			// dodavanje djece ako ima
-			ElementsGetter eg = this.children.createElementsGetter();
+			ElementsGetter<Node> eg = this.children.createElementsGetter();
 
 			while (eg.hasNextElement()) {
 				sb.append(eg.getNextElement().toString()).append("\n");
