@@ -2,9 +2,15 @@ package hr.fer.zemris.java.custom.scripting.exec;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Stack;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import hr.fer.zemris.java.custom.collections.ObjectStack;
 import hr.fer.zemris.java.custom.scripting.elems.Element;
+import hr.fer.zemris.java.custom.scripting.elems.ElementConstantDouble;
+import hr.fer.zemris.java.custom.scripting.elems.ElementConstantInteger;
 import hr.fer.zemris.java.custom.scripting.elems.ElementFunction;
 import hr.fer.zemris.java.custom.scripting.elems.ElementOperator;
 import hr.fer.zemris.java.custom.scripting.elems.ElementString;
@@ -22,6 +28,11 @@ public class SmartScriptEngine {
 	private RequestContext requestContext;
 	private ObjectMultistack multistack = new ObjectMultistack();
 
+	/**
+	 * Privatni razred implementacije node posjetitelja baziran na 
+	 * oblikovnom obrazcu {@code Visitor} i {@code Composite}.
+	 * 
+	 */
 	private INodeVisitor visitor = new INodeVisitor() {
 
 		@Override
@@ -58,7 +69,7 @@ public class SmartScriptEngine {
 		@Override
 		public void visitEchoNode(EchoNode node) {
 
-			ObjectStack<Object> tempStack = new ObjectStack<>();
+			Stack<Object> tempStack = new Stack<>();
 
 			Element[] elements = node.getElements();
 
@@ -87,10 +98,21 @@ public class SmartScriptEngine {
 							result = Math.sin((double) arg);
 						}
 						tempStack.push(result);
+						
+					}else if(functionName.equals("@dup")) {
+						executeDup(tempStack);
+					
+					}else if(functionName.equals("@swap")) {
+						executeSwap(tempStack);
+					
+					}else if(functionName.equals("@paramGet")) {
+						exectuteParamGet(tempStack);
 					}
 
-				} else if (element instanceof ElementString) {
-					tempStack.push(element.asText());
+				} else if (element instanceof ElementString || 
+						element instanceof ElementConstantDouble || 
+						element instanceof ElementConstantInteger) {
+					tempStack.push(element.asText().contains("\"") ? element.asText().replaceAll("\"", "") : element.asText());
 
 				} else if (element instanceof ElementOperator) {
 
@@ -104,15 +126,16 @@ public class SmartScriptEngine {
 				}
 			}
 
-			while(!tempStack.isEmpty()) {
+				
+			List<String> stackContent = tempStack.stream().map(o -> String.valueOf(o)).collect(Collectors.toList());
+			
+			stackContent.forEach(t -> {
 				try {
-					Object o = tempStack.pop();
-					requestContext.write(String.valueOf(o));
-					
+					requestContext.write(t);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			}
+			});
 		}
 
 		@Override
@@ -121,7 +144,7 @@ public class SmartScriptEngine {
 		}
 	};
 
-	private void executeSetMimeType(ObjectStack<Object> tempStack) {
+	private void executeSetMimeType(Stack<Object> tempStack) {
 
 		String mimeType = String.valueOf(tempStack.pop());
 		if (mimeType != null) {
@@ -131,7 +154,7 @@ public class SmartScriptEngine {
 		}
 	}
 
-	private void executeSetDecimalFormat(ObjectStack<Object> tempStack) {
+	private void executeSetDecimalFormat(Stack<Object> tempStack) {
 
 		Object format = tempStack.pop();
 		String formatString = (String) format;
@@ -140,8 +163,35 @@ public class SmartScriptEngine {
 		DecimalFormat decimalFormat = new DecimalFormat(formatString.replaceAll("\"", ""));
 		tempStack.push(decimalFormat.format(number));
 	}
+	
+	private void executeDup(Stack<Object> tempStack) {
+		Object o = tempStack.pop();
+		tempStack.push(o);
+		tempStack.push(o);
+	}
+	
+	private void executeSwap(Stack<Object> tempStack) {
+		Object o1 = tempStack.pop();
+		Object o2 = tempStack.pop();
+		tempStack.push(o1);
+		tempStack.push(o2);
+	}
+	
+	private void exectuteParamGet(Stack<Object> tempStack) {
+		Object defaultValue = tempStack.pop();
+		Object name = tempStack.pop();
+		
+		String value = requestContext.getParameter(String.valueOf(name));
+		tempStack.push(value == null ? defaultValue : value);
+	}
 
-	private void executeOperator(ObjectStack<Object> tempStack, String operator) {
+	/**
+	 * Metoda za izvođenje osnovnih aritmetičkih operacija.
+	 * 
+	 * @param tempStack trenutni stog nekog taga
+	 * @param operator operator koji se treba izvršiti
+	 */
+	private void executeOperator(Stack<Object> tempStack, String operator) {
 
 		Object o1 = tempStack.pop();
 		Object o2 = tempStack.pop();
@@ -150,19 +200,15 @@ public class SmartScriptEngine {
 		vw.add(o1);
 		
 		if (operator.equals("+")) {
-			
 			vw.add(o2);
 			
 		} else if (operator.equals("*")) {
-			
 			vw.multiply(o2);
 
 		} else if (operator.equals("-")) {
-			
 			vw.subtract(o2);
 
 		} else if (operator.equals("/")) {
-			
 			vw.divide(o2);
 			
 		} else
@@ -171,6 +217,12 @@ public class SmartScriptEngine {
 		tempStack.push(vw.getValue());
 	}
 
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param documentNode oblik dokumenta koji je parsiran u odgovarajuće node-ove
+	 * @param requestContext referenca konteksta webservera
+	 */
 	public SmartScriptEngine(DocumentNode documentNode, RequestContext requestContext) {
 		this.documentNode = documentNode;
 		this.requestContext = requestContext;
