@@ -24,7 +24,7 @@ public class SmartScriptParser {
 
 	private DocumentNode documentNode;
 
-	private ArrayIndexedCollection tokens;
+	private ArrayIndexedCollection<Token> tokens;
 
 	// index trenutnog tokena
 	private int index = 0;
@@ -63,7 +63,7 @@ public class SmartScriptParser {
 	 */
 	public DocumentNode parse() {
 
-		ObjectStack nodeStack = new ObjectStack();
+		ObjectStack<Object> nodeStack = new ObjectStack<>();
 
 		DocumentNode documentNode = new DocumentNode();
 		nodeStack.push(documentNode);
@@ -216,7 +216,9 @@ public class SmartScriptParser {
 						sb.append(String.valueOf(token.getValue()));
 						sb.append(" ");
 						index++;
-						
+					}else if(token.getType() == TokenType.OPERATOR) {
+						sb.append(String.valueOf(token.getValue()));
+						index++;
 					}else if(token.getType() == TokenType.SPACES) { // ako je neka vrsta razmaka u navodnicima
 						sb.append(String.valueOf(token.getValue()));
 						index++;

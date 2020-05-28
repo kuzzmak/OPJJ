@@ -22,9 +22,9 @@ public class SmartScriptLexer {
 	// trenutni token
 	private Token token;
 	// aritmetički operatori
-	private static ArrayIndexedCollection operators;
+	private static ArrayIndexedCollection<Character> operators;
 	// praznine
-	private static ArrayIndexedCollection spaces;
+	private static ArrayIndexedCollection<Character> spaces;
 
 	/**
 	 * Inicijalni konstruktor.
@@ -37,14 +37,14 @@ public class SmartScriptLexer {
 		state = SmartScriptLexerState.TEXT;
 		currentIndex = 0;
 
-		operators = new ArrayIndexedCollection();
+		operators = new ArrayIndexedCollection<>();
 		operators.add('+');
 		operators.add('-');
 		operators.add('*');
 		operators.add('/');
 		operators.add('^');
 
-		spaces = new ArrayIndexedCollection();
+		spaces = new ArrayIndexedCollection<>();
 		spaces.add(' ');
 		spaces.add('\t');
 		spaces.add('\n');
@@ -55,9 +55,9 @@ public class SmartScriptLexer {
 	 * Metoda za generiranje svih tokena dokumenta.
 	 * 
 	 */
-	public ArrayIndexedCollection tokenize() {
+	public ArrayIndexedCollection<Token> tokenize() {
 
-		ArrayIndexedCollection tokens = new ArrayIndexedCollection();
+		ArrayIndexedCollection<Token> tokens = new ArrayIndexedCollection<>();
 
 		nextToken();
 		tokens.add(token);
@@ -78,7 +78,7 @@ public class SmartScriptLexer {
 	 * @return sljedeći token tipa <code>Token</code>
 	 */
 	private Token nextToken() {
-
+		
 		if (token != null && token.getType() == TokenType.EOF) {
 			throw new SmartScriptingLexerException("Nema više tokena.");
 		}
