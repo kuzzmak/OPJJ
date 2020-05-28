@@ -1,9 +1,20 @@
 package hr.fer.zemris.java.custom.scripting.nodes;
 
+/**
+ * Razred koji predstavlja tekstualni zapis unutar nekog taga.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class TextNode extends Node {
 
 	String text;
 	
+	/**
+	 * Konstruktor. 
+	 * 
+	 * @param text tekst koji se ispisuje
+	 */
 	public TextNode(String text) {
 		this.text = text;
 	}
