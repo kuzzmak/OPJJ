@@ -7,7 +7,7 @@ package hr.fer.zemris.java.custom.collections;
  * @author Antonio Kuzminski
  *
  */
-public interface Tester {
+public interface Tester<E> {
 
 	/**
 	 * Metoda koja provjerava je li testni objekt prihvatljiv ili ne.
@@ -15,5 +15,5 @@ public interface Tester {
 	 * @param obj objekt koji se testira
 	 * @return istina ako je prihvatljiv, laž inače
 	 */
-	boolean test(Object obj);
+	boolean test(E obj);
 }
