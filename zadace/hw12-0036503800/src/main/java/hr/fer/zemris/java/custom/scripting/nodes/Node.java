@@ -11,7 +11,7 @@ import hr.fer.zemris.java.custom.collections.ArrayIndexedCollection;
  */
 public abstract class Node {
 
-	public  ArrayIndexedCollection children;
+	public ArrayIndexedCollection<Node> children;
 	
 	/**
 	 * Metoda za dodavanje djece u kolekciju.
@@ -23,7 +23,7 @@ public abstract class Node {
 		
 		if(child == null) throw new NullPointerException("Nije moguće dodati null.");
 		
-		if(children == null) children = new ArrayIndexedCollection();
+		if(children == null) children = new ArrayIndexedCollection<>();
 		
 		children.add(child);
 	}
