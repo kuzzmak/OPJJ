@@ -76,6 +76,7 @@ public class RequestContext {
 		this.outputStream = outputStream;
 		this.parameters = parameters == null ? new HashMap<>() : parameters;
 		this.persistentParameters = persistentParameters == null ? new HashMap<>() : persistentParameters;
+		this.temporaryParameters = new HashMap<>();
 		this.outputCookies = outputCookies == null ? new ArrayList<>() : outputCookies;
 
 		encoding = "UTF-8";
