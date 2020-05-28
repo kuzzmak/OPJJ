@@ -216,9 +216,11 @@ public class SmartScriptParser {
 						sb.append(String.valueOf(token.getValue()));
 						sb.append(" ");
 						index++;
-					}else if(token.getType() == TokenType.OPERATOR) {
+						
+					}else if(token.getType() == TokenType.OPERATOR) { // bilo kakav operator unutar stringa je običan znak
 						sb.append(String.valueOf(token.getValue()));
 						index++;
+						
 					}else if(token.getType() == TokenType.SPACES) { // ako je neka vrsta razmaka u navodnicima
 						sb.append(String.valueOf(token.getValue()));
 						index++;
