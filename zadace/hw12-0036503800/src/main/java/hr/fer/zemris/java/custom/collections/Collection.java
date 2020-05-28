@@ -7,7 +7,7 @@ package hr.fer.zemris.java.custom.collections;
  * @author Antonio Kuzminski
  *
  */
-public interface Collection {
+public interface Collection<E> {
 
 	/**
 	 * Metoda za za provjer je li kolekcija prazna.
@@ -33,7 +33,7 @@ public interface Collection {
 	 * @param value vrijednost koja se dodaje u kolekciju
 	 * @throws NullPointerException ako je predana vrijednost <code>null</code>
 	 */
-	void add(Object value);
+	void add(E value);
 
 	/**
 	 * Metoda za provjeru sadržava li kolekcija element <code>value</code>.
@@ -49,14 +49,14 @@ public interface Collection {
 	 * @param value element koji se uklanja
 	 * @return istina ako je element uklonjen, laž inače
 	 */
-	boolean remove(Object value);
+	boolean remove(E value);
 
 	/**
 	 * Metoda za vraćanje internog polja koje služi kao spremnik elemenata.
 	 * 
 	 * @return polje elemenata unutar kolekcije
 	 */
-	Object[] toArray();
+	E[] toArray();
 
 	/**
 	 * Metoda koja nad svakim članom koji nije <code>null</code> izvodi nekakve
@@ -68,15 +68,14 @@ public interface Collection {
 	 * @throws NullPointerException ako je predani <code>processor null</code>
 	 * @see Processor#process(Object value)
 	 */
-	default void forEach(Processor processor) {
+	default void forEach(Processor<? super E> processor) {
 
-		ElementsGetter eg = this.createElementsGetter();
+		ElementsGetter<E> eg = this.createElementsGetter();
 
 		while (eg.hasNextElement()) {
 
 			processor.process(eg.getNextElement());
 		}
-
 	}
 
 	/**
@@ -88,11 +87,11 @@ public interface Collection {
 	 * @throws NullPointerException ako je predana kolekcija <code>null</code>
 	 * @see Processor
 	 */
-	default void addAll(Collection other) {
+	default void addAll(Collection<? extends E> other) {
 
-		other.forEach(new Processor() {
+		other.forEach(new Processor<E>() {
 			@Override
-			public void process(Object value) {
+			public void process(E value) {
 				add(value);
 			}
 		});
@@ -108,7 +107,7 @@ public interface Collection {
 	 * Metoda za stvaranje "iteratora" kolekcije.
 	 * 
 	 */
-	ElementsGetter createElementsGetter();
+	ElementsGetter<E> createElementsGetter();
 
 	/**
 	 * Metoda za dodavanje svih elemenata kolekcije <code>col</code> koji
@@ -118,13 +117,13 @@ public interface Collection {
 	 * @param tester referenca razreda <code>Tester</code> koji definira uvjet
 	 *               zadovoljivosti
 	 */
-	default void addAllSatisfying(Collection col, Tester tester) {
+	default void addAllSatisfying(Collection<E> col, Tester tester) {
 
-		ElementsGetter eg = col.createElementsGetter();
+		ElementsGetter<E> eg = col.createElementsGetter();
 
 		while (eg.hasNextElement()) {
 
-			Object nextElement = eg.getNextElement();
+			E nextElement = eg.getNextElement();
 
 			if (tester.test(nextElement))
 				add(nextElement);

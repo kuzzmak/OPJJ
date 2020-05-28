@@ -8,16 +8,16 @@ package hr.fer.zemris.java.custom.collections;
  * @author Antonio Kuzminski
  *
  */
-public class ObjectStack {
+public class ObjectStack<E> {
 
-	private ArrayIndexedCollection collection;
+	private ArrayIndexedCollection<E> collection;
 
 	/**
 	 * Inicijalni konstruktor
 	 * 
 	 */
 	public ObjectStack() {
-		this.collection = new ArrayIndexedCollection();
+		this.collection = new ArrayIndexedCollection<>();
 	}
 	
 	/**
@@ -44,7 +44,7 @@ public class ObjectStack {
 	 * @param value element koji se stavlja na stog
 	 * @throws NullPointerException ako je predana vrijednost <code>null</code>.
 	 */
-	public void push(Object value) {
+	public void push(E value) {
 
 		if (value == null)
 			throw new NullPointerException("Nemoguće spremiti null na stog.");
@@ -58,12 +58,12 @@ public class ObjectStack {
 	 * @throws EmptyStackException ako je stog prazan
 	 * @return element na vrhu stoga
 	 */
-	public Object pop() {
+	public E pop() {
 
 		if (this.isEmpty())
 			throw new EmptyStackException("Stog je prazan.");
 
-		Object top = this.collection.get(this.collection.size() - 1);
+		E top = this.collection.get(this.collection.size() - 1);
 
 		this.collection.remove(top);
 
@@ -77,7 +77,7 @@ public class ObjectStack {
 	 * @throws EmptyStackException ako je stog prazan
 	 * @return element na vrhu stoga
 	 */
-	public Object peek() {
+	public E peek() {
 
 		if (this.isEmpty())
 			throw new EmptyStackException("Stog je prazan.");

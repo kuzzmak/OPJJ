@@ -6,7 +6,7 @@ package hr.fer.zemris.java.custom.collections;
  * @author Antonio Kuzminski
  *
  */
-public interface List extends Collection {
+public interface List<E> extends Collection<E> {
 	
 	/**
 	 * Metoda za dohvat elementa polja na indeksu <code>index</code>.
@@ -16,7 +16,7 @@ public interface List extends Collection {
 	 *                                   granica polja
 	 * @return element kolekcije na mjestu <code>index</code>
 	 */
-	Object get(int index);
+	E get(int index);
 	
 	/**
 	 * Metoda za umetanje elementa u kolekciju na poziciji <code>position</code>.
@@ -28,7 +28,7 @@ public interface List extends Collection {
 	 * @throws IndexOutOfBoundsException ako je indeks < 0 ili > od veličine
 	 *                                   trenutne kolekcije
 	 */
-	void insert(Object value, int position);
+	void insert(E value, int position);
 	
 	/**
 	 * Metoda za pronalazak indeksa predanog elementa <code>value</code> unutar kolekcije. 
@@ -37,7 +37,7 @@ public interface List extends Collection {
 	 * @param value element čiji se indeks pokušava naći
 	 * @return indeks traženog elementa ako je unutar kolekcije, -1 inače
 	 */
-	int indexOf(Object value);
+	int indexOf(E value);
 	
 	/**
 	 * Metoda za uklanjanje elementa iz kolekcije na mjestu <code>index</code>.

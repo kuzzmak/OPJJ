@@ -10,11 +10,11 @@ import java.util.NoSuchElementException;
  * @author Antonio Kuzminski
  *
  */
-public class LinkedListIndexedCollection implements List {
+public class LinkedListIndexedCollection<E> implements List<E> {
 
 	private int size;
-	private ListNode first;
-	private ListNode last;
+	private ListNode<E> first;
+	private ListNode<E> last;
 	
 	private long modificationCount = 0;
 
@@ -24,11 +24,9 @@ public class LinkedListIndexedCollection implements List {
 	 * @author Antonio Kuzminski
 	 *
 	 */
-	class LLICElementsGetter implements ElementsGetter{
+	class LLICElementsGetter implements ElementsGetter<E>{
 
-		ListNode currentNode = first;
-		// zastavica koja je istinita prilikom prvog dohvata elementa kolekcije
-		private boolean firstElement = true;
+		ListNode<E> currentNode = first;
 		// broj modifikacije prilikom stvaranje ElementGettera
 		private long savedModificationCount;
 
@@ -49,7 +47,7 @@ public class LinkedListIndexedCollection implements List {
 		}
 
 		@Override
-		public Object getNextElement() {
+		public E getNextElement() {
 
 			if (!hasNextElement())
 				throw new NoSuchElementException("Nema više elemenata u kolekciji.");
@@ -74,18 +72,18 @@ public class LinkedListIndexedCollection implements List {
 	 * @author Antonio Kuzminski
 	 *
 	 */
-	private static class ListNode {
+	private static class ListNode<E> {
 
 		@Override
 		public String toString() {
 			return String.valueOf(data);
 		}
 
-		private Object data;
-		private ListNode next;
-		private ListNode previous;
+		private E data;
+		private ListNode<E> next;
+		private ListNode<E> previous;
 
-		public ListNode(Object value) {
+		public ListNode(E value) {
 
 			this.data = value;
 		}
@@ -105,24 +103,24 @@ public class LinkedListIndexedCollection implements List {
 	 * 
 	 * @param col druga kolekcija kojom se kopira u novonastalu
 	 */
-	public LinkedListIndexedCollection(Collection col) {
+	public LinkedListIndexedCollection(Collection<? extends E> col) {
 		this.addAll(col);
 	}
 
 	@Override
-	public void add(Object value) {
+	public void add(E value) {
 
 		if (value == null)
 			throw new NullPointerException("Nije moguće pohraniti null vrijednost.");
 
 		// dodavanje prvog elementa
 		if (this.last == null) {
-			this.first = this.last = new ListNode(value);
+			this.first = this.last = new ListNode<>(value);
 			modificationCount++;
 			this.size++;
 		} else {
 
-			ListNode newNode = new ListNode(value);
+			ListNode<E> newNode = new ListNode<>(value);
 
 			if (this.size == 1) {
 
@@ -131,7 +129,7 @@ public class LinkedListIndexedCollection implements List {
 				newNode.previous = this.first;
 			} else {
 
-				ListNode temp = this.last;
+				ListNode<E> temp = this.last;
 				this.last = newNode;
 				newNode.previous = temp;
 				temp.next = newNode;
@@ -143,7 +141,7 @@ public class LinkedListIndexedCollection implements List {
 	}
 
 	@Override
-	public Object get(int index) {
+	public E get(int index) {
 
 		if (index < 0 || index > this.size - 1)
 			throw new IndexOutOfBoundsException("Indeks izvan granica kolekcije.");
@@ -152,7 +150,7 @@ public class LinkedListIndexedCollection implements List {
 		// kreće se pretraga od prvog node-a pa nadalje
 		if (index < this.size / 2) {
 
-			ListNode next = this.first;
+			ListNode<E> next = this.first;
 			int counter = 0;
 			while (next != null) {
 				if (counter == index) {
@@ -166,7 +164,7 @@ public class LinkedListIndexedCollection implements List {
 
 		} else {
 			// suprotno nego ispred
-			ListNode previous = this.last;
+			ListNode<E> previous = this.last;
 			int counter = this.size - 1;
 			while (previous != null) {
 				if (counter == index) {
@@ -181,12 +179,12 @@ public class LinkedListIndexedCollection implements List {
 	}
 
 	@Override
-	public int indexOf(Object value) {
+	public int indexOf(E value) {
 
 		if (value == null)
 			return -1;
 
-		ListNode node = this.first;
+		ListNode<E> node = this.first;
 
 		int i = 0;
 		while (node != null) {
@@ -215,7 +213,7 @@ public class LinkedListIndexedCollection implements List {
 		if (this.last.data.equals(value))
 			return true;
 
-		ListNode next = this.first.next;
+		ListNode<E> next = this.first.next;
 		while (next != null) {
 			if (next.data.equals(value))
 				return true;
@@ -233,15 +231,16 @@ public class LinkedListIndexedCollection implements List {
 		this.size = 0;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object[] toArray() {
+	public E[] toArray() {
 
 		if (this.size == 0)
-			return new Object[0];
+			return (E[]) new Object[0];
 
-		Object[] array = new Object[this.size];
+		E[] array = (E[]) new Object[this.size];
 
-		ListNode node = this.first;
+		ListNode<E> node = this.first;
 
 		int i = 0;
 		while (node != null) {
@@ -261,7 +260,7 @@ public class LinkedListIndexedCollection implements List {
 		// prva polovica liste
 		if (index < this.size / 2) {
 
-			ListNode current = this.first;
+			ListNode<E> current = this.first;
 			int counter = 0;
 
 			while (current != null) {
@@ -274,8 +273,8 @@ public class LinkedListIndexedCollection implements List {
 			}
 
 			// dohvat prethodnog i sljedećeg elementa od elementa na traženom indeksu
-			ListNode previous = current.previous;
-			ListNode next = current.next;
+			ListNode<E> previous = current.previous;
+			ListNode<E> next = current.next;
 
 			// uklanja se prvi element, potrebno promijeniti this.first
 			if (index == 0) {
@@ -292,7 +291,7 @@ public class LinkedListIndexedCollection implements List {
 
 		} else {
 
-			ListNode current = this.last;
+			ListNode<E> current = this.last;
 			int counter = this.size - 1;
 
 			while (current != null) {
@@ -304,8 +303,8 @@ public class LinkedListIndexedCollection implements List {
 				}
 			}
 
-			ListNode previous = current.previous;
-			ListNode next = current.next;
+			ListNode<E> previous = current.previous;
+			ListNode<E> next = current.next;
 
 			// slučaj kada je samo jedan element, on nema sljedećeg niti prethodnog
 			if (previous == null && next == null) {
@@ -331,7 +330,7 @@ public class LinkedListIndexedCollection implements List {
 	}
 
 	@Override
-	public boolean remove(Object value) {
+	public boolean remove(E value) {
 
 		if (value == null)
 			throw new NullPointerException("Null nije dopušten u kolekciji.");
@@ -342,7 +341,7 @@ public class LinkedListIndexedCollection implements List {
 
 		if (index == 0) {
 
-			ListNode secondElement = this.first.next;
+			ListNode<E> secondElement = this.first.next;
 			if (this.size != 1)
 				secondElement.previous = null; // ako je samo jedan element,
 												// on nema sljedećeg niti prethodnog
@@ -355,7 +354,7 @@ public class LinkedListIndexedCollection implements List {
 
 		} else if (index == this.size - 1) {
 
-			ListNode secondToLast = this.last.previous;
+			ListNode<E> secondToLast = this.last.previous;
 			secondToLast.next = null;
 
 			this.last = secondToLast;
@@ -367,14 +366,14 @@ public class LinkedListIndexedCollection implements List {
 
 		} else {
 
-			ListNode node = this.first;
+			ListNode<E> node = this.first;
 
 			while (node != null) {
 
 				if (node.data.equals(value)) {
 
-					ListNode next = node.next;
-					ListNode previous = node.previous;
+					ListNode<E> next = node.next;
+					ListNode<E> previous = node.previous;
 
 					previous.next = next;
 					next.previous = previous;
@@ -392,7 +391,7 @@ public class LinkedListIndexedCollection implements List {
 	}
 	
 	@Override
-	public void insert(Object value, int position) {
+	public void insert(E value, int position) {
 		
 		if (value == null)
 			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
@@ -401,8 +400,8 @@ public class LinkedListIndexedCollection implements List {
 		
 		if(position == this.size) {
 			
-			ListNode lastNode = this.last;
-			ListNode newNode = new ListNode(value);
+			ListNode<E> lastNode = this.last;
+			ListNode<E> newNode = new ListNode<>(value);
 			
 			lastNode.next = newNode;
 			newNode.previous = lastNode;
@@ -410,8 +409,8 @@ public class LinkedListIndexedCollection implements List {
 			
 		}else if(position == 0) {
 			
-			ListNode firstNode = this.first;
-			ListNode newNode = new ListNode(value);
+			ListNode<E> firstNode = this.first;
+			ListNode<E> newNode = new ListNode<>(value);
 			
 			firstNode.previous = newNode;
 			newNode.next = firstNode;
@@ -419,15 +418,15 @@ public class LinkedListIndexedCollection implements List {
 			
 		}else {
 			
-			ListNode node = this.first;
+			ListNode<E> node = this.first;
 			int counter = 0;
 			
 			while(node != null) {
 				if(counter == position) {
 					
-					ListNode previous = node.previous;
+					ListNode<E> previous = node.previous;
 					
-					ListNode newNode = new ListNode(value);
+					ListNode<E> newNode = new ListNode<>(value);
 					
 					previous.next = newNode;
 					node.previous = newNode;
@@ -447,11 +446,11 @@ public class LinkedListIndexedCollection implements List {
 		this.modificationCount++;
 	}
 
-	public ListNode getFirst() {
+	public ListNode<E> getFirst() {
 		return first;
 	}
 
-	public ListNode getLast() {
+	public ListNode<E> getLast() {
 		return last;
 	}
 
@@ -466,7 +465,7 @@ public class LinkedListIndexedCollection implements List {
 
 			sb.append(this.first.data + ", ");
 
-			ListNode next = this.first.next;
+			ListNode<E> next = this.first.next;
 			while (next != null) {
 				sb.append(next.data + ", ");
 				next = next.next;
@@ -480,7 +479,7 @@ public class LinkedListIndexedCollection implements List {
 	}
 
 	@Override
-	public ElementsGetter createElementsGetter() {
+	public ElementsGetter<E> createElementsGetter() {
 		
 		return new LLICElementsGetter(this.modificationCount);
 	}

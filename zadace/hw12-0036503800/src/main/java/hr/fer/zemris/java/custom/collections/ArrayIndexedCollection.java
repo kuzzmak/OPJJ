@@ -12,10 +12,10 @@ import java.util.NoSuchElementException;
  * @author Antonio Kuzminski
  *
  */
-public class ArrayIndexedCollection implements List {
+public class ArrayIndexedCollection<E> implements List<E> {
 
 	private int size;
-	private Object[] elements;
+	private E[] elements;
 	
 	private long modificationCount = 0;
 
@@ -25,7 +25,7 @@ public class ArrayIndexedCollection implements List {
 	 * @author Antonio Kuzminski
 	 *
 	 */
-	private class AICElementsGetter implements ElementsGetter{
+	private class AICElementsGetter implements ElementsGetter<E>{
 
 		int currentElement = -1;
 		
@@ -45,7 +45,7 @@ public class ArrayIndexedCollection implements List {
 		}
 
 		@Override
-		public Object getNextElement() {
+		public E getNextElement() {
 
 			if (!hasNextElement())
 				throw new NoSuchElementException("Nema više elemenata u kolekciji.");
@@ -67,10 +67,11 @@ public class ArrayIndexedCollection implements List {
 	 * @param capacity inicijalna veličina kolekcije
 	 * @throws IllegalArgumentException ako je <code>capacity</code> manji od 1
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayIndexedCollection(int capacity) {
 		if (capacity < 1)
 			throw new IllegalArgumentException("Kapacitet ne može biti manji od 1!");
-		elements = new Object[capacity];
+		elements = (E[]) new Object[capacity];
 	}
 
 	/**
@@ -88,7 +89,7 @@ public class ArrayIndexedCollection implements List {
 	 * @param col kolekcija čiji se elementi kopiraju u novonastalu kolekciju
 	 * @throws NullPointerException ako je predana kolekcija <code>null</cpde>
 	 */
-	public ArrayIndexedCollection(Collection col) {
+	public ArrayIndexedCollection(Collection<? extends E> col) {
 
 		if (col == null)
 			throw new NullPointerException("Predana kolekcija ne može biti null.");
@@ -106,22 +107,24 @@ public class ArrayIndexedCollection implements List {
 	 * @param col
 	 * @param initialCapacity
 	 */
-	public ArrayIndexedCollection(Collection col, int initialCapacity) {
+	@SuppressWarnings("unchecked")
+	public ArrayIndexedCollection(Collection<? extends E> col, int initialCapacity) {
 
 		if (col == null)
 			throw new NullPointerException("Predana kolekcija ne može biti null.");
 
 		if (initialCapacity < col.size()) {
-			elements = new Object[col.size()];
+			elements = (E[]) new Object[col.size()];
 			this.addAll(col);
 		} else {
-			elements = new Object[initialCapacity];
+			elements = (E[]) new Object[initialCapacity];
 			this.addAll(col);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void add(Object value) {
+	public void add(E value) {
 
 		if (value == null)
 			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
@@ -131,9 +134,9 @@ public class ArrayIndexedCollection implements List {
 			size++;
 		} catch (IndexOutOfBoundsException e) {
 			// kopija trenutne kolekcije
-			ArrayIndexedCollection temp = new ArrayIndexedCollection(this);
+			ArrayIndexedCollection<E> temp = new ArrayIndexedCollection<>(this);
 			// stvaranje nove i kopiranje
-			elements = new Object[size * 2];
+			elements = (E[]) new Object[size * 2];
 			size = 0;
 			this.addAll(temp);
 			elements[size] = value;
@@ -144,7 +147,7 @@ public class ArrayIndexedCollection implements List {
 	}
 
 	@Override
-	public Object[] toArray() {
+	public E[] toArray() {
 
 		return elements;
 	}
@@ -160,7 +163,7 @@ public class ArrayIndexedCollection implements List {
 		if (value == null)
 			return false;
 
-		for (Object o : elements) {
+		for (E o : elements) {
 			if (o != null && o.equals(value))
 				return true;
 		}
@@ -168,13 +171,14 @@ public class ArrayIndexedCollection implements List {
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public boolean remove(Object value) {
+	public boolean remove(E value) {
 
 		if (value == null)
 			return false;
 
-		Object[] temp = new Object[elements.length];
+		E[] temp = (E[]) new Object[elements.length];
 
 		// indeks vrijednosti koja se uklanja ako postoji
 		int index = -1;
@@ -187,7 +191,6 @@ public class ArrayIndexedCollection implements List {
 			} else {
 				temp[i] = elements[i];
 			}
-
 		}
 
 		// postoji vrijednost koja se treba ukloniti
@@ -212,13 +215,14 @@ public class ArrayIndexedCollection implements List {
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void remove(int index) {
 
 		if (index < 0 || index > size - 1)
 			throw new IndexOutOfBoundsException("Nije moguće ukloniti element izvan kolekcije.");
 
-		Object[] tempElements = new Object[elements.length];
+		E[] tempElements = (E[]) new Object[elements.length];
 
 		for (int i = 0; i < index; i++) {
 			tempElements[i] = tempElements[i];
@@ -244,21 +248,22 @@ public class ArrayIndexedCollection implements List {
 		modificationCount++;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void insert(Object value, int position) {
+	public void insert(E value, int position) {
 
 		if (value == null)
 			throw new NullPointerException("Nije moguće dodati null u kolekciju.");
 		if (position < 0 || position > size)
 			throw new IndexOutOfBoundsException("Neispravan indeks za umetanje elementa.");
 
-		Object[] temp;
+		E[] temp;
 
 		// ako je kolekcija puna, stvara se nova dvostruko veća
 		if (size == elements.length) {
-			temp = new Object[elements.length * 2];
+			temp = (E[]) new Object[elements.length * 2];
 		} else {
-			temp = new Object[elements.length];
+			temp = (E[]) new Object[elements.length];
 		}
 
 		// kopiranje prvog dijela elemenata do position
@@ -286,7 +291,7 @@ public class ArrayIndexedCollection implements List {
 	}
 
 	@Override
-	public Object get(int index) {
+	public E get(int index) {
 
 		if (index > size - 1 || index < 0)
 			throw new IndexOutOfBoundsException("Nemoguće dohvatiti element izvan indeksa polja.");
@@ -306,7 +311,7 @@ public class ArrayIndexedCollection implements List {
 	}
 
 	@Override
-	public ElementsGetter createElementsGetter() {
+	public ElementsGetter<E> createElementsGetter() {
 
 		return new AICElementsGetter(this.modificationCount);
 	}
@@ -334,7 +339,7 @@ public class ArrayIndexedCollection implements List {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ArrayIndexedCollection other = (ArrayIndexedCollection) obj;
+		ArrayIndexedCollection<E> other = (ArrayIndexedCollection) obj;
 		if (!Arrays.deepEquals(elements, other.elements))
 			return false;
 		if (modificationCount != other.modificationCount)

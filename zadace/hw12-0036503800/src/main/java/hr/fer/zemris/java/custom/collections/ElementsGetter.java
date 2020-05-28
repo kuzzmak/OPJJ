@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
  * @author Antonio Kuzminski
  *
  */
-public interface ElementsGetter {
+public interface ElementsGetter<E> {
 	
 	/**
 	 * Metoda za provjeru ima li kolekcija još elemenata koji nis dohvaćeni.
@@ -26,7 +26,7 @@ public interface ElementsGetter {
 	 * @throws ConcurrentModificationException ako se rade modifikacije 
 	 * 		   kolekcije prilikom iteriranja
 	 */
-	Object getNextElement();
+	E getNextElement();
 	
 	/**
 	 * Metoda za obradu ostatka elemenata kolekcije. Ostatka 
@@ -37,7 +37,7 @@ public interface ElementsGetter {
 	 * @throws NullPointerException ako je predan <code>null</code> kao Processor
 	 * @see Processor
 	 */
-	default void processRemaining(Processor p) {
+	default void processRemaining(Processor<E> p) {
 		
 		if(p == null) throw new NullPointerException("Null nije valjan Processor.");
 		

@@ -7,7 +7,7 @@ package hr.fer.zemris.java.custom.collections;
  * @author Antonio Kuzminski
  *
  */
-public interface Processor {
+public interface Processor<E> {
 
 	/**
 	 * Metoda koja obavlja nekakvu zadaću nad predanim objektom.
@@ -15,5 +15,5 @@ public interface Processor {
 	 * @param value objekt nad kojim se izvršava neka zadaća
 	 * @throws NullPointerException ako je predana vrijednost <code>null</code>
 	 */
-	public void process(Object value);
+	public void process(E value);
 }
