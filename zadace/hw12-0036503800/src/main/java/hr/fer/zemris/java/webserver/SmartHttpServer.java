@@ -2,11 +2,14 @@ package hr.fer.zemris.java.webserver;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -172,6 +175,18 @@ public class SmartHttpServer {
 						String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
 						
 						RequestContext rq = new RequestContext(ostream, params, persParams, outputCookies);
+						rq.setMimeType(mimeType);
+						rq.setStatusCode(200);
+						
+						try(InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))){
+							
+							byte[] buffer = new byte[1024];
+							while(true) {
+								int read = is.read(buffer);
+								if(read < 1) break;
+								rq.write(buffer);
+							}
+						}
 						
 					}else{
 						sendError(ostream, 404, "File not readable or doesn't exist");
