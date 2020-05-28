@@ -1,8 +1,8 @@
 package hr.fer.zemris.java.custom.scripting.lexer;
 
 /**
- * Enumeracija za razred <code>SmartScriptLexer</code> gdje <code>BASIC</code> označava
- * normalni režim rada gdje se generira samo text, a <code>EXTENDED</code> označava
+ * Enumeracija za razred <code>SmartScriptLexer</code> gdje <code>TEXT</code> označava
+ * normalni režim rada gdje se generira samo text, a <code>TAG</code> označava
  * režim rada gdje se generiraju tagovi.
  * 
  * 
