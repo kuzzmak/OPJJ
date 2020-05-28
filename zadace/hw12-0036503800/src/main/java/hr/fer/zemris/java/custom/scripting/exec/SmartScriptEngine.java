@@ -60,7 +60,7 @@ public class SmartScriptEngine {
 			ValueWrapper vw = new ValueWrapper(start);
 			multistack.push(node.getVariable().asText(), vw);
 
-			while (multistack.peek(var).numCompare(end) < 0) {
+			while (multistack.peek(var).numCompare(end) <= 0) {
 				node.children.forEach(n -> n.accept(this));
 				multistack.peek(var).add(step);
 			}
@@ -107,6 +107,25 @@ public class SmartScriptEngine {
 					
 					}else if(functionName.equals("@paramGet")) {
 						exectuteParamGet(tempStack);
+					
+					}else if(functionName.equals("@pparamGet")) {
+						executePParamGet(tempStack);
+						
+					}else if(functionName.equals("@pparamSet")) {
+						executePParamSet(tempStack);
+						
+					}else if(functionName.equals("@pparamDel")) {
+						executePParamDel(tempStack);
+						
+					}else if(functionName.equals("@tparamGet")) {
+						executeTParamGet(tempStack);
+						
+					}else if(functionName.equals("@tparamSet")) {
+						executeTParamSet(tempStack);
+						
+					}else if(functionName.equals("@tparamDel")) {
+						executeTParamDel(tempStack);
+						
 					}
 
 				} else if (element instanceof ElementString || 
@@ -159,28 +178,28 @@ public class SmartScriptEngine {
 		Object format = tempStack.pop();
 		String formatString = (String) format;
 		Object number = tempStack.pop();
-		
+
 		DecimalFormat decimalFormat = new DecimalFormat(formatString.replaceAll("\"", ""));
 		tempStack.push(decimalFormat.format(number));
 	}
-	
+
 	private void executeDup(Stack<Object> tempStack) {
 		Object o = tempStack.pop();
 		tempStack.push(o);
 		tempStack.push(o);
 	}
-	
+
 	private void executeSwap(Stack<Object> tempStack) {
 		Object o1 = tempStack.pop();
 		Object o2 = tempStack.pop();
 		tempStack.push(o1);
 		tempStack.push(o2);
 	}
-	
+
 	private void exectuteParamGet(Stack<Object> tempStack) {
 		Object defaultValue = tempStack.pop();
 		Object name = tempStack.pop();
-		
+
 		String value = requestContext.getParameter(String.valueOf(name));
 		tempStack.push(value == null ? defaultValue : value);
 	}
@@ -189,7 +208,7 @@ public class SmartScriptEngine {
 	 * Metoda za izvođenje osnovnih aritmetičkih operacija.
 	 * 
 	 * @param tempStack trenutni stog nekog taga
-	 * @param operator operator koji se treba izvršiti
+	 * @param operator  operator koji se treba izvršiti
 	 */
 	private void executeOperator(Stack<Object> tempStack, String operator) {
 
@@ -198,10 +217,10 @@ public class SmartScriptEngine {
 
 		ValueWrapper vw = new ValueWrapper(null);
 		vw.add(o1);
-		
+
 		if (operator.equals("+")) {
 			vw.add(o2);
-			
+
 		} else if (operator.equals("*")) {
 			vw.multiply(o2);
 
@@ -210,17 +229,59 @@ public class SmartScriptEngine {
 
 		} else if (operator.equals("/")) {
 			vw.divide(o2);
-			
+
 		} else
 			throw new RuntimeException("Nepodržan operator: " + operator);
 
 		tempStack.push(vw.getValue());
 	}
 
+	private void executePParamGet(Stack<Object> tempStack) {
+
+		Object defaultValue = tempStack.pop();
+		Object name = tempStack.pop();
+
+		String value = requestContext.getPersistentParameter(String.valueOf(name));
+		tempStack.push(value == null ? defaultValue : value);
+	}
+
+	private void executePParamSet(Stack<Object> tempStack) {
+
+		Object name = tempStack.pop();
+		Object value = tempStack.pop();
+		requestContext.setPersistentParameter(String.valueOf(name), String.valueOf(value));
+	}
+
+	private void executePParamDel(Stack<Object> tempStack) {
+		Object name = tempStack.pop();
+		requestContext.setPersistentParameter(String.valueOf(name), null);
+	}
+
+	private void executeTParamGet(Stack<Object> tempStack) {
+		Object defaultValue = tempStack.pop();
+		Object name = tempStack.pop();
+
+		String value = requestContext.getTemporaryParameter(String.valueOf(name));
+		tempStack.push(value == null ? defaultValue : value);
+	}
+
+	private void executeTParamSet(Stack<Object> tempStack) {
+
+		Object name = tempStack.pop();
+		Object value = tempStack.pop();
+		requestContext.setTemporaryParameter(String.valueOf(name), String.valueOf(value));
+	}
+	
+	private void executeTParamDel(Stack<Object> tempStack) {
+		Object name = tempStack.pop();
+		requestContext.setTemporaryParameter(String.valueOf(name), null);
+	}
+
 	/**
 	 * Konstruktor.
 	 * 
-	 * @param documentNode oblik dokumenta koji je parsiran u odgovarajuće node-ove
+	 * @param documentNode   oblik dokumenta koji je parsiran u odgovarajuće
+	 *                       node-ove
 	 * @param requestContext referenca konteksta webservera
 	 */
 	public SmartScriptEngine(DocumentNode documentNode, RequestContext requestContext) {
