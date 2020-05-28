@@ -264,7 +264,7 @@ public class RequestContext {
 		}
 
 		outputStream.write(data, offset, len);
-
+		outputStream.flush();
 		return this;
 	}
 
