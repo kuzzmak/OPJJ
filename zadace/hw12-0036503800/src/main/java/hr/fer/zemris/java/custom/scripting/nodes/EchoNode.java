@@ -15,7 +15,7 @@ public class EchoNode extends Node {
 
 	Element[] elements;
 	
-	ArrayIndexedCollection col;
+	ArrayIndexedCollection<Element> col;
 	
 	/**
 	 * Inicijalni konstruktor.
@@ -23,7 +23,7 @@ public class EchoNode extends Node {
 	 */
 	public EchoNode() {
 		
-		this.col = new ArrayIndexedCollection();
+		this.col = new ArrayIndexedCollection<>();
 	}
 	
 	/**
