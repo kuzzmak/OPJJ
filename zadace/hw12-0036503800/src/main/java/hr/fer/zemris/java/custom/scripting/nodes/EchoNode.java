@@ -55,7 +55,7 @@ public class EchoNode extends Node {
 		elements = new Element[col.size()];
 		
 		for(int i = 0; i < col.size(); i++) {
-			elements[i] = (Element)col.get(i);
+			elements[i] = col.get(i);
 		}
 		
 		return elements;
