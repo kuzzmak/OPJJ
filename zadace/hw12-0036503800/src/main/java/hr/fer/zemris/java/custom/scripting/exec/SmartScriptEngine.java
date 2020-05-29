@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Stack;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import hr.fer.zemris.java.custom.collections.ObjectStack;
 import hr.fer.zemris.java.custom.scripting.elems.Element;
 import hr.fer.zemris.java.custom.scripting.elems.ElementConstantDouble;
 import hr.fer.zemris.java.custom.scripting.elems.ElementConstantInteger;
@@ -37,6 +35,7 @@ public class SmartScriptEngine {
 
 		@Override
 		public void visitTextNode(TextNode node) {
+			
 			try {
 				requestContext.write(node.toString());
 			} catch (IOException e) {
@@ -76,7 +75,7 @@ public class SmartScriptEngine {
 			for (int i = 0; i < elements.length; i++) {
 
 				Element element = elements[i];
-
+				
 				if (element instanceof ElementFunction) {
 
 					String functionName = element.asText();
@@ -131,6 +130,7 @@ public class SmartScriptEngine {
 				} else if (element instanceof ElementString || 
 						element instanceof ElementConstantDouble || 
 						element instanceof ElementConstantInteger) {
+					
 					tempStack.push(element.asText().contains("\"") ? element.asText().replaceAll("\"", "") : element.asText());
 
 				} else if (element instanceof ElementOperator) {
@@ -140,11 +140,10 @@ public class SmartScriptEngine {
 
 				} else if (element instanceof ElementVariable) {
 
-					String key = elements[i].asText();
+					String key = element.asText();
 					tempStack.push(multistack.peek(key).getValue());
 				}
 			}
-
 				
 			List<String> stackContent = tempStack.stream().map(o -> String.valueOf(o)).collect(Collectors.toList());
 			
