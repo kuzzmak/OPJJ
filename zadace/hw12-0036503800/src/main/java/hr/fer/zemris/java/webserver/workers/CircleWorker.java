@@ -29,7 +29,7 @@ public class CircleWorker implements IWebWorker {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ImageIO.write(bim, "png", bos);
 		byte[] podatci = bos.toByteArray();
-		
+		context.setMimeType("image/png");
 		context.write(podatci);
 	}
 
