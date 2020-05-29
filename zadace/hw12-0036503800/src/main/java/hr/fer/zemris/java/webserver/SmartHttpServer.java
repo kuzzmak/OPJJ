@@ -27,6 +27,8 @@ import java.util.Properties;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 
+import hr.fer.zemris.java.custom.scripting.exec.SmartScriptEngine;
+import hr.fer.zemris.java.custom.scripting.parser.SmartScriptParser;
 import hr.fer.zemris.java.webserver.RequestContext.RCCookie;
 
 public class SmartHttpServer {
@@ -148,69 +150,85 @@ public class SmartHttpServer {
 				}
 
 				String path = firstLine[1];
-				
-				for(int i = 1; i < headers.size(); i++) {
-					if(headers.get(i).contains("Host")) {
+
+				for (int i = 1; i < headers.size(); i++) {
+					if (headers.get(i).contains("Host")) {
 						host = headers.get(i).split(":")[1].trim();
 					}
 				}
 
 				String[] pathSplitted = path.split("\\?");
-				if(pathSplitted.length == 2) {
+				if (pathSplitted.length == 2) {
 					String parameters = pathSplitted[1];
 					extractParameters(parameters);
 				}
-				
-				for(Map.Entry<String, String> entry: params.entrySet()) {
+
+				for (Map.Entry<String, String> entry : params.entrySet()) {
 					System.out.println(entry.getKey() + " " + entry.getValue());
 				}
-				
+
 				path = pathSplitted[0];
-				
+
 				try {
 					internalDispatchRequest(path, true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
+
 				File f = new File(documentRoot.toString(), path);
-				if(!f.exists()) {
+				if (!f.exists()) {
 					sendError(ostream, 403, "Forbidden");
 					return;
-					
-				}else {
-					if(f.isFile() && f.canRead()) {
-						
+
+				} else {
+
+					if (f.isFile() && f.canRead()) {
+
 						String extension = f.getName().split("\\.")[1];
-						
+
 						String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
-						
+
 						RequestContext rq = new RequestContext(ostream, params, persParams, outputCookies);
+
+						if (extension.equals("smscr")) {
+
+							rq = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
+							rq.setMimeType(mimeType);
+							rq.setStatusCode(200);
+
+							String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
+									StandardCharsets.UTF_8);
+
+							if (documentBody != null) {
+								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), rq)
+										.execute();
+							}
+							return;
+						}
+						
 						rq.setMimeType(mimeType);
 						rq.setStatusCode(200);
-						
-						try(InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))){
-							
+
+						try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
+
 							byte[] buffer = new byte[1024];
-							while(true) {
+							while (true) {
 								int read = is.read(buffer);
-								if(read < 1) break;
+								if (read < 1)
+									break;
 								rq.write(buffer);
 							}
 						}
-						
-					}else{
+
+					} else {
 						sendError(ostream, 404, "File not readable or doesn't exist");
 						return;
 					}
 				}
-				
-				
-//				composeResponse(ostream, path, version, headers.subList(1, headers.size()));
 
 			} catch (IOException e) {
 				e.printStackTrace();
-				
+
 			} finally {
 				try {
 					csocket.close();
@@ -219,10 +237,10 @@ public class SmartHttpServer {
 				}
 			}
 		}
-		
+
 		private void extractParameters(String parameters) {
 			String[] splitted = parameters.split("&");
-			for(int i = 0; i < splitted.length; i++) {
+			for (int i = 0; i < splitted.length; i++) {
 				String[] s = splitted[i].split("=");
 				params.put(s[0], s[1]);
 			}
@@ -279,9 +297,9 @@ public class SmartHttpServer {
 		public void dispatchRequest(String urlPath) throws Exception {
 			internalDispatchRequest(urlPath, false);
 		}
-		
-		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception{
-			
+
+		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception {
+
 		}
 	}
 
@@ -302,23 +320,23 @@ public class SmartHttpServer {
 		workerThreads = Integer.parseInt(prop.getProperty("server.workerThreads"));
 		sessionTimeout = Integer.parseInt(prop.getProperty("session.timeout"));
 		documentRoot = Paths.get(prop.getProperty("server.documentRoot"));
-		
+
 		String path = prop.getProperty("server.mimeConfig");
-		
+
 		readMimeConfigurationFile(path);
 	}
-	
+
 	private void readMimeConfigurationFile(String path) {
-		
+
 		try {
 			Scanner sc = new Scanner(new File(path));
-			while(sc.hasNextLine()) {
-				
+			while (sc.hasNextLine()) {
+
 				String line = sc.nextLine();
 				String[] splitted = line.split("=");
 				mimeTypes.put(splitted[0].strip(), splitted[1].strip());
 			}
-			
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -365,11 +383,8 @@ public class SmartHttpServer {
 
 		for (String redak : headers) {
 			int pos = redak.indexOf(':');
-			sb.append("      <tr><td>")
-			.append(redak.substring(0, pos).trim())
-			.append("</td><td>")
-			.append(redak.substring(pos + 1).trim())
-			.append("</td></tr>\r\n");
+			sb.append("      <tr><td>").append(redak.substring(0, pos).trim()).append("</td><td>")
+					.append(redak.substring(pos + 1).trim()).append("</td></tr>\r\n");
 		}
 		sb.append("    </table>\r\n" + "  </body>\r\n" + "</html>\r\n");
 
