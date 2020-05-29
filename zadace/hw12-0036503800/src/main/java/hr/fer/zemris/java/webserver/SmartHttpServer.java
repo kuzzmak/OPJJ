@@ -89,7 +89,7 @@ public class SmartHttpServer {
 
 	}
 
-	private class ClientWorker implements Runnable {
+	private class ClientWorker implements Runnable, IDispatcher {
 
 		private Socket csocket;
 		private InputStream istream;
@@ -103,6 +103,11 @@ public class SmartHttpServer {
 		private List<RCCookie> outputCookies = new ArrayList<>();
 		private String SID;
 
+		/**
+		 * Konstruktor.
+		 * 
+		 * @param csocket priključna točka
+		 */
 		public ClientWorker(Socket csocket) {
 			super();
 			this.csocket = csocket;
@@ -161,6 +166,12 @@ public class SmartHttpServer {
 				}
 				
 				path = pathSplitted[0];
+				
+				try {
+					internalDispatchRequest(path, true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				
 				File f = new File(documentRoot.toString(), path);
 				if(!f.exists()) {
@@ -262,6 +273,15 @@ public class SmartHttpServer {
 				}
 			}
 			return bos.toByteArray();
+		}
+
+		@Override
+		public void dispatchRequest(String urlPath) throws Exception {
+			internalDispatchRequest(urlPath, false);
+		}
+		
+		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception{
+			
 		}
 	}
 
