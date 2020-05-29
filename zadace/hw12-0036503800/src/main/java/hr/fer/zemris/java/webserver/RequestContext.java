@@ -46,6 +46,7 @@ public class RequestContext {
 
 	}
 
+	private IDispatcher dispatcher;
 	private OutputStream outputStream;
 	private Charset charset;
 	public String encoding;
@@ -63,10 +64,11 @@ public class RequestContext {
 	/**
 	 * Konstruktor.
 	 * 
-	 * @param outputStream ponor podataka koji se koristi za zapis, ne smije biti {@code null}
-	 * @param parameters 
+	 * @param outputStream         ponor podataka koji se koristi za zapis, ne smije
+	 *                             biti {@code null}
+	 * @param parameters           ulazni parametri
 	 * @param persistentParameters
-	 * @param ouputCookies kolačići
+	 * @param ouputCookies         kolačići
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
 			Map<String, String> persistentParameters, List<RCCookie> outputCookies) {
@@ -83,6 +85,27 @@ public class RequestContext {
 		statusCode = 200;
 		statusText = "OK";
 		mimeType = "text/html";
+	}
+
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param outputStream         ponor podataka koji se koristi za zapis, ne smije
+	 *                             biti {@code null}
+	 * @param parameters           ulazni parametri
+	 * @param persistentParameters
+	 * @param temporaryParameters
+	 * @param outputCookies
+	 * @param dispatcher
+	 */
+	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
+			Map<String, String> persistentParameters, Map<String, String> temporaryParameters,
+			List<RCCookie> outputCookies, IDispatcher dispatcher) {
+
+		this(outputStream, parameters, persistentParameters, outputCookies);
+
+		this.temporaryParameters = temporaryParameters;
+		this.dispatcher = dispatcher;
 	}
 
 	/**
@@ -208,9 +231,9 @@ public class RequestContext {
 	/**
 	 * Metoda za zapis polja bajtova u {@code outputStream}.
 	 * 
-	 * @param data podatci koji se zapisuju
+	 * @param data   podatci koji se zapisuju
 	 * @param offset pomak od nulte pozicije
-	 * @param len diljina podataka koja se zapisuje
+	 * @param len    diljina podataka koja se zapisuje
 	 * @return objekt tipa {@code RequestContext}
 	 * @throws IOException ukoliko je došlo do greške prilikom zapisa
 	 */
@@ -259,7 +282,7 @@ public class RequestContext {
 			header.append("\r\n");
 
 			outputStream.write(headerEncoding.encode(header.toString()).array());
-			
+
 			headerGenerated = true;
 		}
 
@@ -276,11 +299,11 @@ public class RequestContext {
 	 * @throws IOException ukoliko je došlo do greške prilikom zapisa
 	 */
 	public RequestContext write(String text) throws IOException {
-		
-		if(!headerGenerated) {
+
+		if (!headerGenerated) {
 			charset = Charset.forName(encoding);
 		}
-		
+
 		return write(charset.encode(text).array());
 	}
 
@@ -322,7 +345,7 @@ public class RequestContext {
 		else
 			throw new RuntimeException("Nije moguće postaviti statusni kod jednom kada je generirano zaglavlje.");
 	}
-	
+
 	/**
 	 * Metoda za postavljanje statusnog tekst.
 	 * 
@@ -330,12 +353,12 @@ public class RequestContext {
 	 * @throws RuntimeException ukoliko je zaglavlje već genrirano
 	 */
 	public void setStatusText(String statusText) {
-		if(!headerGenerated) 
+		if (!headerGenerated)
 			this.statusText = statusText;
 		else
 			throw new RuntimeException("Nije moguće postaviti statusni tekst jednom kada je generirano zaglavlje.");
 	}
-	
+
 	/**
 	 * Metoda za postavljanje veličine poruke.
 	 * 
@@ -343,12 +366,12 @@ public class RequestContext {
 	 * @throws RuntimeException ukoliko je zaglavlje već generirano
 	 */
 	public void setContentLength(Long contentLength) {
-		if(!headerGenerated) 
+		if (!headerGenerated)
 			this.contentLength = contentLength;
 		else
 			throw new RuntimeException("Nije moguće postaviti duljinu poruke jednom kada je generirano zaglavlje.");
 	}
-	
+
 	/**
 	 * Metoda za dodavanje kolačića.
 	 * 
@@ -356,7 +379,7 @@ public class RequestContext {
 	 * @throws RuntimeException ukoliko je zaglavlje već genrirano
 	 */
 	public void addRCCookie(RCCookie cookie) {
-		if(!headerGenerated) 
+		if (!headerGenerated)
 			outputCookies.add(cookie);
 		else
 			throw new RuntimeException("Nije moguće dodavati kolačiće jednom kada je generirano zaglavlje.");
