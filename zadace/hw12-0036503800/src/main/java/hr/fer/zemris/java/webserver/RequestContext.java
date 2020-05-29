@@ -384,5 +384,14 @@ public class RequestContext {
 		else
 			throw new RuntimeException("Nije moguće dodavati kolačiće jednom kada je generirano zaglavlje.");
 	}
+
+	/**
+	 * Dohvat dispatchera.
+	 * 
+	 * @return dispatcher trenutnog konteksta
+	 */
+	public IDispatcher getDispatcher() {
+		return dispatcher;
+	}
 	
 }
