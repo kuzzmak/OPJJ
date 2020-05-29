@@ -173,54 +173,6 @@ public class SmartHttpServer {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				
-				File f = new File(documentRoot.toString(), path);
-				String extension = path.split("\\.")[1];
-				String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
-				
-				if (!f.exists()) {
-					sendError(ostream, 403, "Forbidden");
-					return;
-					
-				}else {
-					
-					if (f.isFile() && f.canRead()) {
-						
-						// smart script datoteka
-						if (extension.equals("smscr")) {
-
-							context = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
-							context.setMimeType(mimeType);
-							context.setStatusCode(200);
-
-							String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
-									StandardCharsets.UTF_8);
-
-							if (documentBody != null) {
-								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), context)
-										.execute();
-							}
-							return;
-
-						}else { // neka druga datoteka
-						
-							try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
-
-								byte[] buffer = new byte[1024];
-								while (true) {
-									int read = is.read(buffer);
-									if (read < 1)
-										break;
-									context.write(buffer);
-								}
-							}
-						}
-
-					} else {
-						sendError(ostream, 404, "File not readable or doesn't exist");
-						return;
-					}
-				}
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -233,26 +185,74 @@ public class SmartHttpServer {
 				}
 			}
 		}
-		
+
 		@Override
 		public void dispatchRequest(String urlPath) throws Exception {
 			internalDispatchRequest(urlPath, false);
 		}
 
 		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception {
+
+			File f = new File(documentRoot.toString(), urlPath);
 			
-			String mimeType = mimeTypes.getOrDefault(urlPath, "application/octet-stream");
-			
-			if(context == null) {
-				context =  new RequestContext(ostream, params, persParams, outputCookies);
-				context.setMimeType(mimeType);
+			if (context == null) {
+				context = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
 				context.setStatusCode(200);
 			}
-			
+
 			// predefinirani workeri
-			if(workersMap.containsKey(urlPath)) {
+			if (workersMap.containsKey(urlPath)) {
 				workersMap.get(urlPath).processRequest(context);
 				return;
+			}
+			
+			if (!f.exists()) {
+				sendError(ostream, 403, "Forbidden");
+				return;
+
+			} else {
+
+				if (f.isFile() && f.canRead()) {
+					
+					String extension = urlPath.split("\\.")[1];
+					String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
+					context.setMimeType(mimeType);
+					
+					if (urlPath.contains("/private")) {
+
+						if (directCall) {
+							sendError(ostream, 404, "Nije dozvoljeno pristupati: " + urlPath);
+
+						} else { // neki dokument s ekstenzijom .smscr
+
+							String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
+									StandardCharsets.UTF_8);
+
+							if (documentBody != null) {
+								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), context)
+										.execute();
+							}
+							return;
+
+						}
+					}
+					
+					// ostale vrste datoteka
+					try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
+
+						byte[] buffer = new byte[1024];
+						while (true) {
+							int read = is.read(buffer);
+							if (read < 1)
+								break;
+							context.write(buffer);
+						}
+					}
+					
+				}else { 
+					sendError(ostream, 404, "File not readable or doesn't exist");
+					return;
+				}
 			}
 		}
 
@@ -330,8 +330,8 @@ public class SmartHttpServer {
 	}
 
 	/**
-	 * Čita konfiguracijsku datoteku webservera. Radi inicijalizaciju
-	 * mime tipova i {@code IWebWorker} objekata.
+	 * Čita konfiguracijsku datoteku webservera. Radi inicijalizaciju mime tipova i
+	 * {@code IWebWorker} objekata.
 	 * 
 	 * @param configFileName konfiguracijska datoteka webservera
 	 * @throws IOException           ukoliko je došlo do greške prilikom čitanja
@@ -339,7 +339,7 @@ public class SmartHttpServer {
 	 *                               ne postoji
 	 */
 	private void readConfigFile(String configFileName) throws IOException {
-		
+
 		Properties prop = new Properties();
 
 		InputStream is = Files.newInputStream(Paths.get(configFileName));
@@ -358,7 +358,7 @@ public class SmartHttpServer {
 
 		String mimeConfigurationPath = prop.getProperty("server.mimeConfig");
 		readMimeConfigurationFile(mimeConfigurationPath);
-		
+
 		String workersConfigurationPath = prop.getProperty("server.workers");
 		readWorkersConfigurationFile(workersConfigurationPath);
 	}
@@ -385,8 +385,8 @@ public class SmartHttpServer {
 	}
 
 	/**
-	 * Stvara {@code IWebWorker} objekte navedene u konfiguracijskoj 
-	 * datoteci {@code workers.properties}.
+	 * Stvara {@code IWebWorker} objekte navedene u konfiguracijskoj datoteci
+	 * {@code workers.properties}.
 	 * 
 	 * @param filePath staza do konfiguracijske datoteke
 	 */
@@ -402,18 +402,18 @@ public class SmartHttpServer {
 
 				String path = splitted[0].strip();
 				String fqcn = splitted[1].strip();
-				
+
 				Class<?> referenceToClass = this.getClass().getClassLoader().loadClass(fqcn);
 				Object newObject = referenceToClass.newInstance();
 				IWebWorker iww = (IWebWorker) newObject;
 
 				if (workersMap.containsKey(path))
 					throw new IllegalArgumentException("Datoteka već sadrži stazu: " + path);
-				
+
 				workersMap.put(path, iww);
 			}
 
-		} catch (FileNotFoundException | ClassNotFoundException | InstantiationException | IllegalAccessException  e) {
+		} catch (FileNotFoundException | ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 		}
 	}
