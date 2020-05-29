@@ -73,7 +73,7 @@ public class SmartScriptParser {
 		Token token = (Token) tokens.get(index);
 
 		while (index < tokens.size() && token.getType() != TokenType.EOF) {
-
+			
 			// token za početak taga
 			if (token.getType() == TokenType.TAG_START) {
 
@@ -230,8 +230,7 @@ public class SmartScriptParser {
 				}
 
 				index++; // token poslije navodnika
-				sb.replace(sb.length() - 1, sb.length(), "");
-				ElementString string = new ElementString(sb.toString());
+				ElementString string = new ElementString(sb.toString().strip());
 				equals.addElement(string);
 
 			} else if (token.getType() == TokenType.FUNCTION_START) { // početak funkcije
