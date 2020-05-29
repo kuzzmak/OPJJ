@@ -384,4 +384,5 @@ public class RequestContext {
 		else
 			throw new RuntimeException("Nije moguće dodavati kolačiće jednom kada je generirano zaglavlje.");
 	}
+	
 }
