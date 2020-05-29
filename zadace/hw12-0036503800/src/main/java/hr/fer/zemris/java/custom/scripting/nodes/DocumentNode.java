@@ -22,7 +22,7 @@ public class DocumentNode extends Node {
 
 			StringBuilder sb = new StringBuilder();
 
-			ElementsGetter eg = this.children.createElementsGetter();
+			ElementsGetter<Node> eg = this.children.createElementsGetter();
 
 			while (eg.hasNextElement()) {
 				sb.append(eg.getNextElement().toString()).append("\n");
