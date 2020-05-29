@@ -2,14 +2,12 @@ package hr.fer.zemris.java.webserver;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -149,6 +147,7 @@ public class SmartHttpServer {
 					return;
 				}
 
+				// staza s parametrima
 				String path = firstLine[1];
 
 				for (int i = 1; i < headers.size(); i++) {
@@ -163,10 +162,7 @@ public class SmartHttpServer {
 					extractParameters(parameters);
 				}
 
-				for (Map.Entry<String, String> entry : params.entrySet()) {
-					System.out.println(entry.getKey() + " " + entry.getValue());
-				}
-
+				// naziv datoteke
 				path = pathSplitted[0];
 
 				try {
@@ -175,6 +171,7 @@ public class SmartHttpServer {
 					e.printStackTrace();
 				}
 
+				// apsolutna staza datoteke
 				File f = new File(documentRoot.toString(), path);
 				if (!f.exists()) {
 					sendError(ostream, 403, "Forbidden");
@@ -184,6 +181,7 @@ public class SmartHttpServer {
 
 					if (f.isFile() && f.canRead()) {
 
+						// vrsta datoteke
 						String extension = f.getName().split("\\.")[1];
 
 						String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
@@ -205,7 +203,7 @@ public class SmartHttpServer {
 							}
 							return;
 						}
-						
+
 						rq.setMimeType(mimeType);
 						rq.setStatusCode(200);
 
@@ -238,14 +236,31 @@ public class SmartHttpServer {
 			}
 		}
 
+		/**
+		 * Funkcija za izvlačenje parametara iz stringa.
+		 * 
+		 * @param parameters string spojenih parametara
+		 */
 		private void extractParameters(String parameters) {
+
 			String[] splitted = parameters.split("&");
+
 			for (int i = 0; i < splitted.length; i++) {
 				String[] s = splitted[i].split("=");
 				params.put(s[0], s[1]);
 			}
 		}
 
+		/**
+		 * Metoda za čitanje upita korisnika. Implementirana je tako da iz ulaznog toka
+		 * čita oktete sve dok ne pročita ili 0D 0A 0D 0A, ili 0A 0A. Metoda u pomoćni
+		 * tok upisuje sve pročitane oktete (osim 0D) i to radi sve dok ne pročita jedan
+		 * od navedena dva slijeda .
+		 * 
+		 * @param is ulazni tok podataka
+		 * @return poblje bajtova zahtjeva
+		 * @throws IOException ukoliko je došlo do greške prilikom čitanja
+		 */
 		private byte[] readRequest(InputStream is) throws IOException {
 
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -303,6 +318,14 @@ public class SmartHttpServer {
 		}
 	}
 
+	/**
+	 * Čita konfiguracijsku datoteku webservera i mime konfiguracijsku datoteku.
+	 * 
+	 * @param configFileName konfiguracijska datoteka webservera
+	 * @throws IOException           ukoliko je došlo do greške prilikom čitanja
+	 * @throws FileNotFoundException ukoliko predana datoteka {@code configFileName}
+	 *                               ne postoji
+	 */
 	private void readConfigFile(String configFileName) throws IOException {
 
 		Properties prop = new Properties();
@@ -326,6 +349,11 @@ public class SmartHttpServer {
 		readMimeConfigurationFile(path);
 	}
 
+	/**
+	 * Služi za čitanje mime kongiguracijske datoteke.
+	 * 
+	 * @param path staza do mime konfiguracijske datoteke
+	 */
 	private void readMimeConfigurationFile(String path) {
 
 		try {
@@ -342,6 +370,14 @@ public class SmartHttpServer {
 		}
 	}
 
+	/**
+	 * Šalje statusni kod i tekst greške ponoru podataka.
+	 * 
+	 * @param cos ponor podataka
+	 * @param statusCode satusni kod
+	 * @param statusText tekst greške
+	 * @throws IOException ukoliko je došlo do greške prilikom zapisa
+	 */
 	private static void sendError(OutputStream cos, int statusCode, String statusText) throws IOException {
 
 		cos.write(("HTTP/1.1 " + statusCode + " " + statusText + "\r\n" + "Server: simple java server\r\n"
