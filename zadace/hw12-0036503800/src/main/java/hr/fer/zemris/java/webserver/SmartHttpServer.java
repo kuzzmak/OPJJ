@@ -40,6 +40,7 @@ public class SmartHttpServer {
 	private ServerThread serverThread;
 	private ExecutorService threadPool;
 	private Path documentRoot;
+	private Map<String, IWebWorker> workersMap = new HashMap<>();
 
 	public SmartHttpServer(String configFileName) {
 
@@ -102,6 +103,7 @@ public class SmartHttpServer {
 		private Map<String, String> persParams = new HashMap<>();
 		private List<RCCookie> outputCookies = new ArrayList<>();
 		private String SID;
+		private RequestContext context = null;
 
 		/**
 		 * Konstruktor.
@@ -167,54 +169,50 @@ public class SmartHttpServer {
 
 				try {
 					internalDispatchRequest(path, true);
+					return;
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-
-				// apsolutna staza datoteke
+				
 				File f = new File(documentRoot.toString(), path);
+				String extension = path.split("\\.")[1];
+				String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
+				
 				if (!f.exists()) {
 					sendError(ostream, 403, "Forbidden");
 					return;
-
-				} else {
-
+					
+				}else {
+					
 					if (f.isFile() && f.canRead()) {
-
-						// vrsta datoteke
-						String extension = f.getName().split("\\.")[1];
-
-						String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
-
-						RequestContext rq = new RequestContext(ostream, params, persParams, outputCookies);
-
+						
+						// smart script datoteka
 						if (extension.equals("smscr")) {
 
-							rq = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
-							rq.setMimeType(mimeType);
-							rq.setStatusCode(200);
+							context = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
+							context.setMimeType(mimeType);
+							context.setStatusCode(200);
 
 							String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
 									StandardCharsets.UTF_8);
 
 							if (documentBody != null) {
-								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), rq)
+								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), context)
 										.execute();
 							}
 							return;
-						}
 
-						rq.setMimeType(mimeType);
-						rq.setStatusCode(200);
+						}else { // neka druga datoteka
+						
+							try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
 
-						try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
-
-							byte[] buffer = new byte[1024];
-							while (true) {
-								int read = is.read(buffer);
-								if (read < 1)
-									break;
-								rq.write(buffer);
+								byte[] buffer = new byte[1024];
+								while (true) {
+									int read = is.read(buffer);
+									if (read < 1)
+										break;
+									context.write(buffer);
+								}
 							}
 						}
 
@@ -233,6 +231,28 @@ public class SmartHttpServer {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			}
+		}
+		
+		@Override
+		public void dispatchRequest(String urlPath) throws Exception {
+			internalDispatchRequest(urlPath, false);
+		}
+
+		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception {
+			
+			String mimeType = mimeTypes.getOrDefault(urlPath, "application/octet-stream");
+			
+			if(context == null) {
+				context =  new RequestContext(ostream, params, persParams, outputCookies);
+				context.setMimeType(mimeType);
+				context.setStatusCode(200);
+			}
+			
+			// predefinirani workeri
+			if(workersMap.containsKey(urlPath)) {
+				workersMap.get(urlPath).processRequest(context);
+				return;
 			}
 		}
 
@@ -307,19 +327,11 @@ public class SmartHttpServer {
 			}
 			return bos.toByteArray();
 		}
-
-		@Override
-		public void dispatchRequest(String urlPath) throws Exception {
-			internalDispatchRequest(urlPath, false);
-		}
-
-		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception {
-
-		}
 	}
 
 	/**
-	 * Čita konfiguracijsku datoteku webservera i mime konfiguracijsku datoteku.
+	 * Čita konfiguracijsku datoteku webservera. Radi inicijalizaciju
+	 * mime tipova i {@code IWebWorker} objekata.
 	 * 
 	 * @param configFileName konfiguracijska datoteka webservera
 	 * @throws IOException           ukoliko je došlo do greške prilikom čitanja
@@ -327,7 +339,7 @@ public class SmartHttpServer {
 	 *                               ne postoji
 	 */
 	private void readConfigFile(String configFileName) throws IOException {
-
+		
 		Properties prop = new Properties();
 
 		InputStream is = Files.newInputStream(Paths.get(configFileName));
@@ -344,9 +356,11 @@ public class SmartHttpServer {
 		sessionTimeout = Integer.parseInt(prop.getProperty("session.timeout"));
 		documentRoot = Paths.get(prop.getProperty("server.documentRoot"));
 
-		String path = prop.getProperty("server.mimeConfig");
-
-		readMimeConfigurationFile(path);
+		String mimeConfigurationPath = prop.getProperty("server.mimeConfig");
+		readMimeConfigurationFile(mimeConfigurationPath);
+		
+		String workersConfigurationPath = prop.getProperty("server.workers");
+		readWorkersConfigurationFile(workersConfigurationPath);
 	}
 
 	/**
@@ -371,9 +385,43 @@ public class SmartHttpServer {
 	}
 
 	/**
+	 * Stvara {@code IWebWorker} objekte navedene u konfiguracijskoj 
+	 * datoteci {@code workers.properties}.
+	 * 
+	 * @param filePath staza do konfiguracijske datoteke
+	 */
+	@SuppressWarnings("deprecation")
+	private void readWorkersConfigurationFile(String filePath) {
+
+		try {
+			Scanner sc = new Scanner(new File(filePath));
+			while (sc.hasNextLine()) {
+
+				String line = sc.nextLine();
+				String[] splitted = line.split("=");
+
+				String path = splitted[0].strip();
+				String fqcn = splitted[1].strip();
+				
+				Class<?> referenceToClass = this.getClass().getClassLoader().loadClass(fqcn);
+				Object newObject = referenceToClass.newInstance();
+				IWebWorker iww = (IWebWorker) newObject;
+
+				if (workersMap.containsKey(path))
+					throw new IllegalArgumentException("Datoteka već sadrži stazu: " + path);
+				
+				workersMap.put(path, iww);
+			}
+
+		} catch (FileNotFoundException | ClassNotFoundException | InstantiationException | IllegalAccessException  e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Šalje statusni kod i tekst greške ponoru podataka.
 	 * 
-	 * @param cos ponor podataka
+	 * @param cos        ponor podataka
 	 * @param statusCode satusni kod
 	 * @param statusText tekst greške
 	 * @throws IOException ukoliko je došlo do greške prilikom zapisa
@@ -409,6 +457,7 @@ public class SmartHttpServer {
 		return headers;
 	}
 
+	@SuppressWarnings("unused")
 	private static void composeResponse(OutputStream cos, String path, String version, List<String> headers)
 			throws IOException {
 
