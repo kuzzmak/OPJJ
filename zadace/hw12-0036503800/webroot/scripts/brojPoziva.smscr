@@ -1,3 +1,10 @@
-{$= "text/plain" @setMimeType $} 
-Ovaj dokument pozvan je sljedeći broj puta: 
-{$= "brojPoziva" "1" @pparamGet @dup 1 + "brojPoziva" @pparamSet $}
+{$= "text/html" @setMimeType $} 
+<html> 
+ <head>  
+  <title>Dokument pozvan</title> 
+ </head> 
+  <body>  
+   <h1>Ovaj dokument pozvan je sljedeći broj puta:</h1>   
+   <h1>{$= "brojPoziva" "1" @pparamGet @dup 1 + "brojPoziva" @pparamSet $}</h1>
+  </body> 
+</html>
