@@ -19,29 +19,62 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import hr.fer.zemris.java.custom.scripting.exec.SmartScriptEngine;
 import hr.fer.zemris.java.custom.scripting.parser.SmartScriptParser;
 import hr.fer.zemris.java.webserver.RequestContext.RCCookie;
 
+/**
+ * Implementacija jednostavnog http servera.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class SmartHttpServer {
 
-	private String address;
-	private String domainName;
-	private int port;
-	private int workerThreads;
-	private int sessionTimeout;
-	private Map<String, String> mimeTypes = new HashMap<>();
-	private ServerThread serverThread;
-	private ExecutorService threadPool;
-	private Path documentRoot;
-	private Map<String, IWebWorker> workersMap = new HashMap<>();
+	/** adresa računala */
+	private String                       address;
+	/** ime domene računala */
+	private String                       domainName;
+	/** broj porta na kojem se sluša */
+	private int                          port;
+	/** broj dretvi koje mogu istovremeno usluživati korisnike */
+	private int                          workerThreads;
+	/** vrijeme života jedne sjednice u sekundama */
+	private int                          sessionTimeout;
+	/** vrste sadržaja koje se mogu prikazivati */
+	private Map<String, String>          mimeTypes = new HashMap<>();
+	/** referenca glavne dertve servera */
+	private ServerThread                 serverThread;
+	/** dretva za gašenje isteklih sjednica */
+	private ExpiredSessionsThread        expThread;
+	/** bazen dretvi radnika */
+	private ExecutorService              threadPool;
+	/** staza glavnog direktorija s podatcima servera */
+	private Path                         documentRoot;
+	/** mapa radnika koji se mogu stvoriti po potrebi */
+	private Map<String, IWebWorker>      workersMap = new HashMap<>();
+	/** mapa aktivnih sjednica */
+	private Map<String, SessionMapEntry> sessions = new HashMap<>();
+	/** generator slučajnih brojeva */
+	private Random                       sessionRandom = new Random();
+	/** zastavica za gašenje glavne dretve servera */
+	private boolean                      alive = true;
 
+	/**
+	 * Konstruktor.
+	 * 
+	 * @param configFileName konfiguracijska datoteka servera
+	 */
 	public SmartHttpServer(String configFileName) {
 
 		try {
@@ -51,16 +84,36 @@ public class SmartHttpServer {
 		}
 
 		serverThread = new ServerThread();
+		expThread = new ExpiredSessionsThread();
 	}
 
+	/**
+	 * Pokretanje dretve servera.
+	 * 
+	 */
 	protected synchronized void start() {
 		serverThread.start();
+		expThread.start();
+		threadPool = Executors.newFixedThreadPool(workerThreads);
 	}
 
+	/**
+	 * Gašenje dretve servera.
+	 * 
+	 */
 	protected synchronized void stop() {
-
+		alive = false;
+		threadPool.shutdown();
+		expThread.kill();
 	}
 
+	/**
+	 * Glavna dretva servera, radi inicijalizaciju porta i prihvaća
+	 * nadolazeć promet.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
 	protected class ServerThread extends Thread {
 
 		@Override
@@ -68,42 +121,134 @@ public class SmartHttpServer {
 
 			try {
 				ServerSocket serverSocket = new ServerSocket();
-				serverSocket.bind(new InetSocketAddress((InetAddress) null, port));
+				serverSocket.bind(new InetSocketAddress(InetAddress.getByName(address), port));
 
-				while (true) {
+				while (alive) {
 					Socket csocket = serverSocket.accept();
-					new ClientWorker(csocket).run();
+					ClientWorker cw = new ClientWorker(csocket);
+					threadPool.submit(cw);
 				}
+
+				serverSocket.close();
+
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-
-			Socket csocket = new Socket();
-			try {
-				csocket.bind(new InetSocketAddress(port));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			new ClientWorker(csocket).run();
 		}
-
 	}
 
+	/**
+	 * Dretva koja svakih 5 minuta prolazi mapon aktivnih sessiona i
+	 * ukoliko naiđe na neki kojem je vrijeme isteklo, uklanja ga.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
+	private class ExpiredSessionsThread extends Thread {
+
+		private boolean alive = true;
+		
+		/**
+		 * Konstruktor.
+		 * 
+		 */
+		public ExpiredSessionsThread() {
+			setDaemon(true);
+		}
+		
+		/**
+		 * Gasi dretvu za uklanjanje isteklih sessiona.
+		 * 
+		 */
+		public void kill() {
+			alive = false;
+		}
+		
+		@Override
+		public void run() {
+			
+			while(alive) {
+				
+				Iterator<Map.Entry<String, SessionMapEntry>> iter = sessions.entrySet().iterator();
+				while(iter.hasNext()) {
+					
+					Map.Entry<String, SessionMapEntry> entry = iter.next();
+					if(entry.getValue().validUntil < System.currentTimeMillis()) {
+						iter.remove();
+					}
+				}
+				
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+	}
+
+	/**
+	 * Predstavlja spremnik podataka jedne sjednice.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
+	private static class SessionMapEntry {
+
+		String sid;
+		String host;
+		long validUntil;
+		Map<String, String> map;
+
+		/**
+		 * Konstruktor.
+		 * 
+		 * @param sid identifikacijski string sjednice
+		 * @param host ime računala
+		 * @param validUntil vrijeme do kada je sjednica važeća
+		 * @param map mapa s podatcima sjednice
+		 */
+		public SessionMapEntry(String sid, String host, long validUntil, Map<String, String> map) {
+			this.sid = sid;
+			this.host = host;
+			this.validUntil = validUntil;
+			this.map = map;
+		}
+	}
+
+	/**
+	 * Uslužna dretva koja obrađuje dolazni zahtjev.
+	 * 
+	 * @author Antonio Kuzminski
+	 *
+	 */
 	private class ClientWorker implements Runnable, IDispatcher {
 
-		private Socket csocket;
-		private InputStream istream;
-		private OutputStream ostream;
-		private String version;
-		private String method;
-		private String host;
+		/** priključna točka */
+		private Socket              csocket;
+		/** ulazni tok podataka */
+		private InputStream         istream;
+		/** ponor podataka */
+		private OutputStream        ostream;
+		/** verzija {@code HTTP} */
+		private String              version;
+		/** vrsta zahtjeva */
+		private String              method;
+		/** ime računala */
+		private String              host;
+		/** proslijeđeni parametri */
 		private Map<String, String> params = new HashMap<>();
+		/** mapa pomoćnih parametara */
 		private Map<String, String> tempParams = new HashMap<>();
+		/** parametri pojedine sjednice */
 		private Map<String, String> persParams = new HashMap<>();
-		private List<RCCookie> outputCookies = new ArrayList<>();
-		private String SID;
-		private RequestContext context = null;
+		/** kolačići */
+		private List<RCCookie>      outputCookies = new ArrayList<>();
+		/** identifikacijski broj sjednice */
+		private String              SID;
+		/** kontroler za obradu zahtjeva */
+		private RequestContext      context = null;
+		/** vrijeme u postojanja sjednice u milisekundama */
+		private long TIMEOUT = sessionTimeout * 1000;
 
 		/**
 		 * Konstruktor.
@@ -119,6 +264,7 @@ public class SmartHttpServer {
 		public void run() {
 
 			try {
+
 				istream = new BufferedInputStream(csocket.getInputStream());
 				ostream = new BufferedOutputStream(csocket.getOutputStream());
 
@@ -158,6 +304,8 @@ public class SmartHttpServer {
 					}
 				}
 
+				checkSession(headers);
+
 				String[] pathSplitted = path.split("\\?");
 				if (pathSplitted.length == 2) {
 					String parameters = pathSplitted[1];
@@ -186,17 +334,99 @@ public class SmartHttpServer {
 			}
 		}
 
+		/**
+		 * Metoda za stvaranje nove sjednice.
+		 * 
+		 */
+		private void makeNewSessionEntry() {
+
+			// generiranje session id-ja
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < 20; i++) {
+				sb.append((char) (sessionRandom.nextInt(26) + 'A'));
+			}
+
+			SID = sb.toString();
+
+			Map<String, String> map = new ConcurrentHashMap<>();
+			persParams = map;
+
+			SessionMapEntry sme = new SessionMapEntry(SID, host, System.currentTimeMillis() + TIMEOUT,
+					map);
+
+			sessions.put(SID, sme);
+
+			outputCookies.add(new RCCookie("sid", SID, null, address, "/"));
+		}
+
+		private synchronized void checkSession(List<String> headers) {
+
+			String tmp = null;
+
+			for (String line : headers) {
+				if (line.startsWith("Cookie")) {
+
+					String[] cookies = line.replaceAll("Cookie: ", "").split(";");
+
+					for (String c : cookies) {
+
+						String[] splitted = c.split("=");
+
+						String name = splitted[0].strip();
+						String value = splitted[1].replaceAll("\"", "").strip();
+
+						if (name.equals("sid")) {
+							tmp = value;
+						}
+					}
+				}
+			}
+
+			if (tmp != null) {
+				// već postoji neki cookie za trenutnog korisnika
+				SessionMapEntry entry = sessions.get(tmp);
+
+				if (entry != null) {
+					// ako se hostovi poklapaju
+					if (host.equals(entry.host)) {
+
+						// ako cookie još nije istekao, ažurira mu se vrijeme života
+						if (entry.validUntil >= System.currentTimeMillis()) {
+							entry.validUntil = System.currentTimeMillis() + TIMEOUT;
+							// dohvat parametara zapamćenog cookie-ja
+							persParams = entry.map;
+							return;
+						}
+					}
+				}
+			}
+			// u slučaju da ne postoji cookie, istekao je ili mu se host ne poklapa,
+			// stvara se novi
+			makeNewSessionEntry();
+		}
+
 		@Override
 		public void dispatchRequest(String urlPath) throws Exception {
 			internalDispatchRequest(urlPath, false);
 		}
 
+		/**
+		 * Obrada zahtjeva prolazi kroz ovu metodu koja može obraditi ili odbiti
+		 * zahtjev, ovisno o tome na koji način je pristupljeno određenoj datoteci. Mogu
+		 * se izvršavati normalni zahtjeva, npr. učitavanje index stranice, mogu se
+		 * obrađivati zahtjevi već predodređenih {@code IWebWorker} radnika i datoteka
+		 * koje imaju ekstenziju {@code .smscr}.
+		 * 
+		 * @param urlPath    staza datoteke koja se izvršava ili učitava
+		 * @param directCall je li zahtjev došao izravno iz korisnikove trake
+		 * @throws Exception ukoliko je došlo do greške prilikom izvođenja zahtjeva
+		 */
 		public void internalDispatchRequest(String urlPath, boolean directCall) throws Exception {
 
 			File f = new File(documentRoot.toString(), urlPath);
-			
+
 			if (context == null) {
-				context = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this);
+				context = new RequestContext(ostream, params, persParams, tempParams, outputCookies, this, SID);
 				context.setStatusCode(200);
 			}
 
@@ -205,7 +435,7 @@ public class SmartHttpServer {
 				workersMap.get(urlPath).processRequest(context);
 				return;
 			}
-			
+
 			if (!f.exists()) {
 				sendError(ostream, 403, "Forbidden");
 				return;
@@ -213,30 +443,27 @@ public class SmartHttpServer {
 			} else {
 
 				if (f.isFile() && f.canRead()) {
-					
+
 					String extension = urlPath.split("\\.")[1];
 					String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
 					context.setMimeType(mimeType);
-					
-					if (urlPath.contains("/private")) {
 
-						if (directCall) {
+					if (urlPath.contains("/private"))
+						if (directCall)
 							sendError(ostream, 404, "Nije dozvoljeno pristupati: " + urlPath);
 
-						} else { // neki dokument s ekstenzijom .smscr
+					if (extension.equals("smscr")) {
 
-							String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
-									StandardCharsets.UTF_8);
+						String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
+								StandardCharsets.UTF_8);
 
-							if (documentBody != null) {
-								new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), context)
-										.execute();
-							}
-							return;
-
+						if (documentBody != null) {
+							new SmartScriptEngine(new SmartScriptParser(documentBody).getDocmentNode(), context)
+									.execute();
 						}
+						return;
 					}
-					
+
 					// ostale vrste datoteka
 					try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
 
@@ -248,8 +475,8 @@ public class SmartHttpServer {
 							context.write(buffer);
 						}
 					}
-					
-				}else { 
+
+				} else {
 					sendError(ostream, 404, "File not readable or doesn't exist");
 					return;
 				}
@@ -435,9 +662,17 @@ public class SmartHttpServer {
 
 	}
 
+	/**
+	 * Vraća zaglavlje html datoteke u obliku liste.
+	 * 
+	 * @param requestHeader zaglavlje datoteke u string obliku
+	 * @return lista redaka zaglavlja
+	 */
 	private List<String> extractHeaders(String requestHeader) {
+		
 		List<String> headers = new ArrayList<String>();
 		String currentLine = null;
+		
 		for (String s : requestHeader.split("\n")) {
 			if (s.isEmpty())
 				break;
@@ -457,33 +692,11 @@ public class SmartHttpServer {
 		return headers;
 	}
 
-	@SuppressWarnings("unused")
-	private static void composeResponse(OutputStream cos, String path, String version, List<String> headers)
-			throws IOException {
-
-		StringBuilder sb = new StringBuilder(
-				"<html>\r\n" + "  <head>\r\n" + "    <title>Ispis zaglavlja</title>\r\n" + "  </head>\r\n"
-						+ "  <body>\r\n" + "    <h1>Informacije o poslanom upitu</h1>\r\n" + "    <p>Zatražen resurs: "
-						+ path + "</p>\r\n" + "    <p>Definirane varijable:</p>\r\n" + "    <table border='1'>\r\n");
-
-		for (String redak : headers) {
-			int pos = redak.indexOf(':');
-			sb.append("      <tr><td>").append(redak.substring(0, pos).trim()).append("</td><td>")
-					.append(redak.substring(pos + 1).trim()).append("</td></tr>\r\n");
-		}
-		sb.append("    </table>\r\n" + "  </body>\r\n" + "</html>\r\n");
-
-		byte[] tijeloOdgovora = sb.toString().getBytes(StandardCharsets.UTF_8);
-
-		byte[] zaglavljeOdgovora = (version + " 200 OK\r\n" + "Server: simple java server\r\n"
-				+ "Content-Type: text/html;charset=UTF-8\r\n" + "Content-Length: " + tijeloOdgovora.length + "\r\n"
-				+ "Connection: close\r\n" + "\r\n").getBytes(StandardCharsets.US_ASCII);
-
-		cos.write(zaglavljeOdgovora);
-		cos.write(tijeloOdgovora);
-		cos.flush();
-	}
-
+	/**
+	 * Metoda iz koje kreće izvođenje glavnog programa.
+	 * 
+	 * @param args argumenti glavnog programa
+	 */
 	public static void main(String[] args) {
 
 		String fileName = "config/server.properties";
