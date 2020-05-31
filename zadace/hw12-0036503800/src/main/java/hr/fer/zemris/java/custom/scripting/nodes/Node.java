@@ -52,6 +52,11 @@ public abstract class Node {
 		return (Node)children.get(index);
 	}
 	
+	/**
+	 * Metoda kojom kreće obilazak djece trenutnog {@code node}-a.
+	 * 
+	 * @param visitor vrši obilazak djece
+	 */
 	public abstract void accept(INodeVisitor visitor);
 
 	@Override
