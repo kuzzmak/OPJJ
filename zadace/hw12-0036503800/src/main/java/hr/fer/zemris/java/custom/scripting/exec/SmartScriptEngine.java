@@ -20,22 +20,31 @@ import hr.fer.zemris.java.custom.scripting.nodes.INodeVisitor;
 import hr.fer.zemris.java.custom.scripting.nodes.TextNode;
 import hr.fer.zemris.java.webserver.RequestContext;
 
+/**
+ * Obrađuje i izvršava skripte pisane u smart script obliku.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class SmartScriptEngine {
 
+	/** datoteka raspodijeljena u manje cjeline, odnosno {@code Node} objekte */
 	private DocumentNode documentNode;
+	/** objekt za ispis i dohvat potrebnih parametara */
 	private RequestContext requestContext;
+	/** mapa s funkcionalnošću stoga za pohranjivanje parametara */
 	private ObjectMultistack multistack = new ObjectMultistack();
 
 	/**
-	 * Privatni razred implementacije node posjetitelja baziran na 
-	 * oblikovnom obrazcu {@code Visitor} i {@code Composite}.
+	 * Privatni razred implementacije node posjetitelja baziran na oblikovnom
+	 * obrazcu {@code Visitor} i {@code Composite}.
 	 * 
 	 */
 	private INodeVisitor visitor = new INodeVisitor() {
 
 		@Override
 		public void visitTextNode(TextNode node) {
-			
+
 			try {
 				requestContext.write(node.toString());
 			} catch (IOException e) {
@@ -75,7 +84,7 @@ public class SmartScriptEngine {
 			for (int i = 0; i < elements.length; i++) {
 
 				Element element = elements[i];
-				
+
 				if (element instanceof ElementFunction) {
 
 					String functionName = element.asText();
@@ -85,53 +94,53 @@ public class SmartScriptEngine {
 
 					} else if (functionName.equals("@decfmt")) {
 						executeSetDecimalFormat(tempStack);
-					
-					} else if(functionName.equals("@sin")) {
-						
+
+					} else if (functionName.equals("@sin")) {
+
 						Object arg = tempStack.pop();
 						double result;
-						
-						if(arg instanceof Integer) {
+
+						if (arg instanceof Integer) {
 							result = Math.sin((int) arg);
-						}else {
+						} else {
 							result = Math.sin((double) arg);
 						}
 						tempStack.push(result);
-						
-					}else if(functionName.equals("@dup")) {
+
+					} else if (functionName.equals("@dup")) {
 						executeDup(tempStack);
-					
-					}else if(functionName.equals("@swap")) {
+
+					} else if (functionName.equals("@swap")) {
 						executeSwap(tempStack);
-					
-					}else if(functionName.equals("@paramGet")) {
+
+					} else if (functionName.equals("@paramGet")) {
 						exectuteParamGet(tempStack);
-					
-					}else if(functionName.equals("@pparamGet")) {
+
+					} else if (functionName.equals("@pparamGet")) {
 						executePParamGet(tempStack);
-						
-					}else if(functionName.equals("@pparamSet")) {
+
+					} else if (functionName.equals("@pparamSet")) {
 						executePParamSet(tempStack);
-						
-					}else if(functionName.equals("@pparamDel")) {
+
+					} else if (functionName.equals("@pparamDel")) {
 						executePParamDel(tempStack);
-						
-					}else if(functionName.equals("@tparamGet")) {
+
+					} else if (functionName.equals("@tparamGet")) {
 						executeTParamGet(tempStack);
-						
-					}else if(functionName.equals("@tparamSet")) {
+
+					} else if (functionName.equals("@tparamSet")) {
 						executeTParamSet(tempStack);
-						
-					}else if(functionName.equals("@tparamDel")) {
+
+					} else if (functionName.equals("@tparamDel")) {
 						executeTParamDel(tempStack);
-						
+
 					}
 
-				} else if (element instanceof ElementString || 
-						element instanceof ElementConstantDouble || 
-						element instanceof ElementConstantInteger) {
-					
-					tempStack.push(element.asText().contains("\"") ? element.asText().replaceAll("\"", "") : element.asText());
+				} else if (element instanceof ElementString || element instanceof ElementConstantDouble
+						|| element instanceof ElementConstantInteger) {
+
+					tempStack.push(
+							element.asText().contains("\"") ? element.asText().replaceAll("\"", "") : element.asText());
 
 				} else if (element instanceof ElementOperator) {
 
@@ -144,9 +153,9 @@ public class SmartScriptEngine {
 					tempStack.push(multistack.peek(key).getValue());
 				}
 			}
-				
+
 			List<String> stackContent = tempStack.stream().map(o -> String.valueOf(o)).collect(Collectors.toList());
-			
+
 			stackContent.forEach(t -> {
 				try {
 					requestContext.write(t);
@@ -270,7 +279,7 @@ public class SmartScriptEngine {
 		Object value = tempStack.pop();
 		requestContext.setTemporaryParameter(String.valueOf(name), String.valueOf(value));
 	}
-	
+
 	private void executeTParamDel(Stack<Object> tempStack) {
 		Object name = tempStack.pop();
 		requestContext.setTemporaryParameter(String.valueOf(name), null);
