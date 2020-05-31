@@ -5,6 +5,12 @@ import java.util.Set;
 import hr.fer.zemris.java.webserver.IWebWorker;
 import hr.fer.zemris.java.webserver.RequestContext;
 
+/**
+ * Implementacija radnika za ispis predanih parametara.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class EchoParams implements IWebWorker {
 
 	@Override
@@ -28,7 +34,6 @@ public class EchoParams implements IWebWorker {
 		}
 		
 		sb.append("    </table>\r\n" + "  </body>\r\n" + "</html>\r\n");
-		context.setMimeType("text/html");
 		context.write(sb.toString());
 	}
 
