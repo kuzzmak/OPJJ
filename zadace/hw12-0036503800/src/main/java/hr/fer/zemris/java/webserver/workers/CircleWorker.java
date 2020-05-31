@@ -4,13 +4,18 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 
 import javax.imageio.ImageIO;
 
 import hr.fer.zemris.java.webserver.IWebWorker;
 import hr.fer.zemris.java.webserver.RequestContext;
 
+/**
+ * Implementacija radnika za crtanje kruga.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class CircleWorker implements IWebWorker {
 
 	@Override
