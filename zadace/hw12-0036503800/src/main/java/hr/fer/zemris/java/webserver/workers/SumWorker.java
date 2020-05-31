@@ -3,6 +3,12 @@ package hr.fer.zemris.java.webserver.workers;
 import hr.fer.zemris.java.webserver.IWebWorker;
 import hr.fer.zemris.java.webserver.RequestContext;
 
+/**
+ * Implementacija radnika za zbrajanje dvaju brojeva.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class SumWorker implements IWebWorker {
 
 	@Override
@@ -23,7 +29,7 @@ public class SumWorker implements IWebWorker {
 		context.setTemporaryParameter("varA", String.valueOf(a));
 		context.setTemporaryParameter("varB", String.valueOf(b));
 		
-		String im1 = "/images/image1.jpgq";
+		String im1 = "/images/image1.jpg";
 		String im2 = "/images/image2.jpg";
 		
 		String imageName = sum % 2 == 0 ? im1 : im2;
