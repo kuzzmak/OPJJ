@@ -7,6 +7,12 @@ import java.util.Date;
 import hr.fer.zemris.java.webserver.IWebWorker;
 import hr.fer.zemris.java.webserver.RequestContext;
 
+/**
+ * Implementacija radnika za ispis predanog imena i trenutnog vremena.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 public class HelloWorker implements IWebWorker {
 
 	@Override
@@ -14,8 +20,6 @@ public class HelloWorker implements IWebWorker {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
 		Date now = new Date();
-
-		context.setMimeType("text/html");
 
 		String name = context.getParameter("name");
 
