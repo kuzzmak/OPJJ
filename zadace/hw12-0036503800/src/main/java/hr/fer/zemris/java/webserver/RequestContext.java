@@ -27,24 +27,49 @@ public class RequestContext {
 		private final String domain;
 		private final String path;
 		private Integer maxAge;
+		private boolean httpOnly;
 
 		/**
 		 * Konstruktor.
 		 * 
-		 * @param name
-		 * @param value
-		 * @param maxAge
-		 * @param domain
-		 * @param path
+		 * @param name ime kolačića
+		 * @param value vrijednost pridružena imenu kolačića
+		 * @param maxAge dozvoljena starost
+		 * @param domain domena na kojoj se poziva
+		 * @param path staza na kojoj se poziva
+		 * @param httpOnly je li kolačić HttpOnly 
 		 */
-		public RCCookie(String name, String value, Integer maxAge, String domain, String path) {
+		public RCCookie(String name, String value, Integer maxAge, String domain, String path, boolean httpOnly) {
 			this.name = name;
 			this.value = value;
 			this.domain = domain;
 			this.path = path;
 			this.maxAge = maxAge;
+			this.httpOnly = httpOnly;
 		}
 
+		@Override
+		public String toString() {
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("Set-Cookie: ");
+			sb.append(name).append("=").append("\"").append(value).append("\"");
+			if (domain != null) {
+				sb.append("; Domain=").append(domain);
+			}
+			if (path != null) {
+				sb.append("; Path=").append(path);
+			}
+			if (maxAge != null) {
+				sb.append("; Max-Age=").append(maxAge);
+			}
+			if(httpOnly) {
+				sb.append("; HttpOnly");
+			}
+			
+			return sb.toString();
+		}
 	}
 
 	private IDispatcher dispatcher;
@@ -267,18 +292,7 @@ public class RequestContext {
 			// četvrti red
 			if (outputCookies.size() != 0) {
 				for (RCCookie c : outputCookies) {
-					
-					header.append("Set-Cookie: ");
-					header.append(c.name).append("=").append("\"").append(c.value).append("\"");
-					if (c.domain != null) {
-						header.append("; Domain=").append(c.domain);
-					}
-					if (c.path != null) {
-						header.append("; Path=").append(c.path);
-					}
-					if (c.maxAge != null) {
-						header.append("; Max-Age=").append(c.maxAge);
-					}
+					header.append(c);
 					header.append("\r\n");
 				}
 			}
