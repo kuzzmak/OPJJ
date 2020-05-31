@@ -96,7 +96,7 @@ public class ValueWrapper {
 	/**
 	 * Metoda za postavljanje trenutne vrijednosti.
 	 * 
-	 * @param value
+	 * @param value vrijednost koja se postvlja
 	 */
 	public void setValue(Object value) {
 		this.value = value;
@@ -108,7 +108,7 @@ public class ValueWrapper {
 	 * {@code RuntimeException}.
 	 * 
 	 * @param arg argument za koji se provjerava ispravnost tipa
-	 * @throws RuntimeException ukoliko je predna pogršan tip argumenta
+	 * @throws RuntimeException ukoliko je predan pogrešan tip argumenta
 	 */
 	private void checkArgument(Object arg) {
 
