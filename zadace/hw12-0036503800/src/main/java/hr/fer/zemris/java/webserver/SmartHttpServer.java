@@ -359,6 +359,12 @@ public class SmartHttpServer {
 			outputCookies.add(new RCCookie("sid", SID, null, address, "/", true));
 		}
 
+		/**
+		 * Provjera zaglavlja zahtjeva sadrži li poznate kolačiće i
+		 * postoji li još uvijek aktivna sjednica.
+		 * 
+		 * @param headers
+		 */
 		private synchronized void checkSession(List<String> headers) {
 
 			String tmp = null;
@@ -586,9 +592,11 @@ public class SmartHttpServer {
 		sessionTimeout = Integer.parseInt(prop.getProperty("session.timeout"));
 		documentRoot = Paths.get(prop.getProperty("server.documentRoot"));
 
+		// učitavanje mime tipova
 		String mimeConfigurationPath = prop.getProperty("server.mimeConfig");
 		readMimeConfigurationFile(mimeConfigurationPath);
 
+		// učitavanje rapspoloživih radnika
 		String workersConfigurationPath = prop.getProperty("server.workers");
 		readWorkersConfigurationFile(workersConfigurationPath);
 	}
