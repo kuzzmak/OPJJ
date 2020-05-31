@@ -55,6 +55,7 @@ public class RequestContext {
 	public String statusText;
 	public String mimeType;
 	public Long contentLength;
+	private String sessionID;
 
 	private final Map<String, String> parameters;
 	private Map<String, String> temporaryParameters;
@@ -72,7 +73,7 @@ public class RequestContext {
 	 * @param ouputCookies         kolačići
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
-			Map<String, String> persistentParameters, List<RCCookie> outputCookies) {
+			Map<String, String> persistentParameters, List<RCCookie> outputCookies, String sessionID) {
 
 		Objects.requireNonNull(outputStream);
 
@@ -81,7 +82,8 @@ public class RequestContext {
 		this.persistentParameters = persistentParameters == null ? new HashMap<>() : persistentParameters;
 		this.temporaryParameters = new HashMap<>();
 		this.outputCookies = outputCookies == null ? new ArrayList<>() : outputCookies;
-
+		this.sessionID = sessionID;
+		
 		encoding = "UTF-8";
 		statusCode = 200;
 		statusText = "OK";
@@ -101,9 +103,9 @@ public class RequestContext {
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
 			Map<String, String> persistentParameters, Map<String, String> temporaryParameters,
-			List<RCCookie> outputCookies, IDispatcher dispatcher) {
+			List<RCCookie> outputCookies, IDispatcher dispatcher, String sessionID) {
 
-		this(outputStream, parameters, persistentParameters, outputCookies);
+		this(outputStream, parameters, persistentParameters, outputCookies, sessionID);
 
 		this.temporaryParameters = temporaryParameters;
 		this.dispatcher = dispatcher;
@@ -194,7 +196,7 @@ public class RequestContext {
 	 * @return identifikator web sjednice
 	 */
 	public String getSessionID() {
-		return "";
+		return sessionID;
 	}
 
 	/**
@@ -265,6 +267,7 @@ public class RequestContext {
 			// četvrti red
 			if (outputCookies.size() != 0) {
 				for (RCCookie c : outputCookies) {
+					
 					header.append("Set-Cookie: ");
 					header.append(c.name).append("=").append("\"").append(c.value).append("\"");
 					if (c.domain != null) {
