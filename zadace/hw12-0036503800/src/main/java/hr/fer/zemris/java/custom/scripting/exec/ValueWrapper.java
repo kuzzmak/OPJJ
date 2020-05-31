@@ -74,17 +74,13 @@ public class ValueWrapper {
 		
 		checkArgument(withValue);
 		
-		Object o1 = value;
-		Object o2 = getArgument(withValue);
+		Number n1 = getArgument(value);
+		Number n2 = getArgument(withValue);
 		
-		if (o1 instanceof Integer && o2 instanceof Integer) {
-			return Integer.compare((int) o1, (int) o2);
-		} else if (o1 instanceof Double && o2 instanceof Integer) {
-			return Double.compare((double) o1, (int) o2);
-		} else if (o1 instanceof Integer && o2 instanceof Double) {
-			return Double.compare((int) o1, (double) o2);
+		if (n1 instanceof Integer && n2 instanceof Integer) {
+			return Integer.compare(n1.intValue(), n2.intValue());
 		} else {
-			return Double.compare((double) o1, (double) o2);
+			return Double.compare(n1.doubleValue(), n2.doubleValue());
 		}
 	}
 
@@ -127,27 +123,27 @@ public class ValueWrapper {
 	 * Ukoliko je predani string s točkom ili slovom E, pretvara se u tip
 	 * {@code Double}, inače se pokušava parsirati u {@code Integer}.
 	 * 
-	 * @param arg argument koji se pokušava parsirati
+	 * @param o argument koji se pokušava parsirati
 	 * @return parsiran tip
 	 * @throws RuntimeException ukoliko predan argument nije parsabilan
 	 */
-	private Object getArgument(Object arg) {
+	private Number getArgument(Object o) {
 
 		try {
-			if (arg instanceof String) {
+			if (o instanceof String) {
 
-				String arg0 = (String) arg;
-				if (arg0.contains(".") || arg0.contains("E")) {
-					return Double.parseDouble(arg0);
+				String s = (String) o;
+				if (s.contains(".") || s.contains("E")) {
+					return Double.parseDouble(s);
 				}
 
-				return Integer.parseInt(arg0);
+				return Integer.parseInt(s);
 
-			} else if (arg instanceof Integer) {
-				return (Integer) arg;
+			} else if (o instanceof Integer) {
+				return (Integer) o;
 
-			} else if (arg instanceof Double) {
-				return (Double) arg;
+			} else if (o instanceof Double) {
+				return (Double) o;
 
 			} else
 				return Integer.valueOf(0);
@@ -161,23 +157,19 @@ public class ValueWrapper {
 	 * Metoda za izvršavanje operacije.
 	 * 
 	 * @param arg drugi argument operacije
-	 * @param op  operator koji se koristi u operaciji
+	 * @param op operator koji se koristi u operaciji
 	 */
 	private void execute(Object arg, Operator op) {
 
 		checkArgument(arg);
 
-		Object o1 = value == null ? Integer.valueOf(0) : getArgument(value);
-		Object o2 = getArgument(arg);
+		Number n1 = getArgument(value);
+		Number n2 = getArgument(arg);
 
-		if (o1 instanceof Integer && o2 instanceof Integer) {
-			value = op.apply((int) o1, (int) o2);
-		} else if (o1 instanceof Double && o2 instanceof Integer) {
-			value = op.apply((double) o1, (int) o2);
-		} else if (o1 instanceof Integer && o2 instanceof Double) {
-			value = op.apply((int) o1, (double) o2);
+		if (n1 instanceof Integer && n2 instanceof Integer) {
+			value = op.apply(n1.intValue(), n2.intValue());
 		} else {
-			value = op.apply((double) o1, (double) o2);
+			value = op.apply(n1.doubleValue(), n2.doubleValue());
 		}
 	}
 
