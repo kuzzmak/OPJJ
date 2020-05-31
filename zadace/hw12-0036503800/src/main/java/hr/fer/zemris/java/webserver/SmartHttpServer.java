@@ -356,7 +356,7 @@ public class SmartHttpServer {
 
 			sessions.put(SID, sme);
 
-			outputCookies.add(new RCCookie("sid", SID, null, address, "/"));
+			outputCookies.add(new RCCookie("sid", SID, null, address, "/", true));
 		}
 
 		private synchronized void checkSession(List<String> headers) {
@@ -445,13 +445,13 @@ public class SmartHttpServer {
 				if (f.isFile() && f.canRead()) {
 
 					String extension = urlPath.split("\\.")[1];
-					String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
-					context.setMimeType(mimeType);
-
+					
+					// nije dozvoljeno izravno pristupati private direktoriju
 					if (urlPath.contains("/private"))
 						if (directCall)
 							sendError(ostream, 404, "Nije dozvoljeno pristupati: " + urlPath);
 
+					// smart script datoteke
 					if (extension.equals("smscr")) {
 
 						String documentBody = new String(Files.readAllBytes(Paths.get(f.toString())),
@@ -464,6 +464,9 @@ public class SmartHttpServer {
 						return;
 					}
 
+					String mimeType = mimeTypes.getOrDefault(extension, "application/octet-stream");
+					context.setMimeType(mimeType);
+					
 					// ostale vrste datoteka
 					try (InputStream is = new BufferedInputStream(new FileInputStream(f.toString()))) {
 
