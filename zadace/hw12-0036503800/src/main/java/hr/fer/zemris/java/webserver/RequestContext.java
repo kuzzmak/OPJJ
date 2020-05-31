@@ -94,7 +94,7 @@ public class RequestContext {
 	 * @param outputStream         ponor podataka koji se koristi za zapis, ne smije
 	 *                             biti {@code null}
 	 * @param parameters           ulazni parametri
-	 * @param persistentParameters
+	 * @param persistentParameters parametri dohvatljivi tijekom aktivne sjednice
 	 * @param ouputCookies         kolačići
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
@@ -121,10 +121,10 @@ public class RequestContext {
 	 * @param outputStream         ponor podataka koji se koristi za zapis, ne smije
 	 *                             biti {@code null}
 	 * @param parameters           ulazni parametri
-	 * @param persistentParameters
-	 * @param temporaryParameters
-	 * @param outputCookies
-	 * @param dispatcher
+	 * @param persistentParameters parametri dohvatljivi tijekom sjednice
+	 * @param temporaryParameters  pomoćni parametri
+	 * @param outputCookies        kolačići
+	 * @param dispatcher           referenca objekta za obradu zahtjeva
 	 */
 	public RequestContext(OutputStream outputStream, Map<String, String> parameters,
 			Map<String, String> persistentParameters, Map<String, String> temporaryParameters,
@@ -297,10 +297,10 @@ public class RequestContext {
 				}
 			}
 
+			// prazni redak na kraju zaglavlja
 			header.append("\r\n");
 
 			outputStream.write(headerEncoding.encode(header.toString()).array());
-
 			headerGenerated = true;
 		}
 
