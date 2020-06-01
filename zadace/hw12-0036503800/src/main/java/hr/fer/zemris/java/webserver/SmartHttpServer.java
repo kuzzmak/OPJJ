@@ -709,8 +709,13 @@ public class SmartHttpServer {
 	 * @param args argumenti glavnog programa
 	 */
 	public static void main(String[] args) {
-
-		String fileName = "config/server.properties";
-		new SmartHttpServer(fileName).start();
+		
+		if(args.length != 1) {
+			System.out.println("Krivi broj argumenata. Potreban samo jedan: staza konfiguracijske datoteke servera.");
+			System.exit(-1);
+		}
+		
+		String confPath = args[0];
+		new SmartHttpServer(confPath).start();
 	}
 }
