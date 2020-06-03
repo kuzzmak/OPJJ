@@ -162,6 +162,7 @@ public class SmartHttpServer {
 		 */
 		public void kill() {
 			alive = false;
+			interrupt();
 		}
 		
 		@Override
@@ -716,6 +717,23 @@ public class SmartHttpServer {
 		}
 		
 		String confPath = args[0];
-		new SmartHttpServer(confPath).start();
+		
+		SmartHttpServer server = new SmartHttpServer(confPath);
+		server.start();
+		
+		System.out.println("Za gašenje servera potrebno upisati: \"ugasi\".");
+		
+		Scanner sc = new Scanner(System.in);
+		while(sc.hasNextLine()){
+			String line = sc.nextLine();
+			if(line.equals("ugasi")) {
+				server.stop();
+				break;
+			}
+		}
+		
+		sc.close();
+		System.out.println("Server ugašen.");
+		System.exit(0);
 	}
 }
