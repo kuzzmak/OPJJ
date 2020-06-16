@@ -1,0 +1,93 @@
+Korak 1.
+-----------------------------------------------
+
+Skinuti Apache Derby bazu:
+
+https://db.apache.org/derby/derby_downloads.html
+
+ --> posljednju verziju za Javu 8 i više (10.15.1.3), i to "bin distribution"
+     (npr. https://www-us.apache.org/dist//db/derby/db-derby-10.15.1.3/db-derby-10.15.1.3-bin.tar.gz
+      ili .zip za Windowse)
+
+Raspakirati; dobit ćete direktorij db-derby-10.15.1.3-bin; u ostatku ovog teksta zvat ćemo ga $DERBY_INSTALL.
+Npr. DERBY_INSTALL=/home/marcupic/bin/db-derby-10.15.1.3-bin
+
+Korak 2.
+-----------------------------------------------
+
+Napravite negdje na disku direktorij u kojem će upravitelj baze podataka stvarati sve baze podataka. 
+Taj direktorij označit ćemo u ostatku ovog dokumenta s $DERBY_DATABASES.
+Npr. DERBY_DATABASES=/home/marcupic/tmp/derby-baze
+
+Korak 3.
+-----------------------------------------------
+
+Prekopirajte konfiguracija/derby.properties (dobili ste ga u ovoj ZIP arhivi) u $DERBY_DATABASES; 
+time će se pojaviti datoteka DERBY_DATABASES/derby.properties.
+
+Korak 4.
+-----------------------------------------------
+
+Windowsi:
+  Otvorite datoteku setenv.bat i u njoj napravite potrebna podesavanja staza.
+Linux:
+  Otvorite datoteku setenv.sh i u njoj napravite potrebna podesavanja staza.
+
+Nakon toga cete moci pokretati skripte pripremljene u nastavku (ali još nemojte - napravite najprije korak 5).
+
+server-start.bat/server-start.sh ce pokrenuti posluzitelj i OSTATI rezidentan jer se posluzitelj izvodi.
+                 Posluzitelj nikada nemojte nasilno gasiti (ili CTRL+C); koristite za to sljedecu skriptu.
+
+server-stop.bat/server-stop.sh ce ugasiti posluzitelj (uz pretpostavku da ste se prema uputi jednom spojili kao administrator).
+                Nakon ove naredbe prethodno pokrenuti posluzitelj ce se ugasiti.
+
+server-sysinfo.bat/server-sysinfo.sh ispisuje informacije o pokrenutom posluzitelju.
+
+ij-console.bat/ij-console.sh pokrece konzolu u kojoj se mozete spojiti na pokrenuti posluzitelj i zadavati naredbe.
+
+Korak 5.
+-----------------------------------------------
+
+Morate biti u konzoli pozicionirani u ovaj direktorij koji sadrži sve pripremljene skripte.
+
+a) pokrenite server-start.bat/server-start.sh
+   Win: server-start.bat
+   Lin: ./server-start.sh
+   Pokrenut će se upravitelj bazama podataka i ispisat će da sluša na portu 1527; 
+ovaj terminal više ne možete koristiti dok ne ugasite upravitelja (što nikada ne raditi nasilno već isključivo 
+preko odgovarajuće naredbe iz novog terminala!)
+   Možete provjeriti da je pokretanjem upravitelja nastala log-datoteka $DERBY_DATABASES/derby.log.
+
+b) otvorite novi terminal, pozicionirajte se u isti ovaj direktorij sa skriptama, i pokrenite 
+ij-console.bat/ij-console.sh:
+   Win: ij-console.bat
+   Lin: ./ij-console.sh
+   Time ćete pokrenuti program koji će se spojiti na upravitelja bazom podataka i omogućiti da mu šaljemo SQL naredbe i upite.
+
+c) U tom programu zadajte redom naredbe (pazite točno kako su napisane, gdje su navodnici, gdje je točka-zarez):
+   run 'inicijaliziraj-okruzenje.sql';
+   run 'napravi-bazu.sql';
+   Prva SQL-skripta sadrži naredbu connect koja može potrajati jedno vrijeme; strpite se. 
+   Njezinim izvođenjem dobit ćete bazu podataka credentialsDB smještenu u $DERBY_DATABASES/credentialsDB.
+   Ova naredba će stvoriti administratora upravitelja bazama; njegovo korisničko ime je postavljeno na 'sa', 
+   a zaporka na 'sapwd22'.
+   Za svaku aplikaciju stvarat ćemo po jednu bazu podataka i novog korisnika koji smije raditi s 
+   tom bazom (a za ostale nema ovlasti).
+   Druga skripta radi upravo to. Stvara novu bazu podataka baza1DB, novog korisnika 'perica' (zaporka 'pero'), 
+   i dodjeljuje tom korisniku ovlasti za rad s novostvorenom bazom.
+   Nakon pokretanja ove druge SQL-skripte, stvorit će se baza baza1DB smještena u $DERBY_DATABASES/baza1DB.
+
+d) Izadite iz ij-konzole s "exit;"
+
+Korak 6.
+-----------------------------------------------
+
+Pokrenutog upravitelja možete ugasiti pokretanjem skripte:
+   Win: server-stop.bat
+   Lin: ./server-stop.sh
+i to je način na koji to obavezno morate raditi. Ako nasilno gasite upravitelja, može doći do "kvara" podataka, 
+nakon čega postoji mogućnost da se više nećete moći spojiti na stvorene baze. U tom slučaju, obrišite sadržaj 
+direktorija $DERBY_DATABASES (osim datoteke derby.properties), i ponovno odradite korak 5.
+Nakon gašenja upravitelja, u toj ćete konzoli ponovno moći zadavati nove naredbe (pa tako i naredbu kojom opet 
+možete pokrenuti upravitelja).
+
