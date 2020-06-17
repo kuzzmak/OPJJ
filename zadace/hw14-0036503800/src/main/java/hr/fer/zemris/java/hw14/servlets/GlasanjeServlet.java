@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import hr.fer.zemris.java.hw14.DAOProvider;
 
 /**
- * Servlet za odabir najboljeg benda, odnosno glasanje.
+ * Servlet za glasanje.
  * 
  * @author Antonio Kuzminski
  *
@@ -25,11 +25,12 @@ public class GlasanjeServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
 		// dohvat identifikacijskog broja unosa pojedine ankete
-		int pollID = Integer.valueOf(String.valueOf(req.getParameter("pollID")));
+		Long pollID = Long.valueOf(String.valueOf(req.getParameter("pollID")));
 		// dohvat ankete
 		req.setAttribute("poll", DAOProvider.getDao().getPollList().stream().filter(p -> p.getId() == pollID).findFirst().get());
-		req.setAttribute("entries", DAOProvider.getDao().getPollEntryList());
-
+		req.setAttribute("entries", DAOProvider.getDao().getPollEntryList(pollID));
+		req.getSession().setAttribute("pollID", pollID);
+		
 		req.getRequestDispatcher("/WEB-INF/pages/glasanjeIndex.jsp").forward(req, resp); 
 	}
 
