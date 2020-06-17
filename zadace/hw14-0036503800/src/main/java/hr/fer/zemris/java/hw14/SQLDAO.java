@@ -21,23 +21,29 @@ import java.util.List;
 public class SQLDAO implements DAO {
 
 	@Override
-	public List<PollEntry> getPollEntryList() throws DAOException {
+	public List<PollEntry> getPollEntryList(Long pollID) throws DAOException {
 		
 		List<PollEntry> entries = new ArrayList<>();
 		Connection con = SQLConnectionProvider.getConnection();
 		PreparedStatement pst = null;
 		
 		try {
-			pst = con.prepareStatement("SELECT id, optionTitle, optionLink, pollId FROM PollOptions ORDER BY id");
+			pst = con.prepareStatement("SELECT id, optionTitle, optionLink, pollId, votesCount FROM PollOptions WHERE pollID=? ORDER BY id");
+			pst.setLong(1, pollID);
 			try {
 				ResultSet rs = pst.executeQuery();
 				try {
 					while(rs!=null && rs.next()) {
+						
 						PollEntry entry = new PollEntry();
+						
 						entry.setId(rs.getLong(1));
 						entry.setTitle(rs.getString(2));
 						entry.setLink(rs.getString(3));
 						entry.setPollId(rs.getLong(4));
+						entry.setVotesCount(rs.getLong(5));
+						
+						entries.add(entry);
 					}
 				} finally {
 					try { rs.close(); } catch(Exception ignorable) {}
@@ -53,23 +59,26 @@ public class SQLDAO implements DAO {
 	}
 
 	@Override
-	public Unos dohvatiUnos(long id) throws DAOException {
-		Unos unos = null;
+	public List<Poll> getPollList() throws DAOException {
+		
+		List<Poll> polls = new ArrayList<>();
 		Connection con = SQLConnectionProvider.getConnection();
 		PreparedStatement pst = null;
+		
 		try {
-			pst = con.prepareStatement("select id, title, message, createdOn, userEMail from Poruke where id=?");
-			pst.setLong(1, Long.valueOf(id));
+			pst = con.prepareStatement("SELECT id, title, message FROM Polls ORDER BY id");
 			try {
 				ResultSet rs = pst.executeQuery();
 				try {
-					if(rs!=null && rs.next()) {
-						unos = new Unos();
-						unos.setId(rs.getLong(1));
-						unos.setTitle(rs.getString(2));
-						unos.setMessage(rs.getString(3));
-						unos.setCreatedOn(rs.getTimestamp(4));
-						unos.setUserEMail(rs.getString(5));
+					while(rs != null && rs.next()) {
+						
+						Poll poll = new Poll();
+						
+						poll.setId(rs.getLong(1));
+						poll.setTitle(rs.getString(2));
+						poll.setMessage(rs.getString(3));
+						
+						polls.add(poll);
 					}
 				} finally {
 					try { rs.close(); } catch(Exception ignorable) {}
@@ -78,9 +87,48 @@ public class SQLDAO implements DAO {
 				try { pst.close(); } catch(Exception ignorable) {}
 			}
 		} catch(Exception ex) {
-			throw new DAOException("Pogreška prilikom dohvata korisnika.", ex);
+			throw new DAOException("Pogreška prilikom dohvata liste mogućih anketi za glasanje.", ex);
 		}
-		return unos;
+		
+		return polls;
+	}
+
+	@Override
+	public void voteFor(PollEntry entry) throws DAOException {
+		
+		try {
+			
+			Connection con = SQLConnectionProvider.getConnection();
+			PreparedStatement pst = con.prepareStatement("SELECT votesCount FROM PollOptions WHERE id=?");
+			pst.setLong(1, entry.getId());
+			
+			try{
+				ResultSet rs = pst.executeQuery();
+				try {
+					if(rs != null && rs.next()) {
+						
+						pst = con.prepareStatement("UPDATE PollOptions SET votesCount=? WHERE id=?");
+						pst.setLong(1, rs.getLong(1) + 1);
+						pst.setLong(2, entry.getId());
+						pst.execute();
+						
+					}
+				} finally {
+					try { rs.close(); } catch(Exception ignorable) {}
+				}
+				
+			} finally {
+				try { pst.close(); } catch(Exception ignorable) {}
+			}
+			
+		}catch(Exception e) {
+			throw new DAOException("Pogreška prilikom glasanja.", e);
+		}
+	}
+
+	@Override
+	public PollEntry getPollEntryById(Long pollID, Long entryID) throws DAOException {
+		return getPollEntryList(pollID).stream().filter(p -> p.getId() == entryID).findFirst().get();
 	}
 
 }
