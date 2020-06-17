@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -26,22 +28,19 @@ public class Inicijalizacija implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		
+
 		File configFile = new File(sce.getServletContext().getRealPath("WEB-INF/dbsettings.properties"));
 		Properties props;
-		
+
 		try {
-			
+
 			FileReader reader = new FileReader(configFile);
-		    props = new Properties();
-		    props.load(reader);
-		    
-			String connectionURL = "jdbc:derby://" + 
-					props.getProperty("host") + ":" + 
-					props.getProperty("port") + "/" + 
-					props.getProperty("name") + ";user=" + 
-					props.getProperty("user") + ";password=" + 
-					props.getProperty("password");
+			props = new Properties();
+			props.load(reader);
+
+			String connectionURL = "jdbc:derby://" + props.getProperty("host") + ":" + props.getProperty("port") + "/"
+					+ props.getProperty("name") + ";user=" + props.getProperty("user") + ";password="
+					+ props.getProperty("password");
 
 			ComboPooledDataSource cpds = new ComboPooledDataSource();
 			try {
@@ -50,103 +49,141 @@ public class Inicijalizacija implements ServletContextListener {
 				throw new RuntimeException("Pogreška prilikom inicijalizacije poola.", e1);
 			}
 			cpds.setJdbcUrl(connectionURL);
-			
+
 			sce.getServletContext().setAttribute("hr.fer.zemris.dbpool", cpds);
 
 			try {
-				
+
 				Connection conn = cpds.getConnection();
-				
+
 				DatabaseMetaData dmd = conn.getMetaData();
 				ResultSet rs = dmd.getTables(null, conn.getSchema(), "Polls".toUpperCase(), null);
-			
-				ResultSet pollIdKey = null;
-				
+
+				List<Long> pollKeys = new ArrayList<>();
+
 				// provjera postoji li tablica "Polls", ako ne, stvara se
-				if(!rs.next()) {
-					
-					String query = 
-							"CREATE TABLE Polls "
-							+ "(id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-							+ "title VARCHAR(150) NOT NULL, "
-							+ "message CLOB(2048) NOT NULL)";
+				if (!rs.next()) {
+
+					String query = "CREATE TABLE Polls " + "(id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+							+ "title VARCHAR(150) NOT NULL, " + "message CLOB(2048) NOT NULL)";
 					PreparedStatement pst = cpds.getConnection().prepareStatement(query);
 					pst.execute();
+
+					List<Poll> polls = loadPolls(sce.getServletContext().getRealPath("WEB-INF/ankete-definicija.txt"));
 					
-					query = "INSERT INTO Polls (title, message) "
-							+ "VALUES ('Glasanje za omiljeni bend:', "
-							+ "'Od sljedećih bendova, koji Vam je bend najdraži? Kliknite na link kako biste glasali.')";
+					query = "INSERT INTO Polls (title, message) VALUES (?, ?)";
 					
-					pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-					pst.execute();
-					
-					pollIdKey = pst.getGeneratedKeys();
+					for(Poll poll: polls) {
+						pst = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+						pst.setString(1, poll.getTitle());
+						pst.setString(2, poll.getMessage());
+						pst.execute();
+						
+						ResultSet genKey = pst.getGeneratedKeys();
+						
+						try {
+							if(genKey != null && genKey.next()) {
+								long newID = genKey.getLong(1);
+								pollKeys.add(newID);
+							}
+						} finally {
+							try { genKey.close(); } catch(SQLException ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
 				}
-				
+
 				rs = dmd.getTables(null, conn.getSchema(), "PollOptions".toUpperCase(), null);
 				// provjeta postoji li tablica "PollOptions"
-				if(!rs.next()) {
-					
-					String query = 
-							"CREATE TABLE PollOptions "
-							+ "(id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
-							+ "optionTitle VARCHAR(100) NOT NULL, "
-							+ "optionLink VARCHAR(100) NOT NULL, "
-							+ "pollID BIGINT,"
-							+ "FOREIGN KEY (pollID) REFERENCES Polls(id))";
+				if (!rs.next()) {
+
+					String query = "CREATE TABLE PollOptions " + "(id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY, "
+							+ "optionTitle VARCHAR(100) NOT NULL, " + "optionLink VARCHAR(100) NOT NULL, "
+							+ "pollID BIGINT, " + "votesCount BIGINT, " + "FOREIGN KEY (pollID) REFERENCES Polls(id))";
 					PreparedStatement pst = conn.prepareStatement(query);
 					pst.execute();
 					
-					// učitavanje dostupnih bendova za glasanje
-					String fileNameDefintion = sce.getServletContext().getRealPath("WEB-INF/glasanje-definicija.txt");
-					
-					// dohvat ključa generiranog za ovaj poll
-					Long pollId = null;
-					if(pollIdKey != null && pollIdKey.next()) {
-						pollId = pollIdKey.getLong(1);
-					}
-					
-					try(Scanner sc = new Scanner(new File(fileNameDefintion))){
+					// za svaku anketu
+					for(int i = 0; i < pollKeys.size(); i++) {
 						
-						while(sc.hasNextLine()) {
-							String line = sc.nextLine();
-							String[] splitted = line.split("\t");
-							
-							query = "INSERT INTO PollOptions (optionTitle, optionLink, pollID)"
-									+ "VALUES (?, ?, ?)";
-							pst = conn.prepareStatement(query);
-							
-							// ime benda
-							pst.setString(1, splitted[1]);
-							// link benda
-							pst.setString(2, splitted[2]);
-							// broj poll-a
-							pst.setLong(3, pollId);
-							
-							pst.execute();
+						// učitavanje dostupnih bendova za glasanje
+						String fileNameDefintion = sce.getServletContext().getRealPath("WEB-INF/glasanje-definicija-" + String.valueOf(i + 1) + ".txt");
+						
+						try (Scanner sc = new Scanner(new File(fileNameDefintion))) {
+
+							while (sc.hasNextLine()) {
+								String line = sc.nextLine();
+								String[] splitted = line.split("\t");
+
+								query = "INSERT INTO PollOptions (optionTitle, optionLink, pollID, votesCount)"
+										+ "VALUES (?, ?, ?, ?)";
+								pst = conn.prepareStatement(query);
+
+								pst.setString(1, splitted[1]);
+								pst.setString(2, splitted[2]);
+								pst.setLong(3, pollKeys.get(i));
+								// broj glasova
+								pst.setLong(4, 0);
+
+								pst.execute();
+							}
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
 						}
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
 					}
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		}catch(IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		ComboPooledDataSource cpds = (ComboPooledDataSource)sce.getServletContext().getAttribute("hr.fer.zemris.dbpool");
-		if(cpds!=null) {
+		ComboPooledDataSource cpds = (ComboPooledDataSource) sce.getServletContext()
+				.getAttribute("hr.fer.zemris.dbpool");
+		if (cpds != null) {
 			try {
 				DataSources.destroy(cpds);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * Funnkcija za učitavanje dostupnih anketa.
+	 * 
+	 * @param fileName staza do datoteke s anketama
+	 * @return lista objekata tipa {@code Poll} koji predstavlja pojedinu anketu
+	 */
+	public List<Poll> loadPolls(String fileName) {
+		
+		List<Poll> polls = new ArrayList<>();
+		
+		try (Scanner sc = new Scanner(new File(fileName))) {
+
+			while (sc.hasNextLine()) {
+
+				String line = sc.nextLine();
+				String[] splitted = line.split("\t");
+				
+				String title = splitted[0];
+				String message = splitted[1];
+				
+				Poll poll = new Poll();
+				poll.setTitle(title);
+				poll.setMessage(message);
+				polls.add(poll);
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		return polls;
 	}
 
 }
