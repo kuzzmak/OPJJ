@@ -14,7 +14,7 @@ import hr.fer.zemris.java.hw14.DAOProvider;
 import hr.fer.zemris.java.hw14.PollEntry;
 
 /**
- * Servlet za prikaz stranice rezultata glasanja za najbolji bend.
+ * Servlet za prikaz stranice rezultata glasanja.
  * 
  * @author Antonio Kuzminski
  *
@@ -27,8 +27,10 @@ public class GlasanjeRezultatiServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
+		Long pollID = Long.parseLong(String.valueOf(req.getSession().getAttribute("pollID")));
+		
 		// unosi pojedine ankete
-		List<PollEntry> entries = DAOProvider.getDao().getPollEntryList();
+		List<PollEntry> entries = DAOProvider.getDao().getPollEntryList(pollID);
 		// sortirani po broju glasova
 		entries = entries.stream().sorted().collect(Collectors.toList());
 		
