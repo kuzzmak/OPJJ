@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import hr.fer.zemris.java.hw14.DAOProvider;
 
 /**
- * Servlet za glasanje najboljeg benda.
+ * Servlet za glasanje.
  * 
  * @author Antonio Kuzminski
  *
@@ -26,8 +26,9 @@ public class GlasanjeGlasajServlet extends HttpServlet {
 
 		// identifikacijski broj pojedinog unosa
 		Long entryID = Long.parseLong(req.getParameter("entryID"));
-		
-		DAOProvider.getDao().voteFor(DAOProvider.getDao().getPollEntryById(entryID));
+		Long pollID = Long.parseLong(String.valueOf(req.getSession().getAttribute("pollID")));
+	
+		DAOProvider.getDao().voteFor(DAOProvider.getDao().getPollEntryById(pollID, entryID));
 		resp.sendRedirect(req.getContextPath() + "/servleti/glasanje-rezultati");
 	}
 	
