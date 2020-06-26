@@ -15,6 +15,12 @@ public interface DAO {
 	 */
 	public BlogEntry getBlogEntry(Long id) throws DAOException;
 	
+	/**
+	 * Registracija novog korisnika u bazu podataka.
+	 * 
+	 * @param buf forma korisnika
+	 * @throws DAOException uslijed nastale greške
+	 */
 	public void registerNewUser(BlogUserForm buf) throws DAOException;
 	
 }
