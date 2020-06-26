@@ -1,4 +1,4 @@
-package hr.web.adresar.servleti;
+package hr.fer.zemris.java.hw15.servlets;
 
 import java.io.IOException;
 
