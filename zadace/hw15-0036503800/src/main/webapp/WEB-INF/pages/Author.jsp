@@ -3,6 +3,7 @@
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html; charset=UTF-8" session="true" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+
 <html>
 <head>
 <%@ include file="Header.jsp" %>  
@@ -24,18 +25,26 @@ td, th {
 tr:nth-child(even) {
   background-color: #dddddd;
 }
+
+a {
+  padding: 0px 10px;
+  word-wrap: normal;
+  display: inline-block;
+}
 </style>
 
 <body>
 
 	<%
-		String nick = (String)session.getAttribute("current.user.nick");
-	    if(nick != null)
+		String nick = (String) session.getAttribute("current.user.nick");
+	    if(nick != null){
 			out.print("<h1>" + nick + "</h1>");
+			if(nick.equals(request.getParameter("nick"))){
+				out.print("<a href=\"newBlogEntry\">Nova objava</a>");
+			}
+	    }
 	%>
 
-	<a href="newBlogEntry">Nova objava</a>
-	
 	<p> Lista objava autora <%= request.getParameter("nick") %>:</p>
 	<table>
 		<tr>
@@ -44,8 +53,8 @@ tr:nth-child(even) {
 			<th>Objavljeno</th>
 			<th></th>
 		</tr>
+		
 	 <%
-	 
 	 	String user = request.getParameter("nick");
 	 	if(user != null){
 	 		
@@ -58,17 +67,17 @@ tr:nth-child(even) {
 	 			out.print("<th>" + be.getTitle() + "</th>");
 	 			out.print("<th>" + be.getText() + "</th>");
 	 			out.print("<th>" + be.getCreatedAt().toString() + "</th>");
-	 			out.print("<th><a href=\"comments?blogId=" + be.getId() + "\"" + "\">" + "komentari" + "</a></th>");
+	 			if(nick != null && nick.equals(user)){
+			 		out.print("<th><a href=\"comments?blogId=" + be.getId() + "\"" + "\">" + "komentari" + "</a> <a href=\"editBlogEntry?blogId=" + be.getId() + "\"" + ">uredi</a>" + "</th>");
+	 			}else{
+	 				out.print("<th><a href=\"comments?blogId=" + be.getId() + "\"" + "\">" + "komentari" + "</a>" + "</th>");
+	 			}
 	 			out.print("<tr>");
 	 		}
 	 	}
-	 
 	 %>
 		
-	
-	
 	</table>
-	
 	
 </body>
 
