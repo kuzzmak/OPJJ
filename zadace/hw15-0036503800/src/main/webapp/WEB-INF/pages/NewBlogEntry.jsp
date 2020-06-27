@@ -52,7 +52,7 @@ input[type=submit]:hover {
 	    <label for="blogTitle">Title</label>
 	    <input type="text" id="blogTitle" name="blogTitle" placeholder="Naslov objave...">
 	
-	    <label for="tet">Tekst objave</label>
+	    <label for="text">Tekst objave</label>
 	    <textarea id="text" name="text" placeholder="Upišite tekst objave..." style="height:200px"></textarea>
 	
 	    <input type="submit" value="Spremi">
