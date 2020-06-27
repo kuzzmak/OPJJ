@@ -9,9 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import hr.fer.zemris.java.hw15.dao.DAOProvider;
 import hr.fer.zemris.java.hw15.dao.jpa.JPAEMProvider;
 import hr.fer.zemris.java.hw15.forms.BlogCommentForm;
 import hr.fer.zemris.java.hw15.model.BlogComment;
+import hr.fer.zemris.java.hw15.model.BlogEntry;
 
 /**
  * Servlet za komentiranje neke objave.
@@ -41,9 +43,10 @@ public class CommentServlet extends HttpServlet {
 		
 		BlogComment bc = bcf.getBlogComment();
 		
-		EntityManager em = JPAEMProvider.getEntityManager();
-		em.persist(bc);
-		
+		BlogEntry be = DAOProvider.getDAO().getBlogEntry(Long.valueOf((String) req.getSession().getAttribute("blogId"))); 
+//		EntityManager em = JPAEMProvider.getEntityManager();
+//		em.persist(bc);
+		be.getComments().add(bc);
 		resp.sendRedirect(req.getContextPath() + "/servleti/comments?blogId=" + req.getSession().getAttribute("blogId"));
 	}
 	
