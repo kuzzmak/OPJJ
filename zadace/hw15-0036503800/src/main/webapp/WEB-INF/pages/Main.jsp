@@ -1,5 +1,8 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@page import="hr.fer.zemris.java.hw15.model.BlogUser" %> 
+<%@page import="java.util.List" %>
+<%@page import="hr.fer.zemris.java.hw15.dao.DAOProvider"%>
+<%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
 
 <style>
@@ -7,7 +10,6 @@ form {
 	border: 3px solid #f1f1f1;
 }
 
-/* Full-width inputs */
 input[type=text], input[type=password] {
 	width: 100%;
 	padding: 12px 20px;
@@ -17,7 +19,6 @@ input[type=text], input[type=password] {
 	box-sizing: border-box;
 }
 
-/* Set a style for all buttons */
 button {
 	background-color: #4CAF50;
 	color: white;
@@ -28,21 +29,39 @@ button {
 	width: 100%;
 }
 
-/* Add a hover effect for buttons */
 button:hover {
 	opacity: 0.8;
 }
 
-/* Extra style for the cancel button (red) */
 .cancelbtn {
 	width: auto;
 	padding: 10px 18px;
 	background-color: #f44336;
 }
 
-/* Add padding to containers */
 .container {
 	padding: 16px;
+}
+
+.center {
+ 	text-align: center;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even){background-color: #f2f2f2}
+
+th {
+  background-color: #4CAF50;
+  color: white;
 }
 
 /* Change styles for span and cancel button on extra small screens */
@@ -78,5 +97,32 @@ button:hover {
     	<button type="submit">Registracija</button>
     </div>
 </form>
+
+<%
+
+	List<BlogUser> users = DAOProvider.getDAO().getAllUsers();
+	
+	out.print("<table>");
+				
+	out.print("<tr>");		
+	out.print("<th> korisničko ime </th>");
+	out.print("<th> ime </th>");
+	out.print("<th> prezime </th>");
+	out.print("<th> e-mail </th>");
+	out.print("</tr>");
+	
+	for(BlogUser bu: users){
+		out.print("<tr>");
+		String link = "<a href=" + "\"author?nick=" + bu.getNick() + "\">" + bu.getNick() + "</a>";
+		out.print("<th>" + link + "</th>");
+		out.print("<th>" + bu.getFirstName() + "</th>");
+		out.print("<th>" + bu.getLastName() + "</th>");
+		out.print("<th>" + bu.geteMail() + "</th>");
+		out.print("<tr>");
+		
+// 		out.print("<p class=" + "center" + ">" + link + "</p>");
+	}
+	out.print("</table>");
+%>
 
 </html>
