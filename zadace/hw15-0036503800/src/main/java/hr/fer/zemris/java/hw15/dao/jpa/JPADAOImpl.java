@@ -29,7 +29,6 @@ public class JPADAOImpl implements DAO {
 	public void registerNewUser(BlogUserForm buf) throws DAOException {
 		EntityManager em = JPAEMProvider.getEntityManager();
 		em.persist(buf.getBlogUser());
-		em.close();
 	}
 
 	@Override
@@ -67,8 +66,6 @@ public class JPADAOImpl implements DAO {
 		
 		BlogUser bu = findUserByUsername(nick);
 		
-		System.out.println(bu);
-		
 		@SuppressWarnings("unchecked")
 		List<BlogEntry> userEntries = (List<BlogEntry>) em
 				.createQuery("SELECT be FROM BlogEntry AS be WHERE be.creator=:creator")
@@ -81,15 +78,17 @@ public class JPADAOImpl implements DAO {
 	@Override
 	public List<BlogComment> getBlogEntryComments(Long blogId) throws DAOException {
 		
-		EntityManager em = JPAEMProvider.getEntityManager();
+//		EntityManager em = JPAEMProvider.getEntityManager();
+//		
+//		@SuppressWarnings("unchecked")
+//		List<BlogComment> blogEntryComments = (List<BlogComment>) em
+//				.createQuery("SELECT bc FROM BlogComment AS bc WHERE bc.blogEntry.id=:blogId")
+//				.setParameter("blogId", blogId)
+//				.getResultList();
 		
-		@SuppressWarnings("unchecked")
-		List<BlogComment> blogEntryComments = (List<BlogComment>) em
-				.createQuery("SELECT bc FROM BlogComment AS bc WHERE bc.blogEntry.id=:blogId")
-				.setParameter("blogId", blogId)
-				.getResultList();
+//		return blogEntryComments;
 		
-		return blogEntryComments;
+		return getBlogEntry(blogId).getComments();
 	}
 	
 }
