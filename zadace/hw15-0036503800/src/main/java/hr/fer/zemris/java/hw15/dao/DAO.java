@@ -3,6 +3,7 @@ package hr.fer.zemris.java.hw15.dao;
 import java.util.List;
 
 import hr.fer.zemris.java.hw15.forms.BlogUserForm;
+import hr.fer.zemris.java.hw15.model.BlogComment;
 import hr.fer.zemris.java.hw15.model.BlogEntry;
 import hr.fer.zemris.java.hw15.model.BlogUser;
 
@@ -42,4 +43,15 @@ public interface DAO {
 	 * @throws DAOException ukoliko je došlo do greške
 	 */
 	public List<BlogUser> getAllUsers() throws DAOException;
+	
+	/**
+	 * DOhvaćanje svih objava korisnika.
+	 * 
+	 * @param nick korisničko ime korisnika prema kojem se dohvaćaju objave
+	 * @return lista objava korisnika
+	 * @throws DAOException ako je došlo do pogreške
+	 */
+	public List<BlogEntry> getUserEntries(String nick) throws DAOException;
+	
+	public List<BlogComment> getBlogEntryComments(Long blogId) throws DAOException;
 }
