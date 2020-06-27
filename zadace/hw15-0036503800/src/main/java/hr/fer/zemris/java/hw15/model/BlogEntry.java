@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -35,6 +36,8 @@ public class BlogEntry {
 
 	/** Jedinstveni identifikator svake objave. */
 	private Long id;
+	/** Korisnik koji je stvorio objavu. */
+	private BlogUser creator;
 	/** Komentari objave. */
 	private List<BlogComment> comments = new ArrayList<>();
 	/** Datum stvaranje objave. */ 
@@ -53,6 +56,15 @@ public class BlogEntry {
 	
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	@ManyToOne
+	public BlogUser getCreator() {
+		return creator;
+	}
+
+	public void setCreator(BlogUser creator) {
+		this.creator = creator;
 	}
 
 	@OneToMany(mappedBy="blogEntry", fetch=FetchType.LAZY, cascade=CascadeType.PERSIST, orphanRemoval=true)
