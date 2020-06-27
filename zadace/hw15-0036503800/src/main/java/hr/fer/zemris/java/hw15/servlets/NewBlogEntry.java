@@ -13,6 +13,12 @@ import hr.fer.zemris.java.hw15.dao.jpa.JPAEMProvider;
 import hr.fer.zemris.java.hw15.forms.BlogEntryForm;
 import hr.fer.zemris.java.hw15.model.BlogEntry;
 
+/**
+ * Servlet za stvaranje nove objave.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 @WebServlet(name="newBlogEntry", urlPatterns={"/servleti/newBlogEntry"})
 public class NewBlogEntry extends HttpServlet {
 
