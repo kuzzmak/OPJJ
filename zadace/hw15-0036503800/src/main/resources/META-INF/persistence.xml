@@ -8,6 +8,8 @@
 		<class>hr.fer.zemris.java.hw15.model.BlogEntry</class>
 		<class>hr.fer.zemris.java.hw15.model.BlogComment</class>
 		
+		<shared-cache-mode>ENABLE_SELECTIVE</shared-cache-mode> <!-- NONE, ALL, ENABLE_SELECTIVE, DISABLE_SELECTIVE -->
+		
 		<properties>
 
 			<!-- Generalne postavke Hibernate-a -->			
@@ -47,6 +49,14 @@
 			<property name="hibernate.c3p0.timeout" value="1800" />
 			<property name="hibernate.c3p0.max_statements" value="50" />
 			<property name="hibernate.c3p0.idle_test_period" value="3600" />
+			
+			<!-- Postavke za 2nd-level kojima hibernate-u kazemo sta da koristi kao implementaciju -->			
+			<!-- ================================================================================= -->
+			<property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.ehcache.EhCacheRegionFactory "/>
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.cache.use_second_level_cache" value="true" />
+			<property name="hibernate.generate_statistics" value="false" />
+			<property name="net.sf.ehcache.configurationResourceName" value="/ehcache.xml" />
 			
 		</properties>
 	</persistence-unit>

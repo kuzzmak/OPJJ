@@ -2,6 +2,7 @@ package hr.fer.zemris.java.hw15.model;
 
 import java.util.Date;
 
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,6 +21,7 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name="blog_comments")
+@Cacheable(true)
 public class BlogComment {
 
 	/** Jedinstveni identifikator svakog komentara. */
