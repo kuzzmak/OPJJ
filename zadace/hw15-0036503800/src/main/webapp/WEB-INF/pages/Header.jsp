@@ -3,28 +3,37 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 
 <html>
+
+<style>
+h1 {
+	text-align: center;
+}
+
+label {
+ 	font-family: Verdana, Arial, Helvetica, sans-serif;
+	 font-size: medium;
+}
+</style>
+
 <%
 	Object currentNick = session.getAttribute("current.user.nick");
-
 	if (currentNick != null) {
 		request.setAttribute("nick", currentNick);
-	} 
+	}
 %>
 
 <c:choose>
 	<c:when test="${nick != null}">
-	
-		<h1><% out.print((String) session.getAttribute("current.user.fn")); %></h1>
-		<h1><% out.print((String) session.getAttribute("current.user.ln")); %></h1>
-	
-		<form action="logout">
-			<input type="submit" value="Odjava" />
-		</form>
-		<br />
+		<div align="center">
+			<form action="logout">
+				<label for="name"> <% out.print((String) session.getAttribute("current.user.fn") + " "); %> </label> 
+				<label for="surname"> <% out.print((String) session.getAttribute("current.user.ln")); %> </label> 
+				<input type="submit" value="Odjava" />
+			</form>
+		</div>
 	</c:when>
 	<c:otherwise>
-        <h1>anonymous</h1>
-        <br />
+		<h1>not logged in</h1>
 	</c:otherwise>
 </c:choose>
 
