@@ -8,6 +8,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Servlet za početnu stranicu.
+ * 
+ * @author Antonio Kuzminski
+ *
+ */
 @WebServlet(name="main", urlPatterns={"/servleti/main"})
 public class Main extends HttpServlet {
 
@@ -16,7 +22,6 @@ public class Main extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		
 		req.getRequestDispatcher("/WEB-INF/pages/Main.jsp").forward(req, resp);
 	}
 }
