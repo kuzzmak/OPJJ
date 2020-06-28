@@ -19,9 +19,17 @@ a.button {
 	opacity: 0.9;
 }
 
-h1 {text-align: center;}
-p {text-align: center;}
-a {text-align: center;}
+h1 {
+	text-align: center;
+}
+
+p {
+	text-align: center;
+}
+
+a {
+	text-align: center;
+}
 
 .button:hover {
 	opacity: 1;
@@ -36,7 +44,6 @@ a {text-align: center;}
 	<body>
 		<h1>Dogodila se pogreška</h1>
 		<p><c:out value="${error}"/></p>
-
 		<p><a href="main" class="button">Povratak na početnu stranicu</a></p>
 	</body>
 </html>
