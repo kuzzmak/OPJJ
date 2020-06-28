@@ -7,10 +7,6 @@
 
 <html>
 
-<head>
-<%@ include file="Header.jsp"%>
-</head>
-
 <style>
 form {
 	border: 3px solid #f1f1f1;
@@ -37,12 +33,6 @@ button {
 
 button:hover {
 	opacity: 0.8;
-}
-
-.cancelbtn {
-	width: auto;
-	padding: 10px 18px;
-	background-color: #f44336;
 }
 
 .container {
@@ -83,7 +73,6 @@ p {
 
 <c:if test="${loginError != null}">
 	<p style="color: red">${loginError}</p>
-	<br />
 </c:if>
 
 <form action="login" method="post">
@@ -117,25 +106,25 @@ p {
 <%
 	List<BlogUser> users = DAOProvider.getDAO().getAllUsers();
 
-out.print("<table>");
-
-out.print("<tr>");
-out.print("<th> korisničko ime </th>");
-out.print("<th> ime </th>");
-out.print("<th> prezime </th>");
-out.print("<th> e-mail </th>");
-out.print("</tr>");
-
-for (BlogUser bu : users) {
+	out.print("<table>");
+	
 	out.print("<tr>");
-	String link = "<a href=" + "\"author?nick=" + bu.getNick() + "\">" + bu.getNick() + "</a>";
-	out.print("<th>" + link + "</th>");
-	out.print("<th>" + bu.getFirstName() + "</th>");
-	out.print("<th>" + bu.getLastName() + "</th>");
-	out.print("<th>" + bu.geteMail() + "</th>");
-	out.print("<tr>");
-}
-out.print("</table>");
+	out.print("<th> korisničko ime </th>");
+	out.print("<th> ime </th>");
+	out.print("<th> prezime </th>");
+	out.print("<th> e-mail </th>");
+	out.print("</tr>");
+	
+	for (BlogUser bu : users) {
+		out.print("<tr>");
+		String link = "<a href=" + "\"author?nick=" + bu.getNick() + "\">" + bu.getNick() + "</a>";
+		out.print("<th>" + link + "</th>");
+		out.print("<th>" + bu.getFirstName() + "</th>");
+		out.print("<th>" + bu.getLastName() + "</th>");
+		out.print("<th>" + bu.geteMail() + "</th>");
+		out.print("<tr>");
+	}
+	out.print("</table>");
 %>
 
 </html>

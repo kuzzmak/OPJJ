@@ -68,7 +68,11 @@ a {
 <title>Registracija</title>
 </head>
 
-<form action="saveUser" method="post">
+<c:if test="${error != null}">
+	<p align="center" style="color: red">${error}</p>
+</c:if>
+
+<form action="register" method="post">
 
 	<div class="container">
 

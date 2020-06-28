@@ -68,16 +68,6 @@ public class BlogUserForm {
 			return s.strip();
 	}
 
-	public void validate() {
-
-		errors.clear();
-
-		if (!password.equals(passwordRepeat)) {
-			errors.put("password", "Upisane lozinke nisu jednake.");
-		}
-
-	}
-
 	/**
 	 * Metoda za stvaranje objekta {@code BlogUser} iz forme.
 	 * 

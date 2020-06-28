@@ -27,8 +27,13 @@ public class JPADAOImpl implements DAO {
 
 	@Override
 	public void registerNewUser(BlogUserForm buf) throws DAOException {
+		
 		EntityManager em = JPAEMProvider.getEntityManager();
-		em.persist(buf.getBlogUser());
+		
+		BlogUser bu = findUserByUsername(buf.getUsername());
+		
+		if(bu != null) throw new DAOException("Korisnik već postoji s korisničkim imenom: " + buf.getUsername());
+		else em.persist(buf.getBlogUser());
 	}
 
 	@Override

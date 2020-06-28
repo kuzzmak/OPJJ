@@ -11,7 +11,21 @@ h1 {
 
 label {
  	font-family: Verdana, Arial, Helvetica, sans-serif;
-	 font-size: medium;
+	font-size: medium;
+}
+
+a.button {
+	-webkit-appearance: button;
+	-moz-appearance: button;
+	text-decoration: none;
+	appearance: button;
+	background-color: #4CAF50;
+	color: white;
+	padding: 16px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	opacity: 0.9;
 }
 </style>
 
@@ -22,7 +36,10 @@ label {
 	}
 %>
 
+<a href="main" class="button">Početna stranica</a>
+
 <c:choose>
+	
 	<c:when test="${nick != null}">
 		<div align="center">
 			<form action="logout">
@@ -36,5 +53,12 @@ label {
 		<h1>not logged in</h1>
 	</c:otherwise>
 </c:choose>
+
+
+	<%
+	    if(currentNick != null){
+			out.print("<h1>" + currentNick + "</h1>");
+	    }
+	%>
 
 </html>
