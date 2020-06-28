@@ -42,13 +42,19 @@ public class LoginServlet extends HttpServlet {
 		// ako nije pronađen korisnik s takvim korisničkim imenom ili se sažetci lozinka ne slažu,
 		// preusmjerava se opet na početnu stranicu
 		if(buInDatabase == null || !buInDatabase.getPasswordHash().equals(bu.getPasswordHash())) {
+			
+			req.getSession().setAttribute("triedNick", bu.getNick());
+			req.getSession().setAttribute("loginError", "Unesena kriva kombinacija korisničkog imena i lozinke. Pokušajte ponovo.");
 			resp.sendRedirect(req.getServletContext().getContextPath() + "/servleti/login");
+			
 		}else {
 			
 			req.getSession().setAttribute("current.user.id", buInDatabase.getId());
 			req.getSession().setAttribute("current.user.nick", buInDatabase.getNick());
 			req.getSession().setAttribute("current.user.fn", buInDatabase.getFirstName());
 			req.getSession().setAttribute("current.user.ln", buInDatabase.getLastName());
+			
+			req.getSession().removeAttribute("loginError");
 			
 			resp.sendRedirect(req.getContextPath() + "/servleti/author?nick=" + buInDatabase.getNick());
 		}
