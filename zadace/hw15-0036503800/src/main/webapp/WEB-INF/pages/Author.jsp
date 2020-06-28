@@ -31,6 +31,20 @@ a {
   word-wrap: normal;
   display: inline-block;
 }
+
+a.button {
+	-webkit-appearance: button;
+	-moz-appearance: button;
+	text-decoration: none;
+	appearance: button;
+	background-color: #4CAF50;
+	color: white;
+	padding: 16px 20px;
+	margin: 8px 0;
+	border: none;
+	cursor: pointer;
+	opacity: 0.9;
+}
 </style>
 
 <body>
@@ -40,7 +54,7 @@ a {
 	    if(nick != null){
 			out.print("<h1>" + nick + "</h1>");
 			if(nick.equals(request.getParameter("nick"))){
-				out.print("<a href=\"newBlogEntry\">Nova objava</a>");
+				out.print("<a href=\"newBlogEntry\" class=\"button\">Nova objava</a>");
 			}
 	    }
 	%>
