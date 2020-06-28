@@ -52,7 +52,6 @@ a.button {
 	<%
 		String nick = (String) session.getAttribute("current.user.nick");
 	    if(nick != null){
-			out.print("<h1>" + nick + "</h1>");
 			if(nick.equals(request.getParameter("nick"))){
 				out.print("<a href=\"newBlogEntry\" class=\"button\">Nova objava</a>");
 			}
